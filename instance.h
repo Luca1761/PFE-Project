@@ -12,7 +12,9 @@
 #include <list>
 #include <string>
 #include <vector>
-
+#include "Client.h"
+#include "Rng.h"
+#include "Vehicle.h"
 using namespace std;
 
 const double MAXCOST = 1.e30;
