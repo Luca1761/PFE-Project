@@ -931,7 +931,7 @@ int mainTest4(int argc, char *argv[])
     vector<double> quantities = vector<double>(6);
     LotSizingSolver *lotSizingSolver =  new LotSizingSolver(mesParametres, insertions, 2);
     cout<<"solve:"<<endl;
-    if(mesParametres->isstockout)lotSizingSolver->solve_stockout();
+    if(mesParametres->isstockout)lotSizingSolver->solve_stockout_backward();
     else
       lotSizingSolver->solve();
     // on desalloue la memoire

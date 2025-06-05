@@ -33,7 +33,7 @@ public:
    
     bool traces;
 
-    LotSizingSolver(Params * params, vector<vector<Insertion>> insertions, int client, bool backward= false);
+    LotSizingSolver(Params * params, vector<vector<Insertion>> insertions, int client);
 
     std::shared_ptr<PLFunction> copyPLFunction(std::shared_ptr<PLFunction> source);
     void extractBreakpoints(const std::shared_ptr<PLFunction>& f, vector<double>& breakpoints);
@@ -63,7 +63,6 @@ public:
         std::shared_ptr<LinearPiece> fromF, double I, double demand, double &fromI, double &quantity,std::shared_ptr<LinearPiece> Cpre,double inventory);
     
     bool solve();
-    bool solve_stockout();
     bool solve_stockout_backward();
     ~LotSizingSolver();
 };

@@ -33,8 +33,8 @@ public:
 
     // initialize a PL function from arc profile
     PLFunction(Params *params, vector<Insertion> insertions, int day, int client);
-    PLFunction(Params *params, vector<Insertion> insertions, int day, int client,bool st, bool backward);
-    PLFunction(Params *params, vector<Insertion> insertions, int day, int client,bool st,int daily, bool backward);
+    PLFunction(Params *params, vector<Insertion> insertions, int day, int client,bool st);
+    PLFunction(Params *params, vector<Insertion> insertions, int day, int client,bool st,int daily);
 
     // initialize a PLFunction from list of pieces
     PLFunction(Params *params, vector<shared_ptr<LinearPiece>> pieces);

@@ -10,7 +10,7 @@
 #include <vector>
 #include <cmath>
 #include <iomanip>
-LotSizingSolver::LotSizingSolver(Params *params, vector<vector<Insertion>> inst, int client, bool backward)
+LotSizingSolver::LotSizingSolver(Params *params, vector<vector<Insertion>> inst, int client)
     : params(params), insertions(inst), client(client)
 {
   horizon = (int)insertions.size();
@@ -27,10 +27,10 @@ LotSizingSolver::LotSizingSolver(Params *params, vector<vector<Insertion>> inst,
   
 
     if(params-> isstockout){
-      if (backward) {
-        std::shared_ptr<PLFunction> a = std::make_shared<PLFunction>(params, tmp, t, client, true,params->cli[client].dailyDemand[t], backward); 
+      if (params->isbackward) {
+        std::shared_ptr<PLFunction> a = std::make_shared<PLFunction>(params, tmp, t, client, true,params->cli[client].dailyDemand[t]); 
 
-        std::shared_ptr<PLFunction> b = std::make_shared<PLFunction>(params, tmp, t, client, false, backward); 
+        std::shared_ptr<PLFunction> b = std::make_shared<PLFunction>(params, tmp, t, client, false); 
         F1[t] = std::make_shared<PLFunction>(params);
         F2[t] = std::make_shared<PLFunction>(params);
         
@@ -46,9 +46,9 @@ LotSizingSolver::LotSizingSolver(Params *params, vector<vector<Insertion>> inst,
           F2[t]->append(tmp);
         }
     } else {
-        F1[t] = std::make_shared<PLFunction>(params, tmp, t, client, true,params->cli[client].dailyDemand[t], backward); 
+        F1[t] = std::make_shared<PLFunction>(params, tmp, t, client, true,params->cli[client].dailyDemand[t]); 
 
-        F2[t] = std::make_shared<PLFunction>(params, tmp, t, client, false, backward); 
+        F2[t] = std::make_shared<PLFunction>(params, tmp, t, client, false); 
 
       }
       
@@ -1344,173 +1344,17 @@ void  LotSizingSolver::Lastday(vector<std::shared_ptr<PLFunction>> &C){//for the
   C[horizon]->append(tmptmptmp);
 }
 
-bool LotSizingSolver::solve_stockout()
-{
-  double minInventory, maxInventory;
-
-  C = vector<std::shared_ptr<PLFunction>>(horizon);
-
-  I = vector<double>(horizon);
-  // final inventory at the end of each period
-
-  quantities = vector<double>(horizon);
-  // replinishment at each period
-
-  breakpoints = vector<std::shared_ptr<Insertion>>(horizon);
-  
-  for (int i = 0; i < horizon; i++)
-  {
-    C[i] = std::make_shared<PLFunction>(params); // a piecewise linear function in each period
-  }
-  
-  Firstday(C);
-
-  // initialazition end***************************************************************************
-  
-  for (int t = 1; t < horizon; t++)
-  {
-    //picewise linear functions
-    std::shared_ptr<PLFunction> f1;
-    std::shared_ptr<PLFunction> f2;
-    std::shared_ptr<PLFunction> f3;
-    std::shared_ptr<PLFunction> f4;
-    std::shared_ptr<PLFunction>  fromF;
-    std::shared_ptr<PLFunction>  fromF1;
-    std::shared_ptr<PLFunction>  fromF2;
-    std::shared_ptr<PLFunction>  fromC;
-    minInventory = params->cli[client].minInventory;
-    maxInventory = params->cli[client].maxInventory - params->cli[client].dailyDemand[t];
-   
-
-    //(1). q(t) = 0,  I(t-1) > daily ==> I(t) > 0 
-    //dp <--- C(t-1)(I) + inventoryCost (I-daily)
-    f1 = copyPLFunction(C[t-1]);
-    f1->addHolding(params->cli[client].inventoryCost,params->cli[client].dailyDemand[t]);
-    for (int i = 0; i < f1->nbPieces; i++)
-    {
-      f1->pieces[i]->fromC_pre = C[t - 1]->pieces[i]->clone();
-      f1->pieces[i]->replenishment_loss = -1; 
-      f1->pieces[i]->fromF = nullptr;
-      f1->pieces[i]->fromC = f1->pieces[i]->clone();
-      f1->pieces[i]->fromInst = nullptr;
-    }
-    f1->shiftLeft(params->cli[client].dailyDemand[t]);
-    f1 = f1->getInBound(0, maxInventory, false);
-
-    //(2) q(t) == 0,  I(t-1) < daily ==> I(t) ->>> 0 
-    //dp <--- C(t-1)(I) + stockoutCost (daily-I)
-    f2 = copyPLFunction(C[t - 1]);
-    for (int i = 0; i < f2->nbPieces; i++){
-      f2->pieces[i]->fromC_pre = C[t - 1]->pieces[i]->clone();
-      f2->pieces[i]->replenishment_loss = 0; 
-      f2->pieces[i]->fromC = nullptr;
-      f2->pieces[i]->fromF = nullptr;
-      f2->pieces[i]->fromInst = nullptr;
-    }
-  
-    f2->addStockout(params->cli[client].stockoutCost,params->cli[client].dailyDemand[t]);  
-    f2->shiftLeft(params->cli[client].dailyDemand[t]);
-    
-    f2 = f2->getInBound( -params->cli[client].dailyDemand[t] , 0, false);
-
-    ///////************************** C[0] = f2->minValue;
-
-    // q != 0, I(t-1)+q-daily > 0     ==> I(t)>0
-    // C(t)(It) <----- C(t-1)(It-1) + holdingCost(It-1) + F2function (qt)
-    f3 = std::make_shared<PLFunction>(params);
-    fromF2 = copyPLFunction(F2[t]);
-    //fromF2 = fromF2->getInBound(0,maxInventory,false);
-    fromF2 = fromF2->getInBound(1,params->cli[client].maxInventory,false);
-    
-    fromC = copyPLFunction(C[t - 1]);
-    fromC->addHoldingf(params->cli[client].inventoryCost);
-    fromC->shiftLeft(params->cli[client].dailyDemand[t]);
-
-    for (int i = 0; i < fromC->nbPieces; i++){
-      fromC->pieces[i]->fromC_pre = C[t - 1]->pieces[i]->clone();
-    } 
-
-    f3 = supperposition(fromC, fromF2);
-    for (int i = 0; i < f3->nbPieces; i++){
-      f3->pieces[i]->replenishment_loss = -1; 
-      f3->pieces[i]->fromC_pre = f3->pieces[i]->fromC->fromC_pre;
-    } 
-    f3 = f3->getInBound(0,maxInventory, false);
-
-    // q != 0, I(t-1)+q-daily < 0     ==> I(t)=0
-    // C(t)(It) <----- C(t-1)(It-1) + stockoutCost(It-1) + F1function (qt)
-    f4 = std::make_shared<PLFunction>(params);
-    fromF1 = copyPLFunction(F1[t]);
-    fromF1 = fromF1->getInBound(1,1000000, false);
-  
-    fromC = copyPLFunction(C[t - 1]);
-    fromC->addStockoutf(params->cli[client].stockoutCost);
-    fromC->shiftLeft(params->cli[client].dailyDemand[t]);
-    for (int i = 0; i < fromC->nbPieces; i++){
-      fromC->pieces[i]->fromC_pre = C[t - 1]->pieces[i]->clone();
-    }
-    fromC = fromC->getInBound(-params->cli[client].dailyDemand[t],-1,false);
-    
-    
-    f4 = supperposition(fromC, fromF1);
-    for (int i = 0; i < f4->nbPieces; i++){
-      f4->pieces[i]->replenishment_loss = 0; 
-      f4->pieces[i]->fromC_pre = f4->pieces[i]->fromC->fromC_pre; 
-    }
-    f4 = f4->getInBound(-params->cli[client].dailyDemand[t], 0, false);
-    
-    
-    C[t] = min_final(f1,f3);
-    double rep2=0.,rep4=0.,t2=10000000.,t4=10000000.;
-    
-    if(f2->nbPieces) {f2->update_minValue(rep2);  t2 = f2->minValue; }
-    if(f4->nbPieces) {f4->update_minValue(rep4); t4 = f4->minValue;}
-    if(f4->nbPieces&&gt(t2,t4)){  
-      C[t]=C[t]->update0(f4->minValue); 
-      if(eq(C[t]->pieces[0]->p2->x,0) && eq(C[t]->pieces[0]->p2->y,f4->minValue) ){
-        C[t]->pieces[0]->fromF = f4->minimalPiece->fromF; 
-        C[t]->pieces[0]->fromC = f4->minimalPiece->fromC;
-        C[t]->pieces[0]->fromC_pre = f4->minimalPiece->fromC_pre;
-        C[t]->pieces[0]->fromInst = f4->minimalPiece->fromInst;
-        C[t]->pieces[0]->replenishment_loss =rep4;
-      } 
-    }
-    
-    else if(f2->nbPieces){
-      C[t]=C[t]->update0(f2->minValue);
-      if(eq(C[t]->pieces[0]->p2->x,0) && eq(C[t]->pieces[0]->p2->y,f2->minValue) ){
-        C[t]->pieces[0]->fromF = f2->minimalPiece->fromF;
-        C[t]->pieces[0]->fromC = f2->minimalPiece->fromC;
-        C[t]->pieces[0]->fromC_pre = f2->minimalPiece->fromC_pre;
-        C[t]->pieces[0]->fromInst = f2->minimalPiece->fromInst;
-        C[t]->pieces[0]->replenishment_loss = rep2;
-      }
-    }
-  }
-  // std::cout << "no backward" << std::endl;
-
-  // get solution
-  bool ok = backtracking_stockout();
-  return false;
-
-  if (!ok)
-  {
-    return false;
-  }
-  return true;
-}
-
 bool LotSizingSolver::solve_stockout_backward()
 {
   double minInventory, maxInventory;
 
-  C = vector<std::shared_ptr<PLFunction>>(horizon+1);
+  C = vector<std::shared_ptr<PLFunction>>(horizon + 1);
 
-  I = vector<double>(horizon);
   // final inventory at the end of each period
+  I = vector<double>(horizon);
 
-  quantities = vector<double>(horizon);
   // replinishment at each period
+  quantities = vector<double>(horizon);
 
   breakpoints = vector<std::shared_ptr<Insertion>>(horizon);
   
@@ -1554,9 +1398,6 @@ bool LotSizingSolver::solve_stockout_backward()
     partialf1->shiftRight(params->cli[client].dailyDemand[t-1]); //partialF1(x) = Ct(x-d_i^t) + hi*(x-d_i^t)
     partialf1 = partialf1->getInBound(params->cli[client].dailyDemand[t-1], maxInventory, false); //x>=d_i^t
 
-    // shared_ptr<LinearPiece> tmpPart(make_shared<LinearPiece>(0, 10000000000000000, params->cli[client].dailyDemand[t-1]-1, 10000000000000000));
-    // f1->append(tmpPart); //complete with high values
-
     for (int i = 0; i < partialf1->nbPieces; i++) {
       f1->append(partialf1->pieces[i]);
     }
@@ -1594,24 +1435,13 @@ bool LotSizingSolver::solve_stockout_backward()
       fromC1->pieces[i]->fromC_pre = C[t]->pieces[i]->clone();
     }
     fromC1 = fromC1->getInBound(params->cli[client].dailyDemand[t-1], params->cli[client].maxInventory, false);
-    // std::cout << "fromC1" << std::endl;
-    // fromC1->print();
-    // std::cout << "fromF2" << std::endl;
-    // fromF2->print();
+
     f3 = supperposition(fromC1, fromF2); //f3(x) = min_q (fromC1(x-q) + fromF2(q)) (q<0)
     for (int i = 0; i < f3->nbPieces; i++){
       f3->pieces[i]->replenishment_loss = -1; 
       f3->pieces[i]->fromC_pre = f3->pieces[i]->fromC->fromC_pre;
     } 
     f3 = f3->getInBound(0,maxInventory, false);
-    // if (f3->nbPieces==0) {
-    //   std::cout << "verif" << std::endl;
-    //   std::cout << params->cli[client].maxInventory << std::endl;
-    //   std::cout << "fromC1" << std::endl;
-    //   fromC1->print();
-    //   std::cout << "fromF2" << std::endl;
-    //   fromF2->print();
-    // }
 
     // q != 0, I(t-1)+q-daily < 0     ==> I(t)=0
     // C(t-1)(I(t-1)) <----- C(t)(0) + stockoutCost * (d_i^t-q-I(t-1)) + F_t^1(q)
@@ -1631,38 +1461,15 @@ bool LotSizingSolver::solve_stockout_backward()
     }
     
     f4 = supperposition(fromC2, fromF1); //f4(x) = min_q (fromC2(x-q) + fromF1(q)) (q<0)
-    // std::cout << "verif" << std::endl;
-    // fromC2->print();
-    // fromF1->print();
-    // f4->print();
+
     f4 = f4->getInBound(0,params->cli[client].dailyDemand[t-1], false);
 
     for (int i = 0; i < f4->nbPieces; i++){
       f4->pieces[i]->replenishment_loss = 0; 
       f4->pieces[i]->fromC_pre = f4->pieces[i]->fromC->fromC_pre; 
     }
-    // std::cout << setprecision(10);
-    // std::cout << "F1" << std::endl;
-    // F1[t-1]->print();
-    // std::cout << "F2" << std::endl;
-    // F2[t-1]->print();
-    // std::cout << "demand" << std::endl;
-    // std::cout << params->cli[client].dailyDemand[t-1] << std::endl;
-    // std::cout << "noDeliveryNoStockout" << std::endl;
-    // f1->print();
-    // std::cout << "noDeliveryStockout" << std::endl;
-    // f2->print();
-    // std::cout << "deliveryNoStockout" << std::endl;
-    // f3->print();
-    // std::cout << "deliveryStockout" << std::endl;
-    // f4->print();
-    // std::cout << "minNoStockout" << std::endl;
-    // min_final(f1,f3)->print();
-    // std::cout << "minStockout" << std::endl;
-    // min_final(f2,f4)->print();
+
     C[t-1] = min_final(min_final(f1,f3),min_final(f2,f4)); 
-    // std::cout << "final" << std::endl;
-    // C[t-1]->print();
 
   }
   C[0] = C[0]->getInBound(params->cli[client].startingInventory, params->cli[client].startingInventory , false);

@@ -289,13 +289,11 @@ int LocalSearch::mutation11(int client)
   }
   
   unique_ptr<LotSizingSolver> lotsizingSolver(
-      make_unique<LotSizingSolver>(params, insertions, client, params->isbackward));
+      make_unique<LotSizingSolver>(params, insertions, client));
     
   bool ok = true;
-    if(params-> isstockout) {
-    if (params->isbackward) ok = lotsizingSolver->solve_stockout_backward();
-    else ok = lotsizingSolver->solve_stockout();
-  } else ok = lotsizingSolver->solve();
+    if(params-> isstockout) ok = lotsizingSolver->solve_stockout_backward();
+    else ok = lotsizingSolver->solve();
 
   objective = lotsizingSolver->objective;
   quantities = lotsizingSolver->quantities;

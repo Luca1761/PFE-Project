@@ -138,7 +138,7 @@ PLFunction::PLFunction(Params *params, vector<Insertion> insertions, int day, in
 }
 
 
-PLFunction::PLFunction(Params *params, vector<Insertion> insertions, int day, int client,bool st, bool backward) : params(params)
+PLFunction::PLFunction(Params *params, vector<Insertion> insertions, int day, int client,bool st) : params(params)
 {
     if (insertions.size() == 0)
     {
@@ -163,7 +163,7 @@ PLFunction::PLFunction(Params *params, vector<Insertion> insertions, int day, in
     // loop through all pieces
     while (index != insertions.end())
     {
-        if (index->detour < 0) {
+        if (index->detour < -1) {
             std::cout << index->detour << std::endl;
             throw std::string("Negative detour??");
         }
@@ -244,7 +244,7 @@ PLFunction::PLFunction(Params *params, vector<Insertion> insertions, int day, in
 }
 
 
-PLFunction::PLFunction(Params *params, vector<Insertion> insertion, int day, int client, bool st, int daily, bool backward) : params(params)
+PLFunction::PLFunction(Params *params, vector<Insertion> insertion, int day, int client, bool st, int daily) : params(params)
 {
     std::vector<Insertion> insertions = insertion;
 
