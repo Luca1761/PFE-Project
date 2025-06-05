@@ -163,25 +163,23 @@ PLFunction::PLFunction(Params *params, vector<Insertion> insertions, int day, in
     // loop through all pieces
     while (index != insertions.end())
     {
-        if (index->detour < -1) {
+        if (index->detour < 0) {
             std::cout << index->detour << std::endl;
-            throw string("negative detour???");
+            throw std::string("Negative detour??");
         }
-        // std::cout << "detour " << index->detour << std::endl; 
-        // make a first piece for the first insertion
         if (index == insertions.begin())
         {
             pre_x = 0;
-            pre_y = calculateCost_holding(day, client, index->detour, pre_x,  pre_x, backward);
+            pre_y = calculateCost_holding(day, client, index->detour, pre_x,  pre_x);
             x = index->load;
-            y = calculateCost_holding(day, client, index->detour, x, index->load, backward); //x,load: demand loadfree
+            y = calculateCost_holding(day, client, index->detour, x, index->load); //x,load: demand loadfree
             
         }
         else
         {
-            double current_cost = calculateCost_holding(day, client, index->detour, index->load, index->load, backward);
+            double current_cost = calculateCost_holding(day, client, index->detour, index->load, index->load);
             std::vector<Insertion>::iterator pre_index = index - 1;
-            double pre_insertion_cost_with_current_demand = calculateCost_holding(day, client, pre_index->detour, index->load, pre_index->load, backward);
+            double pre_insertion_cost_with_current_demand = calculateCost_holding(day, client, pre_index->detour, index->load, pre_index->load);
 
             bool is_dominated_vehicle = (index->load <= pre_load) || (pre_insertion_cost_with_current_demand <= current_cost);
 
@@ -190,7 +188,7 @@ PLFunction::PLFunction(Params *params, vector<Insertion> insertions, int day, in
                 //index->detour = pre_detour +  x *PenalityCapacity - preload*PenalityCapacity 
                 x = pre_load + (index->detour - pre_detour) / params->penalityCapa;
 
-                y = calculateCost_holding(day, client, pre_detour, x, pre_load, backward);
+                y = calculateCost_holding(day, client, pre_detour, x, pre_load);
 
                 if (fabs(x- pre_x)>0.999)
                 {
@@ -212,7 +210,7 @@ PLFunction::PLFunction(Params *params, vector<Insertion> insertions, int day, in
         if (fabs(x- pre_x)>0.999)
         {
             // make piecey
-            pre_y = calculateCost_holding(day, client, index->detour, pre_x, index->load,backward);
+            pre_y = calculateCost_holding(day, client, index->detour, pre_x, index->load);
             shared_ptr<LinearPiece> tmp(make_shared<LinearPiece>(pre_x, pre_y, x, y));
             tmp->fromInst = make_shared<Insertion>(index->detour, index->load, index->place);
 
@@ -235,7 +233,7 @@ PLFunction::PLFunction(Params *params, vector<Insertion> insertions, int day, in
     }
    if (fabs(x- pre_x)>0.999)
     {
-        y = calculateCost_holding(day, client, pre_detour, x, pre_load, backward);
+        y = calculateCost_holding(day, client, pre_detour, x, pre_load);
         // make piecey
         shared_ptr<LinearPiece> tmp(make_shared<LinearPiece>(pre_x, pre_y, x, y));
         tmp->fromInst = make_shared<Insertion>(pre_detour, pre_load, pre_place);
@@ -276,22 +274,17 @@ PLFunction::PLFunction(Params *params, vector<Insertion> insertion, int day, int
     // loop through all pieces
     while (index != insertions.end())
     {
-        // if (index->detour < 0) {
-        //     std::cout << "Detour négatif ???" << std::endl;
-        //     std::cout << index->detour << std::endl;
-        //     throw string("error");
-        // }
         if(index->load>daily) flag = true, index->load=daily;
         if (index == insertions.begin()){
             pre_x = 0;
-            pre_y = calculateCost_stockout(day, client, index->detour, pre_x, pre_x, backward);
+            pre_y = calculateCost_stockout(day, client, index->detour, pre_x, pre_x);
             x = index->load;
-            y = calculateCost_stockout(day, client, index->detour, x, index->load, backward);
+            y = calculateCost_stockout(day, client, index->detour, x, index->load);
         }
         else{
-            double current_cost = calculateCost_stockout(day, client, index->detour, index->load, index->load, backward);
+            double current_cost = calculateCost_stockout(day, client, index->detour, index->load, index->load);
             std::vector<Insertion>::iterator pre_index = index - 1;
-            double pre_insertion_cost_with_current_demand=calculateCost_stockout(day, client, pre_index->detour, index->load, pre_index->load, backward);
+            double pre_insertion_cost_with_current_demand=calculateCost_stockout(day, client, pre_index->detour, index->load, pre_index->load);
             bool is_dominated_vehicle = (index->load <= pre_load) || (pre_insertion_cost_with_current_demand <= current_cost);
             
             if (!is_dominated_vehicle  )
@@ -300,7 +293,7 @@ PLFunction::PLFunction(Params *params, vector<Insertion> insertion, int day, int
                 
                 x = pre_load + (index->detour - pre_detour) / params->penalityCapa;
                 if(x > daily)   flag = 1, x= daily;
-                y = calculateCost_stockout(day, client, pre_detour, x, pre_load, backward);
+                y = calculateCost_stockout(day, client, pre_detour, x, pre_load);
                 
                 if (fabs(x- pre_x)>0.999) 
                 {   
@@ -319,7 +312,7 @@ PLFunction::PLFunction(Params *params, vector<Insertion> insertion, int day, int
         if (fabs(x- pre_x)>0.999)
         {
             // make piecey
-            pre_y= calculateCost_stockout(day, client, index->detour, pre_x, index->load, backward);
+            pre_y= calculateCost_stockout(day, client, index->detour, pre_x, index->load);
             shared_ptr<LinearPiece> tmp(make_shared<LinearPiece>(pre_x, pre_y, x, y));
             tmp->fromInst = make_shared<Insertion>(index->detour, index->load, index->place);
             append(tmp);
@@ -343,7 +336,7 @@ PLFunction::PLFunction(Params *params, vector<Insertion> insertion, int day, int
     }
    if (fabs(x- pre_x)>0.999)
     {
-        y = calculateCost_stockout(day, client, pre_detour, x, pre_load, backward);
+        y = calculateCost_stockout(day, client, pre_detour, x, pre_load);
         // make piecey
         shared_ptr<LinearPiece> tmp(make_shared<LinearPiece>(pre_x, pre_y, x, y));
         tmp->fromInst = make_shared<Insertion>(pre_detour, pre_load, pre_place);
@@ -540,13 +533,6 @@ bool PLFunction::intersect(shared_ptr<LinearPiece> lp1, shared_ptr<LinearPiece> 
 }
 
 void PLFunction::append(shared_ptr<LinearPiece> lp){
-    // if (eq(lp->p1->x, lp->p2->x) && neq(lp->p1->y, lp->p2->y)) {
-    //     shared_ptr<LinearPiece> lp1 = lp->clone();
-    //     double y = std::min(lp->p1->y, lp->p2->y);
-    //     lp1->updateLinearPiece(lp->p1->x, y,lp->p1->x,y);
-    //     this->append(lp1);
-    //     return;
-    // }
     if(!lp) return;
     double minNum = std::min(lp->p1->x, lp->p2->x);
     double maxNum = std::max(lp->p1->x, lp->p2->x);
@@ -771,9 +757,9 @@ std::shared_ptr<PLFunction> PLFunction::getInBound(double lb, double ub, bool up
 
     for (int i = 0; i < nbPieces; i++){
         shared_ptr<LinearPiece> lp = pieces[i]->getInBound(lb, ub);
-        if (lp != nullptr) {
+
+        if (lp != nullptr)
             plFunction->append(lp);
-        }
             
         if (updateValueAt0 && lt(pieces[i]->p1->x, lb) && le(lb, pieces[i]->p2->x)   ) // lb is within this piece (inside)
         {
@@ -828,12 +814,12 @@ void PLFunction::print()
 }
 
 //only calculate the &stockout cost &detour & more capacity cost
-double PLFunction::calculateCost_stockout(int day, int client, double detour, double replenishment, double freeload, bool backward)
+double PLFunction::calculateCost_stockout(int day, int client, double detour, double replenishment, double freeload)
 {
     // detour
     double cost = detour;
     //stock-out cost
-    if (!backward)
+    if (!params->isbackward)
         cost +=  params->cli[client].stockoutCost  * (params->cli[client].dailyDemand[day] - replenishment);
     //cost-depot(holdingcost)
     cost -= params->inventoryCostSupplier * replenishment * (double)(params->ancienNbDays - day); 
@@ -844,12 +830,12 @@ double PLFunction::calculateCost_stockout(int day, int client, double detour, do
 }
 
 //only calculate the hodling cost &detour & more capacity cost
-double PLFunction::calculateCost_holding(int day, int client, double detour, double replenishment, double freeload, bool backward)
+double PLFunction::calculateCost_holding(int day, int client, double detour, double replenishment, double freeload)
 {
     // detour
     double cost = detour;
     // holding cost
-    if (!backward)
+    if (!params->isbackward)
         cost +=  params->cli[client].inventoryCost  * (replenishment - params->cli[client].dailyDemand[day] );
     //cost-depot(holdingcost)
     cost -= params->inventoryCostSupplier * replenishment * (double)(params->ancienNbDays - day); 

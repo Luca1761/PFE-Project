@@ -160,7 +160,7 @@ void Params::setMethodParams()
 	// parameters related to how the problem is treated
 	conversionToPVRP = true;
 	triCentroides = false;	  // is the chromosome ordered by barycenter of the routes (CVRP case, c.f. OR2012 paper)
-	isRoundingInteger = true; // using the rounding (for now set to true, because currently testing on the instances of Uchoa)
+	isRoundingInteger = false; // using the rounding (for now set to true, because currently testing on the instances of Uchoa)
 	isRoundingTwoDigits = false;
 
 	// parameters of the population

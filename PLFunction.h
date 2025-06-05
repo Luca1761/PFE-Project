@@ -77,8 +77,8 @@ public:
     std::shared_ptr<PLFunction> getInBound(double lb, double ub, bool updateValueAt0);
 
     double calculateCost(int day, int client, double detour, double demand, double freeload);
-    double calculateCost_stockout(int day, int client, double detour, double replenishment, double freeload, bool backward); 
-    double calculateCost_holding(int day, int client, double detour, double replenishment, double freeload, bool backward); 
+    double calculateCost_stockout(int day, int client, double detour, double replenishment, double freeload); 
+    double calculateCost_holding(int day, int client, double detour, double replenishment, double freeload); 
 
     bool testSuperposition();
 
