@@ -8,8 +8,8 @@
       "args": [],
       "stopAtEntry": false,
       "externalConsole": true,
-      "cwd": "c:/Users/lucas/Documents/PFE-Project",
-      "program": "c:/Users/lucas/Documents/PFE-Project/build/Debug/outDebug",
+      "cwd": "c:/Users/lucas/Documents/HGS-IRP",
+      "program": "c:/Users/lucas/Documents/HGS-IRP/build/Debug/outDebug",
       "MIMode": "gdb",
       "miDebuggerPath": "gdb",
       "setupCommands": [

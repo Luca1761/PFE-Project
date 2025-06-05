@@ -1,6 +1,6 @@
 #include "Vehicle.h"
 
-Vehicle::Vehicle(int depotIdx,double vehicleCapacity):
-depotIdx(depotIdx), vehicleCapacity(vehicleCapacity)
+Vehicle::Vehicle(int depotNumber,double maxRouteTime,double vehicleCapacity):
+depotNumber(depotNumber), maxRouteTime(maxRouteTime), vehicleCapacity(vehicleCapacity)
 {}
 Vehicle::~Vehicle(void){}
