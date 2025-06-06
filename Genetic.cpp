@@ -49,7 +49,7 @@ void Genetic::evolve(int maxIter, int maxIterNonProd, int nbRec)
 			resultCross = crossOX();
 		else
 			resultCross = crossPOX2(); // TODO -- for now crossover is deactivated to debug the GA
-		
+
 		muter();
 		
 		// REPAIR IF NEEDED
@@ -257,7 +257,7 @@ int Genetic::crossPOX2()
 
 	// std::random_shuffle(joursPerturb.begin(), joursPerturb.end());
 	std::random_device rd;
-	std::mt19937 g(rd());
+	std::mt19937 g(params->seed);
 	std::shuffle(joursPerturb.begin(), joursPerturb.end(), g);
 
 	// Picking j1 et j2
