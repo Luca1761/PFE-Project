@@ -133,6 +133,8 @@ int commandline::get_stockout() { return stockout; }
 
 bool commandline::get_backward() { return backward; }
 
+int commandline::get_nb_scenarios() {return nb_scenarios; }
+
 int commandline::get_rou() { return rou; }
 
 // renvoie le nombre de clients

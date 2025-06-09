@@ -1,11 +1,12 @@
 #include "Params.h"
 
 // creating the parameters from the instance file
-Params::Params(string nomInstance, string nomSolution, int type, int nbVeh, string nomBKS, int seedRNG, int rou,bool stockout, bool backward) : 
+Params::Params(string nomInstance, string nomSolution, int type, int nbVeh, string nomBKS, int seedRNG, int rou,bool stockout, int nbScenar) : 
 	type(type), nbVehiculesPerDep(nbVeh)
 {
 	seed = seedRNG;
-	isbackward = backward;
+	isbackward = true;
+	nbScenarios = nbScenar;
 
 	if (seed == 0)
 		rng = new Rng((unsigned long long)time(NULL));
@@ -52,8 +53,7 @@ Params::Params(string nomInstance, string nomSolution, int type, int nbVeh, stri
 	type(type), nbVehiculesPerDep(nbVeh)
 {
 	seed = seedRNG;
-	isbackward = false;
-
+	isbackward = true;
 	if (seed == 0)
 		rng = new Rng((unsigned long long)time(NULL));
 	else

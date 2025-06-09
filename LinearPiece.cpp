@@ -26,7 +26,6 @@ LinearPiece::LinearPiece(double left_x, double left_y, double right_x, double ri
     else slope = (right_y - left_y) / (right_x - left_x);
 
     next = NULL;
-    //    pre = NULL;
     replenishment_loss=0;
     fromC = NULL;
     fromC_pre = NULL;

@@ -22,7 +22,7 @@ void LocalSearch::runSearchTotal(bool isRepPhase)
   mutationDifferentDay();
   updateMoves();
   for (int day = 1; day <= params->nbDays; day++)
-      mutationSameDay(day);
+    mutationSameDay(day);
 }
 
 
@@ -220,7 +220,6 @@ int LocalSearch::mutationDifferentDay()
 {
   rechercheTerminee = false;
   int nbMoves = 0;
-  int times = 0;
   while(!rechercheTerminee){
     rechercheTerminee = true;
     
@@ -292,9 +291,8 @@ int LocalSearch::mutation11(int client)
       make_unique<LotSizingSolver>(params, insertions, client));
     
   bool ok = true;
-    if(params-> isstockout) ok = lotsizingSolver->solve_stockout_backward();
-    else ok = lotsizingSolver->solve();
-
+  ok = lotsizingSolver->solveStockoutBackward();
+  
   objective = lotsizingSolver->objective;
   quantities = lotsizingSolver->quantities;
   if(lt(currentCost,objective-0.01)) return 0;
@@ -320,8 +318,7 @@ int LocalSearch::mutation11(int client)
   for (int k = 1; k <= params->ancienNbDays; k++)
   {
     if (quantities[k - 1] > 0.0001 || (lotsizingSolver->breakpoints[k - 1]&&gt(0,lotsizingSolver->breakpoints[k - 1]->detour) )) // don't forget that in the model the index      // goes from 0 to t-1
-    {
-      
+    {      
       demandPerDay[k][client] = round(quantities[k - 1]);
       
       clients[k][client]->placeInsertion = lotsizingSolver->breakpoints[k - 1]->place;
@@ -330,18 +327,14 @@ int LocalSearch::mutation11(int client)
     }
   }
 
-  double tmpCost = 0.0;
-  if(params -> isstockout)
-     tmpCost = evaluateCurrentCost_stockout(client);
-  else
-    tmpCost = evaluateCurrentCost(client);
-  if (fabs(tmpCost- objective)>0.01) {
+  double realCost = evaluateCurrentCost_stockout(client);
+  if (fabs(realCost- objective)>0.01) {
     std::cout << "EXCUSE??? " << std::endl;
-    std::cout << fabs(tmpCost- objective) << " " << tmpCost << " " << objective << std::endl;
+    std::cout << fabs(realCost- objective) << " " << realCost << " " << objective << std::endl;
     throw string("Erreur Split");
     return 0;
   }
-  if ( currentCost-objective >=0.01 )// An improving move has been found,
+  if (currentCost-objective >=0.01 )// An improving move has been found,
                                         // the search is not finished.
   {
     rechercheTerminee = false;

@@ -22,6 +22,8 @@ private:
     bool stockout;
     bool backward;
 
+    int nb_scenarios;
+
     // instance type, if given
     int type;
 
@@ -81,7 +83,8 @@ public:
     int get_type();
     int get_stockout();
     int get_rou();
-    bool get_backward(); 
+    bool get_backward();
+    int get_nb_scenarios(); 
     
     // renvoie le nombre de clients
     int get_nbCli();

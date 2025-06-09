@@ -33,8 +33,7 @@ public:
 
     // initialize a PL function from arc profile
     PLFunction(Params *params, vector<Insertion> insertions, int day, int client);
-    PLFunction(Params *params, vector<Insertion> insertions, int day, int client,bool st);
-    PLFunction(Params *params, vector<Insertion> insertions, int day, int client,bool st,int daily);
+    PLFunction(Params *params, vector<Insertion> insertions, int day, int client,int daily);
 
     // initialize a PLFunction from list of pieces
     PLFunction(Params *params, vector<shared_ptr<LinearPiece>> pieces);
@@ -74,7 +73,7 @@ public:
     std::shared_ptr<PLFunction> update0(double min0);
     void reflection(double x_axis);
 
-    std::shared_ptr<PLFunction> getInBound(double lb, double ub, bool updateValueAt0);
+    std::shared_ptr<PLFunction> getInBound(double lb, double ub, bool updateValueAt0 = false);
 
     double calculateCost(int day, int client, double detour, double demand, double freeload);
     double calculateCost_stockout(int day, int client, double detour, double replenishment, double freeload); 

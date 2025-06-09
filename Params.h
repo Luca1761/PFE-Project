@@ -107,6 +107,8 @@ class Params {
   // nombre d'offspring dans une generation
   int lambda;
 
+  int nbScenarios;
+
   // probabilit� de recherche locale totale pour la reparation (PVRP)
   double pRep;
 
@@ -249,7 +251,7 @@ class Params {
   Params(string nomInstance, string nomSolution, int type, int nbVeh,
          string nomBKS, int seedRNG);
   Params(string nomInstance, string nomSolution, int type, int nbVeh,
-         string nomBKS, int seedRNG, int rou, bool stockout, bool backward);
+         string nomBKS, int seedRNG, int rou, bool stockout, int nbScenar);
 
   // Transformation de probl�me, le nouveau fichier params cr�� correspond � un
   // sous-probl�me:

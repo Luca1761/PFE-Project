@@ -65,104 +65,6 @@ PLFunction::PLFunction(Params *params, vector<Insertion> insertions, int day, in
     // loop through all pieces
     while (index != insertions.end())
     {
-        // make a first piece for the first insertion
-        if (index == insertions.begin())
-        {
-            pre_x = 0;
-            pre_y = index->detour;
-            x = index->load;
-            y = calculateCost(day, client, index->detour, x, index->load); //x,load: demand loadfree
-            
-        }
-        else
-        {
-            double current_cost = calculateCost(day, client, index->detour, index->load, index->load);
-            std::vector<Insertion>::iterator pre_index = index - 1;
-            double pre_insertion_cost_with_current_demand = calculateCost(day, client, pre_index->detour, index->load, pre_index->load);
-
-            bool is_dominated_vehicle = (index->load <= pre_load) || (pre_insertion_cost_with_current_demand <= current_cost);
-
-            if (!is_dominated_vehicle)
-            {    // make piecey
-                //index->detour = pre_detour +  x *PenalityCapacity - preload*PenalityCapacity 
-                x = pre_load + (index->detour - pre_detour) / params->penalityCapa;
-                y = calculateCost(day, client, pre_detour, x, pre_load);
-
-                if (neq(x, pre_x))
-                {
-                    shared_ptr<LinearPiece> tmp(make_shared<LinearPiece>(pre_x, pre_y, x, y));
-                    tmp->fromInst = make_shared<Insertion>(pre_index->detour, pre_index->load, pre_index->place);
-                    append(tmp);
-                    pre_x = x;
-                    pre_y = y;
-                }
-            }   
-
-            x = index->load;
-            y = current_cost;
-        }
-
-        a = (y - pre_y) / (x - pre_x);
-
-        if (neq(x, pre_x))
-        {
-            // make piecey
-            shared_ptr<LinearPiece> tmp(make_shared<LinearPiece>(pre_x, pre_y, x, y));
-            tmp->fromInst = make_shared<Insertion>(index->detour, index->load, index->place);
-
-            append(tmp);
-        }
-
-        pre_x = x;
-        pre_y = y;
-        pre_load = index->load;
-        pre_detour = index->detour;
-        pre_place = index->place;
-        index++;
-    }
-
-    // the last piece
-    x = params->cli[client].maxInventory;
-    if (x <= pre_x)
-    {
-        return;
-    }
-   if (neq(x, pre_x))
-    {
-        y = calculateCost(day, client, pre_detour, x, pre_load);
-        // make piecey
-        shared_ptr<LinearPiece> tmp(make_shared<LinearPiece>(pre_x, pre_y, x, y));
-        tmp->fromInst = make_shared<Insertion>(pre_detour, pre_load, pre_place);
-        append(tmp);
-    }
-}
-
-
-PLFunction::PLFunction(Params *params, vector<Insertion> insertions, int day, int client,bool st) : params(params)
-{
-    if (insertions.size() == 0)
-    {
-        throw std::string(
-            "ERROR: can not initialize a PL function with zero element in "
-            "insertions!!!");
-    }
-    nbPieces = 0;
-    pieces = vector<shared_ptr<LinearPiece>>();
-    minimalPiece = nullptr;
-    pieceAt0 = nullptr;
-
-    minValue = MAXCOST;
-    maxValue = -MAXCOST;
-
-    std::vector<Insertion>::iterator index = insertions.begin();
-
-    double pre_x = 0;
-    double pre_y, x, y, a, pre_load, pre_detour;
-    Noeud *pre_place = nullptr;
-
-    // loop through all pieces
-    while (index != insertions.end())
-    {
         if (index->detour < -1) {
             std::cout << index->detour << std::endl;
             throw std::string("Negative detour??");
@@ -244,7 +146,7 @@ PLFunction::PLFunction(Params *params, vector<Insertion> insertions, int day, in
 }
 
 
-PLFunction::PLFunction(Params *params, vector<Insertion> insertion, int day, int client, bool st, int daily) : params(params)
+PLFunction::PLFunction(Params *params, vector<Insertion> insertion, int day, int client, int daily) : params(params)
 {
     std::vector<Insertion> insertions = insertion;
 
@@ -261,8 +163,6 @@ PLFunction::PLFunction(Params *params, vector<Insertion> insertion, int day, int
 
     minValue = MAXCOST;
     maxValue = -MAXCOST;
-
-    //    LinearPiece *tmp = new LinearPiece();
 
     std::vector<Insertion>::iterator index = insertions.begin();
 
@@ -343,8 +243,6 @@ PLFunction::PLFunction(Params *params, vector<Insertion> insertion, int day, int
         append(tmp);
     }
 }
-
-
 
 PLFunction::PLFunction(Params *params, vector<shared_ptr<LinearPiece>> pieces) : params(params)
 {
