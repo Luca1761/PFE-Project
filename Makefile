@@ -11,7 +11,7 @@ LIBS= -lm -lpthread
 PATHLIBS=
 TARGETDIR=.
 # CPPFLAGS += -m64 -O -fPIC -fno-strict-aliasing -fexceptions -DNDEBUG -DIL_STD -I/opt/ibm/ILOG/CPLEX_Studio128/cplex/include -I/opt/ibm/ILOG/CPLEX_Studio128/concert/include
-CPPFLAGS += -m64 -O -fPIC -fno-strict-aliasing -fexceptions -DNDEBUG -DIL_STD
+CPPFLAGS += -m64 -O3 -fPIC -fno-strict-aliasing -fexceptions -DNDEBUG -DIL_STD
 
 
 OBJS2 = \

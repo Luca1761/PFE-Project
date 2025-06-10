@@ -72,16 +72,16 @@ PLFunction::PLFunction(Params *params, vector<Insertion> insertions, int day, in
         if (index == insertions.begin())
         {
             pre_x = 0;
-            pre_y = calculateCost_holding(day, client, index->detour, pre_x,  pre_x);
+            pre_y = calculateGFunction(day, client, index->detour, pre_x,  pre_x);
             x = index->load;
-            y = calculateCost_holding(day, client, index->detour, x, index->load); //x,load: demand loadfree
+            y = calculateGFunction(day, client, index->detour, x, index->load); //x,load: demand loadfree
             
         }
         else
         {
-            double current_cost = calculateCost_holding(day, client, index->detour, index->load, index->load);
+            double current_cost = calculateGFunction(day, client, index->detour, index->load, index->load);
             std::vector<Insertion>::iterator pre_index = index - 1;
-            double pre_insertion_cost_with_current_demand = calculateCost_holding(day, client, pre_index->detour, index->load, pre_index->load);
+            double pre_insertion_cost_with_current_demand = calculateGFunction(day, client, pre_index->detour, index->load, pre_index->load);
 
             bool is_dominated_vehicle = (index->load <= pre_load) || (pre_insertion_cost_with_current_demand <= current_cost);
 
@@ -90,7 +90,7 @@ PLFunction::PLFunction(Params *params, vector<Insertion> insertions, int day, in
                 //index->detour = pre_detour +  x *PenalityCapacity - preload*PenalityCapacity 
                 x = pre_load + (index->detour - pre_detour) / params->penalityCapa;
 
-                y = calculateCost_holding(day, client, pre_detour, x, pre_load);
+                y = calculateGFunction(day, client, pre_detour, x, pre_load);
 
                 if (fabs(x- pre_x)>0.999)
                 {
@@ -112,7 +112,7 @@ PLFunction::PLFunction(Params *params, vector<Insertion> insertions, int day, in
         if (fabs(x- pre_x)>0.999)
         {
             // make piecey
-            pre_y = calculateCost_holding(day, client, index->detour, pre_x, index->load);
+            pre_y = calculateGFunction(day, client, index->detour, pre_x, index->load);
             shared_ptr<LinearPiece> tmp(make_shared<LinearPiece>(pre_x, pre_y, x, y));
             tmp->fromInst = make_shared<Insertion>(index->detour, index->load, index->place);
 
@@ -135,7 +135,7 @@ PLFunction::PLFunction(Params *params, vector<Insertion> insertions, int day, in
     }
    if (fabs(x- pre_x)>0.999)
     {
-        y = calculateCost_holding(day, client, pre_detour, x, pre_load);
+        y = calculateGFunction(day, client, pre_detour, x, pre_load);
         // make piecey
         shared_ptr<LinearPiece> tmp(make_shared<LinearPiece>(pre_x, pre_y, x, y));
         tmp->fromInst = make_shared<Insertion>(pre_detour, pre_load, pre_place);
@@ -177,14 +177,14 @@ PLFunction::PLFunction(Params *params, vector<Insertion> insertion, int day, int
         if(index->load>daily) flag = true, index->load=daily;
         if (index == insertions.begin()){
             pre_x = 0;
-            pre_y = calculateCost_stockout(day, client, index->detour, pre_x, pre_x);
+            pre_y = calculateGFunction(day, client, index->detour, pre_x, pre_x);
             x = index->load;
-            y = calculateCost_stockout(day, client, index->detour, x, index->load);
+            y = calculateGFunction(day, client, index->detour, x, index->load);
         }
         else{
-            double current_cost = calculateCost_stockout(day, client, index->detour, index->load, index->load);
+            double current_cost = calculateGFunction(day, client, index->detour, index->load, index->load);
             std::vector<Insertion>::iterator pre_index = index - 1;
-            double pre_insertion_cost_with_current_demand=calculateCost_stockout(day, client, pre_index->detour, index->load, pre_index->load);
+            double pre_insertion_cost_with_current_demand=calculateGFunction(day, client, pre_index->detour, index->load, pre_index->load);
             bool is_dominated_vehicle = (index->load <= pre_load) || (pre_insertion_cost_with_current_demand <= current_cost);
             
             if (!is_dominated_vehicle  )
@@ -193,7 +193,7 @@ PLFunction::PLFunction(Params *params, vector<Insertion> insertion, int day, int
                 
                 x = pre_load + (index->detour - pre_detour) / params->penalityCapa;
                 if(x > daily)   flag = 1, x= daily;
-                y = calculateCost_stockout(day, client, pre_detour, x, pre_load);
+                y = calculateGFunction(day, client, pre_detour, x, pre_load);
                 
                 if (fabs(x- pre_x)>0.999) 
                 {   
@@ -212,7 +212,7 @@ PLFunction::PLFunction(Params *params, vector<Insertion> insertion, int day, int
         if (fabs(x- pre_x)>0.999)
         {
             // make piecey
-            pre_y= calculateCost_stockout(day, client, index->detour, pre_x, index->load);
+            pre_y= calculateGFunction(day, client, index->detour, pre_x, index->load);
             shared_ptr<LinearPiece> tmp(make_shared<LinearPiece>(pre_x, pre_y, x, y));
             tmp->fromInst = make_shared<Insertion>(index->detour, index->load, index->place);
             append(tmp);
@@ -236,7 +236,7 @@ PLFunction::PLFunction(Params *params, vector<Insertion> insertion, int day, int
     }
    if (fabs(x- pre_x)>0.999)
     {
-        y = calculateCost_stockout(day, client, pre_detour, x, pre_load);
+        y = calculateGFunction(day, client, pre_detour, x, pre_load);
         // make piecey
         shared_ptr<LinearPiece> tmp(make_shared<LinearPiece>(pre_x, pre_y, x, y));
         tmp->fromInst = make_shared<Insertion>(pre_detour, pre_load, pre_place);
@@ -254,34 +254,10 @@ PLFunction::PLFunction(Params *params, vector<shared_ptr<LinearPiece>> pieces) :
         append(pieces[i]);
     }
 }
-void PLFunction::update_minValue(double & rep){
-    double min_tmp = std::min<double>(this->pieces[0]->p1->y,this->pieces[0]->p2->y);
-    rep = -(gt(this->pieces[0]->p1->y,this->pieces[0]->p2->y)? this->pieces[0]->p2->x:this->pieces[0]->p1->x);
-    if(lt(rep , 0)){
-        cout<<"rep "<<rep+1e-4<<endl;
-        cout <<"error.PLfunction update_minvalue"<<endl;
-        int a;cin>>a;
-    }
-    int piece_tmp = 0;
-    for(int i =1 ; i < this->nbPieces ; i++){
-        double tmp = std::min<double>(this->pieces[i]->p1->y,this->pieces[i]->p2->y);
-        if(gt(min_tmp,tmp)){
-            min_tmp = tmp;
-            rep=  -(gt(this->pieces[i]->p1->y,this->pieces[i]->p2->y)? this->pieces[i]->p2->x:this->pieces[i]->p1->x);
-            piece_tmp = i;
-        }
-    }
-    this->minimalPiece = this->pieces[piece_tmp];
-    this->minValue = min_tmp;
-}
- 
 
 double PLFunction::cost(double x)
 {
-    if (eq(x, 0))
-    {
-        return 0; //*********************************************
-    }
+    if (eq(x, 0)) return 0;
 
     shared_ptr<LinearPiece> piece = getPiece(x);
 
@@ -296,10 +272,7 @@ double PLFunction::cost(double x)
 
 shared_ptr<LinearPiece> PLFunction::getPiece(double x)
 {
-    if (gt(x, pieces[nbPieces - 1]->p2->x))
-    {
-        return nullptr;
-    }
+    if (gt(x, pieces[nbPieces - 1]->p2->x)) return nullptr;
 
     shared_ptr<LinearPiece> fitPiece;
     // binary search to get right piece
@@ -337,96 +310,53 @@ shared_ptr<LinearPiece> PLFunction::getPiece(double x)
     return fitPiece;
 }
 
-std::shared_ptr<LinearPiece> PLFunction::getMinimalPiece(int client, double &minAt, double &minValue)
-{
-    if (nbPieces == 0)
-        return nullptr;
-
-    shared_ptr<LinearPiece> minPiece = pieces[0];
-    minValue = pieces[0]->p1->y;
-    minAt = pieces[0]->p1->x;
-
-    if (lt(minPiece->p2->y, minValue))
-    {
-        minValue = minPiece->p2->y;
-        minAt = minPiece->p2->x;
-    }
-
-    if (pieceAt0 != nullptr && lt(valueAt0, minValue))
-    {
-        minPiece = pieceAt0;
-        minValue = valueAt0;
-        minAt = params->cli[client].minInventory;
-    }
-
-    for (int i = 1; i < nbPieces; i++)
-    {
-        if (gt(minValue, pieces[i]->p2->y))
-        {
-            minPiece = pieces[i];
-            minValue = pieces[i]->p2->y;
-            minAt = pieces[i]->p2->x;
-        }
-    }
-    return minPiece;
-}
-
 std::shared_ptr<LinearPiece> PLFunction::getMinimalPiece_stockout
 (int client, double &minAt, double &minValue){
 //client, I[day], objective
-    if (nbPieces == 0)
-        return nullptr;
-        shared_ptr<LinearPiece> minPiece = pieces[0];
-        minValue = pieces[0]->p1->y;
-        minAt = pieces[0]->p1->x;
-        
-        if (lt(minPiece->p2->y, minValue)) {
-            minValue = minPiece->p2->y;
-            minAt = minPiece->p2->x;
+    if (nbPieces == 0) return nullptr;
+    shared_ptr<LinearPiece> minPiece = pieces[0];
+    minValue = pieces[0]->p1->y;
+    minAt = pieces[0]->p1->x;
+    
+    if (lt(minPiece->p2->y, minValue)) {
+        minValue = minPiece->p2->y;
+        minAt = minPiece->p2->x;
+    }
+    
+    for (int i = 1; i < nbPieces; i++) {
+        if (gt(minValue, pieces[i]->p2->y)){
+            
+            minPiece = pieces[i];
+            
+            minValue = pieces[i]->p2->y;
+            minAt = pieces[i]->p2->x;
         }
-        
-        for (int i = 1; i < nbPieces; i++) {
-            if (gt(minValue, pieces[i]->p2->y)){
-                
-                minPiece = pieces[i];
-                
-                minValue = pieces[i]->p2->y;
-                minAt = pieces[i]->p2->x;
-            }
-            if (gt(minValue, pieces[i]->p1->y)){
-                
-                minPiece = pieces[i];
-                
-                minValue = pieces[i]->p1->y;
-                minAt = pieces[i]->p1->x;
-            }
+        if (gt(minValue, pieces[i]->p1->y)){
+            
+            minPiece = pieces[i];
+            
+            minValue = pieces[i]->p1->y;
+            minAt = pieces[i]->p1->x;
         }
+    }
     return minPiece;
 }
 
 bool PLFunction::intersect(shared_ptr<LinearPiece> lp1, shared_ptr<LinearPiece> lp2, double &x, double &y)
 {
-    bool trsce = false;
     if(lp1)lp1->updateLinearPiece(lp1->p1->x,lp1->p1->y,lp1->p2->x,lp1->p2->y);
     if(lp2)lp2->updateLinearPiece(lp2->p1->x,lp2->p1->y,lp2->p2->x,lp2->p2->y);
-   // if(eq(lp1->p1->x,-1)&&eq(lp1->p2->x,62))  trsce = true;
     
-    
-    if(trsce)    cout <<"slope1 "<<lp1->slope<<"  slope2  "<<lp2->slope<<endl;
     // parallel
-    if (eq(lp1->slope, lp2->slope))
-        return false;
+    if (eq(lp1->slope, lp2->slope)) return false;
     
-
     // get intersection point
-    
     double del_b = ( (lp1->p2->y - lp1->slope * lp1->p2->x ) - (lp2->p2->y - lp2->slope * lp2->p2->x) );
     double del_k=lp2->slope - lp1->slope;
     x = del_b/del_k;
     y = lp1->p2->y - lp1->slope * (lp1->p2->x - x);
 
-    if(lt(x, lp1->p1->x)||  lt(x, lp2->p1->x) ||lt( lp1->p2->x,x) || lt( lp2->p2->x,x))
-     return false;
+    if(lt(x, lp1->p1->x)||  lt(x, lp2->p1->x) ||lt( lp1->p2->x,x) || lt( lp2->p2->x,x)) return false;
     return true;
 }
 
@@ -531,15 +461,6 @@ void PLFunction::append(shared_ptr<LinearPiece> lp){
     }
 }
 
-void PLFunction::shiftLeft(double x_axis)
-{
-    for (int i = 0; i < this->nbPieces; i++)
-    {
-        pieces[i]->p1->x -= x_axis;
-        pieces[i]->p2->x -= x_axis;
-    }
-}
-
 void PLFunction::shiftRight(double x_axis)
 {
     for (int i = 0; i < this->nbPieces; i++)
@@ -549,15 +470,6 @@ void PLFunction::shiftRight(double x_axis)
     }
 }
 
-void PLFunction::addHolding(double InventoryCost,double daily) //x = 6,daily = 5  -----> +1*holdingcost --->dp(1)
-{
-    for (int i = 0; i < this->nbPieces; i++)
-    {
-        pieces[i]->p1->y += InventoryCost*(pieces[i]->p1->x-daily);
-        pieces[i]->p2->y += InventoryCost*(pieces[i]->p2->x-daily);
-        pieces[i]->update(pieces[i]->p1->x,pieces[i]->p1->y,pieces[i]->p2->x,pieces[i]->p2->y);
-    }
-}
 void PLFunction::addHoldingf(double InventoryCost) //x = 6,daily = 5  -----> +1*holdingcost --->dp(1)
 {
     for (int i = 0; i < this->nbPieces; i++)
@@ -567,15 +479,7 @@ void PLFunction::addHoldingf(double InventoryCost) //x = 6,daily = 5  -----> +1*
         pieces[i]->update(pieces[i]->p1->x,pieces[i]->p1->y,pieces[i]->p2->x,pieces[i]->p2->y);
     }
 }
-void PLFunction::addStockout(double stockoutCost,double daily)//x = 2,daily = 6  -----> +1*stockoutcost --->dp(-1)
-{
-    for (int i = 0; i < this->nbPieces; i++)
-    {
-        pieces[i]->p1->y += stockoutCost*(daily-pieces[i]->p1->x);
-        pieces[i]->p2->y += stockoutCost*(daily-pieces[i]->p2->x);
-        pieces[i]->update(pieces[i]->p1->x,pieces[i]->p1->y,pieces[i]->p2->x,pieces[i]->p2->y);
-    }
-}
+
 void PLFunction::addStockoutf(double stockoutCost)//x = 2,daily = 6  -----> +1*stockoutcost --->dp(-1)
 {
     for (int i = 0; i < this->nbPieces; i++)
@@ -668,43 +572,10 @@ std::shared_ptr<PLFunction> PLFunction::getInBound(double lb, double ub, bool up
     return plFunction;
 }
 
-double PLFunction::calculateCost(int day, int client, double detour, double demand, double freeload)
-{
-    // detour
-    double cost = detour;
-    
-    double inventoryCost = (params->cli[client].inventoryCost    -    params->inventoryCostSupplier) 
-                            * (double)(params->ancienNbDays - day);
-    cost += inventoryCost * demand; 
-
-    // possible excess capacity
-    cost += params->penalityCapa * std::max(0.0, demand - freeload);
-
-    return cost;
-}
-
-double PLFunction::calculateDemandFromCost(int day, int client, double detour, double cost, double freeload)
-{
-    double inventoryCost = (params->cli[client].inventoryCost - params->inventoryCostSupplier) * (double)(params->ancienNbDays - day);
-
-    double demand = (cost - detour + freeload * params->penalityCapa) / (inventoryCost + params->penalityCapa);
-
-    // make sure demand > freeload
-    assert(demand >= freeload);
-
-    return demand;
-}
-
-bool PLFunction::testSuperposition()
-{
-    return false;
-}
-
 void PLFunction::print()
 {
     for (int i = 0; i < nbPieces; i++)
-    {
-        
+    {        
         cout << i<<" :(" << pieces[i]->p1->x << ", " << pieces[i]->p1->y << ", " << pieces[i]->p2->x
              << ", " << pieces[i]->p2->y << "), ";
     }
@@ -712,26 +583,10 @@ void PLFunction::print()
 }
 
 //only calculate the &stockout cost &detour & more capacity cost
-double PLFunction::calculateCost_stockout(int day, int client, double detour, double replenishment, double freeload)
+double PLFunction::calculateGFunction(int day, int client, double detour, double replenishment, double freeload)
 {
     // detour
     double cost = detour;
-    //stock-out cost
-
-    //cost-depot(holdingcost)
-    cost -= params->inventoryCostSupplier * replenishment * (double)(params->ancienNbDays - day); 
-    
-    // possible excess capacity
-    cost += params->penalityCapa * std::max(0.0, replenishment - freeload);
-    return cost;
-}
-
-//only calculate the hodling cost &detour & more capacity cost
-double PLFunction::calculateCost_holding(int day, int client, double detour, double replenishment, double freeload)
-{
-    // detour
-    double cost = detour;
-    // holding cost
 
     //cost-depot(holdingcost)
     cost -= params->inventoryCostSupplier * replenishment * (double)(params->ancienNbDays - day); 

@@ -283,30 +283,4 @@ void LinearPiece::print()
              << ", " << p2->y << ") ";
     cout << endl;
 }
-std::shared_ptr<LinearPiece> LinearPiece::clone_addHolding(double InventoryCost, double daily)
-{
-    shared_ptr<LinearPiece> lp(make_shared<LinearPiece>(this->p1->x, this->p1->y+InventoryCost*(this->p1->x-daily), 
-                            this->p2->x, this->p2->y+InventoryCost*(this->p2->x-daily)));
-    lp->next = this->next;
-    lp->fromC = this->fromC;
-    lp->fromF = this->fromF;
-    lp->fromInst = this->fromInst;
-    lp->replenishment_loss=this->replenishment_loss;
-    lp->fromC_pre = this->fromC_pre;
-    return lp;
-}
-
-std::shared_ptr<LinearPiece> LinearPiece::clone_addStockout(double stockout, double daily)
-{
-    shared_ptr<LinearPiece> lp(make_shared<LinearPiece>(this->p1->x, this->p1->y-stockout*(daily-this->p1->x), 
-                            this->p2->x, this->p2->y-stockout*(daily-this->p1->x)) );
-    lp->next = this->next;
-    lp->fromC = this->fromC;
-    lp->fromF = this->fromF;
-    lp->fromC_pre = this->fromC_pre;
-    lp->replenishment_loss=this->replenishment_loss;
-    lp->fromInst = this->fromInst;
-
-    return lp;
-}
 
