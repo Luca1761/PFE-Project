@@ -82,8 +82,8 @@ commandline::commandline(int argc, char *argv[])
       else if (string(argv[i]) == "-stock"){
           rou = atoi(argv[i + 1]);
           stockout=true;
-      } else if (string(argv[i]) == "-backward"){
-          backward=true;
+      } else if (string(argv[i]) == "-scenarios"){
+          nb_scenarios = atoi(argv[i + 1]);
       }
         
       else

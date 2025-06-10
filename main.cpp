@@ -31,6 +31,9 @@ int mainSIRP(int argc, char *argv[])
     Params *mesParametres = new Params(
         c.get_path_to_instance(), c.get_path_to_solution(), c.get_type(),
         c.get_nbVeh(), c.get_path_to_BKS(), c.get_seed(),c.get_rou(), c.get_stockout(), c.get_nb_scenarios());
+
+
+        
         
     // initial population 
     Population *population = new Population(mesParametres);
@@ -40,8 +43,8 @@ int mainSIRP(int argc, char *argv[])
     
     // on lance l'evolution   launch evolution
     
-    int max_iter = 100;
-    int maxIterNonProd = 100;
+    int max_iter = 100000;
+    int maxIterNonProd = 10000;
     solver.evolve(max_iter, maxIterNonProd, 1);
 
     population->ExportPop(c.get_path_to_solution(),true);

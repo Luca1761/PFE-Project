@@ -717,8 +717,7 @@ double PLFunction::calculateCost_stockout(int day, int client, double detour, do
     // detour
     double cost = detour;
     //stock-out cost
-    if (!params->isbackward)
-        cost +=  params->cli[client].stockoutCost  * (params->cli[client].dailyDemand[day] - replenishment);
+
     //cost-depot(holdingcost)
     cost -= params->inventoryCostSupplier * replenishment * (double)(params->ancienNbDays - day); 
     
@@ -733,8 +732,7 @@ double PLFunction::calculateCost_holding(int day, int client, double detour, dou
     // detour
     double cost = detour;
     // holding cost
-    if (!params->isbackward)
-        cost +=  params->cli[client].inventoryCost  * (replenishment - params->cli[client].dailyDemand[day] );
+
     //cost-depot(holdingcost)
     cost -= params->inventoryCostSupplier * replenishment * (double)(params->ancienNbDays - day); 
     

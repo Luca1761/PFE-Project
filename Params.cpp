@@ -5,7 +5,6 @@ Params::Params(string nomInstance, string nomSolution, int type, int nbVeh, stri
 	type(type), nbVehiculesPerDep(nbVeh)
 {
 	seed = seedRNG;
-	isbackward = true;
 	nbScenarios = nbScenar;
 
 	if (seed == 0)
@@ -53,7 +52,6 @@ Params::Params(string nomInstance, string nomSolution, int type, int nbVeh, stri
 	type(type), nbVehiculesPerDep(nbVeh)
 {
 	seed = seedRNG;
-	isbackward = true;
 	if (seed == 0)
 		rng = new Rng((unsigned long long)time(NULL));
 	else
@@ -158,7 +156,6 @@ void Params::computeDistancierFromCoords()
 void Params::setMethodParams()
 {
 	// parameters related to how the problem is treated
-	conversionToPVRP = true;
 	triCentroides = false;	  // is the chromosome ordered by barycenter of the routes (CVRP case, c.f. OR2012 paper)
 	isRoundingInteger = true; // using the rounding (for now set to true, because currently testing on the instances of Uchoa)
 	isRoundingTwoDigits = false;
@@ -481,7 +478,6 @@ Params::Params(Params *params, int decom, int *serieVisites, Vehicle **serieVehi
 	rng = params->rng;
 	type = params->type;
 	seed = params->seed;
-	isbackward = false;
 
 	/* For now I just kept the CVRP decomposition */
 	// if (decom == 2) decomposeDepots(params,affectDepots,depot);

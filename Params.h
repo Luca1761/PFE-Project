@@ -63,9 +63,6 @@ class Params {
   // adresse de la BKS
   string pathToBKS;
 
-  // flag indiquant si instance MDPVRP doit etre trait�e en tant que PVRP
-  bool conversionToPVRP;
-
   // flag indiquant si l'on doit trier les routes dans l'ordre des centroides
   bool triCentroides;
 
@@ -156,7 +153,6 @@ class Params {
   // pr�sence d'un probl�me IRP ;
   bool isInventoryRouting;
   bool isstockout;
-  bool isbackward;
 
   // nombre de sommets clients
   int nbClients;
@@ -271,11 +267,6 @@ class Params {
   void decomposeRoutes(Params* params, int* serieVisites,
                        Vehicle** serieVehicles, int nbVisites, int nbVeh);
 
-  // createur des parametres � partir du fichier d'instance et d'un type et
-  // autres param�tres donn�s d'office
-  Params(string nomInstance, string nomSolution, string nomBKS, int seedRNG,
-         int type, string regul, int nbVeh, int nbCli, int relax);
- 
 
   // destructeur de Params
   ~Params(void);
