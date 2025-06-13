@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
-
+#include <random>
 #include "Genetic.h"
 #include "LotSizingSolver.h"
 #include "commandline.h"
@@ -28,18 +28,41 @@ int mainSIRP(int argc, char *argv[])
     // initialisation des Parametres � partir du fichier d'instance et du chemin
     // de la solution
 
-    Params *mesParametres = new Params(
-        c.get_path_to_instance(), c.get_path_to_solution(), c.get_type(),
-        c.get_nbVeh(), c.get_path_to_BKS(), c.get_seed(),c.get_rou(), c.get_stockout(), c.get_nb_scenarios());
+    int nbScenarios = c.get_nb_scenarios();
+    mt19937 gen(c.get_seed());  
+    normal_distribution<double> dist(0, 0);
 
+    vector<double> randomNumbers = vector<double>(nbScenarios, 0.0);
+    for (int i = 0; i < nbScenarios; i++) {
+      randomNumbers[i] = dist(gen);
+    }
 
-        
+    vector<Params*> paramsList;
+    for(int i = 0; i < nbScenarios; i++) {
+      double randomValue = randomNumbers[i];
+      Params* param = new Params(
+        c.get_path_to_instance(), 
+        c.get_path_to_solution(),
+        c.get_type(),
+        c.get_nbVeh(), 
+        c.get_seed(),
+        c.get_rou(), 
+        c.get_stockout(),
+        randomValue,   
+        dist           
+      );
+      paramsList.push_back(param);
+    }
+
+    // Params *mesParametres = new Params(
+    //     c.get_path_to_instance(), c.get_path_to_solution(), c.get_type(),
+    //     c.get_nbVeh(), c.get_path_to_BKS(), c.get_seed(),c.get_rou(), c.get_stockout(), c.get_nb_scenarios());
         
     // initial population 
-    Population *population = new Population(mesParametres);
+    Population *population = new Population(paramsList[0]);
 
     // on cree le solver we create the solver,we create the solver we create the solver
-    Genetic solver(mesParametres, population, nb_ticks_allowed, true, true);
+    Genetic solver(paramsList[0], population, nb_ticks_allowed, true, true);
     
     // on lance l'evolution   launch evolution
     
@@ -52,7 +75,7 @@ int mainSIRP(int argc, char *argv[])
     population->ExportBKS(c.get_path_to_BKS());
   
     // on desalloue la memoire
-    delete mesParametres;
+    delete paramsList[0];
     return 0;
   }
   else
