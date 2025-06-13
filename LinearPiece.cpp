@@ -258,7 +258,7 @@ std::shared_ptr<LinearPiece> LinearPiece::clone()
     lp->fromF = this->fromF;
     lp->fromInst = this->fromInst;
     lp->fromC_pre = this->fromC_pre;  
-    lp->replenishment_loss=this->replenishment_loss;
+    lp->replenishment_loss = this->replenishment_loss;
     
     return lp;
 }
