@@ -25,36 +25,33 @@ class Client
 public:
 
 	// customer number
-    int custNum ;
+    int custIdx ;
 
     // coordonnees des points
     couple coord ;
-
-	// demande associee a un sommet
-	double demand ;
 
 	// DATA STRUCTURES USED FOR THE IRP //
 	
 	// starting inventory level
 	double startingInventory ;
 
-	// bounds for the inventory
-	double minInventory ;
+	// bounds for the inventory (generally 0)
+	double minInventory;
 
 	// bounds for the inventory
 	double maxInventory ;
 
 	// daily demand of the customer.
-	vector <double> dailyDemand ;
+	vector<double>dailyDemand ;
 
 	// daily inventory cost of the customer
 	double inventoryCost ;
 	double stockoutCost;
 	// ordre des sommets et depots, par proximit�
-	vector <int> ordreProximite ;
+	vector<int> ordreProximite ;
 
 	// les sommets les plus proches selon le critere de proximite
-	vector <int> sommetsVoisins ;
+	vector<int> sommetsVoisins ;
 
 	Client(void);
 
