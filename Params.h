@@ -12,6 +12,7 @@
 #include <list>
 #include <string>
 #include <vector>
+#include <random>
 #include "Client.h"
 #include "Rng.h"
 #include "Vehicle.h"
@@ -26,8 +27,8 @@ class Noeud;
 struct Insertion
 {
        double detour;
-       double load;
        //the remain load of this route
+       double load;
 
        Noeud *place;
 
@@ -242,12 +243,13 @@ class Params {
   // modifie al�atoirement les tableaux de proximit� des clients
   void shuffleProches();
 
+  void adjustDemands(double randomValue);
   // constructeur de Params qui remplit les structures en les pr�levant dans le
   // fichier
   Params(string nomInstance, string nomSolution, int type, int nbVeh,
          string nomBKS, int seedRNG);
-  Params(string nomInstance, string nomSolution, int type, int nbVeh,
-         string nomBKS, int seedRNG, int rou, bool stockout, int nbScenar);
+  Params(string nomInstance, string nomSolution, int type, int nbVeh, int seedRNG, int rou,bool stockout, 
+          double randomValue, normal_distribution<double> dist);
 
   // Transformation de probl�me, le nouveau fichier params cr�� correspond � un
   // sous-probl�me:

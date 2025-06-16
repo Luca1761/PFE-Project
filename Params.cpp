@@ -1,52 +1,69 @@
 #include "Params.h"
 
 // creating the parameters from the instance file
-Params::Params(string nomInstance, string nomSolution, int type, int nbVeh, string nomBKS, int seedRNG, int rou,bool stockout, int nbScenar) : 
+Params::Params(string nomInstance, string nomSolution, int type, int nbVeh, int seedRNG, int rou,bool stockout, double randomValue, normal_distribution<double> dist) : 
 	type(type), nbVehiculesPerDep(nbVeh)
 {
 	seed = seedRNG;
-	nbScenarios = nbScenar;
+	nbVehiculesPerDep = nbVeh;
+	ancienNbDays = nbDays;
 
 	if (seed == 0)
 		rng = new Rng((unsigned long long)time(NULL));
 	else
-		rng = new Rng((unsigned long long)(seed));
+		rng = new Rng((unsigned long long)(seed));	
 
 	pathToInstance = nomInstance;
 	pathToSolution = nomSolution;
-	pathToBKS = nomBKS;
 
-	debut = clock();
-	//PItime = 0;
+	debut = clock();	
 	nbVehiculesPerDep = nbVeh;
+	isstockout = stockout;
 
-	// ouverture du fichier en lecture
 	fichier.open(nomInstance.c_str());
 
-	// parsing des donn�es
 	if (fichier.is_open())
-		preleveDonnees(nomInstance, rou, stockout);
+		preleveDonnees(nomInstance, rou, stockout);	
 	else
 	{
 		cout << "Unable to open file : " << nomInstance << endl;
 		throw string(" Unable to open file ");
-	}
-	cout << "Read file done" << endl;
+	}	
 
-	// Setting the parameters
+	adjustDemands(randomValue);
+
 	setMethodParams();
-	
-	// Simply compute the distances from the coordinates
+
 	computeDistancierFromCoords();
 
-	// calcul des structures
-	calculeStructures();
+	calculeStructures();	
 
 	// Compute the constant value in the objective function
 	if(stockout) computeConstant_stockout();
 	else computeConstant();
 	
 }
+
+void Params::adjustDemands(double rv) {
+    mt19937 gen(seed + static_cast<int>(rv * 10000)); 
+    normal_distribution<double> normDist(0.0, 1.0);    
+
+    for (int i = 0; i < nbClients + nbDepots; i++) {
+		if (cli[i].custNum == 0) continue; 
+		std::cout << "Client " << i << ": ";
+		std::cout << "original " << cli[i].dailyDemand[1] << " // " << cli[i].maxInventory << " // ";
+        for (int k = 1; k <= nbDays; k++) {
+            double x = normDist(gen);        // x ~ N(0,1)
+            double coeff = x / 4.0 + 0.35;         
+            coeff = max<double>(0.2, coeff);   
+			coeff = min<double>(coeff, 0.8);
+            cli[i].dailyDemand[k] = round(cli[i].maxInventory * coeff);
+			std::cout << cli[i].dailyDemand[k] << " ";
+        }
+		std::cout << std::endl;
+    }
+}
+
 
 Params::Params(string nomInstance, string nomSolution, int type, int nbVeh, string nomBKS, int seedRNG) : 
 	type(type), nbVehiculesPerDep(nbVeh)
@@ -157,7 +174,7 @@ void Params::setMethodParams()
 {
 	// parameters related to how the problem is treated
 	triCentroides = false;	  // is the chromosome ordered by barycenter of the routes (CVRP case, c.f. OR2012 paper)
-	isRoundingInteger = true; // using the rounding (for now set to true, because currently testing on the instances of Uchoa)
+	isRoundingInteger = false; // using the rounding (for now set to true, because currently testing on the instances of Uchoa)
 	isRoundingTwoDigits = false;
 
 	// parameters of the population
@@ -576,7 +593,5 @@ void Params::computeConstant_stockout()
 		// Adding the total cost for supplier inventory over the planning horizon (CONSTANT IN OBJECTIVE)
 		for (int k = 1; k <= ancienNbDays; k++)
 			objectiveConstant_stockout += availableSupply[k] * (ancienNbDays + 1 - k) * inventoryCostSupplier;
-
 	}
-	
 }
