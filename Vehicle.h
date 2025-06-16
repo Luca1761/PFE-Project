@@ -22,9 +22,9 @@ int depotNumber ;
 double maxRouteTime ;
 
 // capacity limit
-double vehicleCapacity ;
+double capacity ;
 
-Vehicle(int depotNumber,double maxRouteTime,double vehicleCapacity);
+Vehicle(int depotNumber,double maxRouteTime,double capacity);
 ~Vehicle(void);
 };
 
