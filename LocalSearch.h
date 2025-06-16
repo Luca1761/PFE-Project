@@ -106,9 +106,6 @@ public:
   // demandPerDay[i][j] -> The load to be delivered to each customer [j] on day [i]
   vector<vector<double>> demandPerDay;
 
-  // Straightforward ILS, using a simple shaking operator
-  void runILS(bool isRepPhase, int maxIterations);
-
   // lance la recherche locale avec changement de jours
   void runSearchTotal(bool isRepPhase);
 
@@ -167,7 +164,6 @@ public:
 
   /* PI procedure for IRP */
   int mutation11(int client);
-  int mutation11print(int client);
   // Evaluates the current objective function from the model
   double evaluateCurrentCost(int client);
   double evaluateCurrentCost_stockout (int client);
@@ -195,10 +191,6 @@ public:
   // calcule pour un jour donn� et un client donn� (repr�sent� par un noeud)
   // les couts d'insertion dans les differentes routes constituant ce jour
   void computeCoutInsertion(Noeud *client);
-
-  // performs a basic shaking for the problem
-  // only for testing
-  void shaking();
 
   LocalSearch();
 

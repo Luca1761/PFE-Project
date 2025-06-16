@@ -1,16 +1,6 @@
 #include "LocalSearch.h"
 #include <algorithm>
 // lance la recherche locale
-void LocalSearch::runILS(bool isRepPhase, int maxIterations)
-{
-  double bestCost = 1.e30;
-  for (int it = 0; it < maxIterations; it++)
-  {
-    if (it > 0)
-      shaking();
-    runSearchTotal(isRepPhase);
-  }
-}
 
 void LocalSearch::runSearchTotal(bool isRepPhase)
 {
@@ -270,12 +260,7 @@ int LocalSearch::mutation11(int client)
   }
   // Compute the current lot sizing solution cost (from the model point of view)
   //before optimizatio  currentCost = evaluateCurrentCost(client);
-  if(params -> isstockout){
-    currentCost=evaluateCurrentCost_stockout(client);
-  }
-
-  else
-    currentCost = evaluateCurrentCost(client);
+  currentCost = evaluateCurrentCost_stockout(client);
   /* Generate the structures of the subproblem */
   
   vector<vector<Insertion>> insertions = vector<vector<Insertion>>(params->nbDays);
@@ -313,12 +298,11 @@ int LocalSearch::mutation11(int client)
     demandPerDay[k][client] = 0.;
 
   }
-
   // Then looking at the solution of the model and inserting in the good place
   for (int k = 1; k <= params->ancienNbDays; k++)
   {
     if (quantities[k - 1] > 0.0001 || (lotsizingSolver->breakpoints[k - 1]&&gt(0,lotsizingSolver->breakpoints[k - 1]->detour) )) // don't forget that in the model the index      // goes from 0 to t-1
-    {      
+    {
       demandPerDay[k][client] = round(quantities[k - 1]);
       
       clients[k][client]->placeInsertion = lotsizingSolver->breakpoints[k - 1]->place;
@@ -329,9 +313,9 @@ int LocalSearch::mutation11(int client)
 
   double realCost = evaluateCurrentCost_stockout(client);
   if (fabs(realCost- objective)>0.01) {
-    std::cout << "EXCUSE??? " << std::endl;
-    std::cout << fabs(realCost- objective) << " " << realCost << " " << objective << std::endl;
-    throw string("Erreur Split");
+    std::cout << "The solution doesn't give the expected cost" << std::endl;
+    std::cout << "Cost: " << realCost << "; Expected cost: " << objective << std::endl;
+    throw string("Cost error");
     return 0;
   }
   if (currentCost-objective >=0.01 )// An improving move has been found,
@@ -634,11 +618,11 @@ double LocalSearch::evaluateCurrentCost_stockout(int client)
       // adding the inventory cost
         myCost +=
           params->cli[client].inventoryCost * 
-          std::max<double> (0., I+demandPerDay[k][client]-params->cli[client].dailyDemand[k]);
+          std::max<double> (0., I + demandPerDay[k][client] - params->cli[client].dailyDemand[k]);
       //stockout
         myCost +=
-          params->cli[client].stockoutCost * std::max<double> (0., -I-demandPerDay[k][client]+params->cli[client].dailyDemand[k]);
-      
+          params->cli[client].stockoutCost * std::max<double> (0., params->cli[client].dailyDemand[k] - I - demandPerDay[k][client]);
+
       //-supplier *q[]
         myCost -=  params->inventoryCostSupplier *
             (double)(params->ancienNbDays + 1 - k) * demandPerDay[k][client];
@@ -656,106 +640,19 @@ double LocalSearch::evaluateCurrentCost_stockout(int client)
                   noeudClient->route->vehicleCapacity - demandPerDay[k][client];
         if(eq(x2,0)) x2 = 0;
         myCost += params->penalityCapa *(std::max<double>(0., x1) - std::max<double>(0., x2));
-        myCost += 1000000*std::max<double> (0.,I+demandPerDay[k][client]-params->cli[client].maxInventory);
-       
-        I = std::max<double> (0., I+demandPerDay[k][client]-params->cli[client].dailyDemand[k]);
-      }
-      else{ 
-        myCost += params->cli[client].inventoryCost *  std::max<double>(0., I-params->cli[client].dailyDemand[k]);
-        myCost += params->cli[client].stockoutCost * std::max<double>  (0., -I+params->cli[client].dailyDemand[k]);
+        myCost += 1000000*std::max<double> (0., I + demandPerDay[k][client]- params->cli[client].maxInventory);
 
-        I = std::max<double> (0., I-params->cli[client].dailyDemand[k]);
+        I = std::max<double> (0., I + demandPerDay[k][client] - params->cli[client].dailyDemand[k]);
+      }
+      else{     
+        myCost += params->cli[client].inventoryCost *  std::max<double>(0., I - params->cli[client].dailyDemand[k]);
+        myCost += params->cli[client].stockoutCost * std::max<double>  (0., params->cli[client].dailyDemand[k] - I);
+
+        I = std::max<double> (0., I - params->cli[client].dailyDemand[k]);
         
       }
   }
   return myCost;
-}
-
-
-
-void LocalSearch::shaking()
-{
-  updateMoves(); // shuffles the order of the customers in each day in the
-  // table "ordreParcours"
-
-  // For each day, perform one random swap
-  int nbRandomSwaps = 1;
-  for (int k = 1; k <= params->nbDays; k++)
-  {
-    if (ordreParcours[k].size() > 2) // if there are more than 2 customers in the day
-    {
-      for (int nSwap = 0; nSwap < nbRandomSwaps; nSwap++)
-      {
-        // Select the two customers to be swapped
-        int client1 = ordreParcours[k][params->rng->genrand64_int63() %
-                                       ordreParcours[k].size()];
-        int client2 = client1;
-        while (client2 == client1)
-          client2 = ordreParcours[k][params->rng->genrand64_int63() %
-                                     ordreParcours[k].size()];
-
-        // Perform the swap
-        Noeud *noeud1 = clients[k][client1];
-        Noeud *noeud2 = clients[k][client2];
-
-        // If the nodes are not identical or consecutive (TODO : check why
-        // consecutive is a problem in the function swap)
-        if (client1 != client2 &&
-            !(noeud1->suiv == noeud2 || noeud1->pred == noeud2))
-        {
-          swapNoeud(noeud1, noeud2);
-        }
-      }
-    }
-  }
-
-  // Take one customer, and put it back to the days corresponding to the best
-  // lot sizing (without detour cost consideration)
-  int nbRandomLotOpt = 2;
-  Noeud *noeudTravail;
-  for (int nLotOpt = 0; nLotOpt < nbRandomLotOpt; nLotOpt++)
-  {
-    // Choose a random customer
-    int client =
-        params->nbDepots + params->rng->genrand64_int63() % params->nbClients;
-
-    // Remove all occurences of this customer
-    for (int k = 1; k <= params->ancienNbDays; k++)
-    {
-      noeudTravail = clients[k][client];
-      if (noeudTravail->estPresent)
-        removeNoeud(noeudTravail);
-      demandPerDay[k][client] = 0.;
-    }
-
-    // Find the best days of insertion (Lot Sizing point of view)
-    vector<double> insertionQuantity;
-    // ModelLotSizingPI::bestInsertionLotSizing(client, insertionQuantity, params);
-
-    // And insert in the good days after a random customer
-    // Then looking at the solution of the model and inserting in the good place
-   
-    for (int k = 1; k <= params->ancienNbDays; k++)
-    {
-      if (insertionQuantity[k - 1] > 0.0001) // don't forget that in the model
-                                             // the index goes from 0 to t-1
-      {
-        demandPerDay[k][client] = insertionQuantity[k - 1];
-          
-
-        // If the day is not currently empty
-        if (ordreParcours[k].size() >
-            0) // place after a random existing customer
-          clients[k][client]->placeInsertion =
-              clients[k][ordreParcours[k][params->rng->genrand64_int63() %
-                                          ordreParcours[k].size()]];
-        else // place after a depot
-          clients[k][client]->placeInsertion = depots[k][0];
-
-        addNoeud(clients[k][client]);
-      }
-    }
-  }
 }
 
 // constructeur
