@@ -20,8 +20,6 @@ public:
     vector<vector<Insertion>> insertions;
     vector<std::shared_ptr<PLFunction>> C;
     vector<std::shared_ptr<PLFunction>> F;
-    vector<std::shared_ptr<PLFunction>> F1;
-    vector<std::shared_ptr<PLFunction>> F2;
     vector<double> I;
     vector<double> quantities;
     vector<std::shared_ptr<Insertion>> breakpoints;
@@ -37,7 +35,7 @@ public:
     void extractRepeat(const std::shared_ptr<PLFunction>& f, vector<double>& breakpoints);
     vector<double > getBreakpoints_final(std::shared_ptr<PLFunction> f1, std::shared_ptr<PLFunction> f2);
     std::shared_ptr<PLFunction> min_final(std::shared_ptr<PLFunction> f1, std::shared_ptr<PLFunction> f2);
-    std::shared_ptr<LinearPiece> createPieceFromLowerY(std::shared_ptr<LinearPiece> &chosenPiece,
+    std::shared_ptr<LinearPiece> createPieceFromLowerY(std::shared_ptr<LinearPiece> chosenPiece,
          double x1, double y1, double x2, double y2);
     std::shared_ptr<PLFunction> supperpositionPieces(std::shared_ptr<LinearPiece> fromPieceC, std::shared_ptr<LinearPiece> fromPieceF);
     std::shared_ptr<PLFunction> supperposition(std::shared_ptr<PLFunction> fromC, std::shared_ptr<PLFunction> fromF);
@@ -45,7 +43,7 @@ public:
     void Lastday(vector<std::shared_ptr<PLFunction>> &C);
     bool solveStockoutBackward();
     void solveEquationSystemHoldingBackward(std::shared_ptr<LinearPiece> C, std::shared_ptr<LinearPiece> fromC,
-        std::shared_ptr<LinearPiece> fromF, double I, double demand, double &fromI, double &quantity,std::shared_ptr<LinearPiece> Cpre,double inventory);
+        std::shared_ptr<LinearPiece> fromF, double I, double demand, double &fromI, double &quantity);
     bool backtrackingStockoutBackward();
     ~LotSizingSolver();
 };

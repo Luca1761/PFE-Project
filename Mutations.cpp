@@ -47,13 +47,11 @@ int LocalSearch::mutation1 ()
 {
 	double costSuppU = params->timeCost[noeudUPredCour][xCour] 
 	- params->timeCost[noeudUPredCour][noeudUCour]  
-	- params->timeCost[noeudUCour][xCour]
-	- params->cli[noeudUCour].serviceDuration ;
+	- params->timeCost[noeudUCour][xCour];
 
 	double costSuppV = params->timeCost[noeudVCour][noeudUCour] 
 	+ params->timeCost[noeudUCour][yCour] 
-	- params->timeCost[noeudVCour][yCour]
-	+ params->cli[noeudUCour].serviceDuration ;
+	- params->timeCost[noeudVCour][yCour];
 
 	// dans le cas ou l'on est dans la meme route , le cout n'est pas calcul� correctement en r�alit�
 	// tout ce qu'on sait c'est que si il est n�gatif c'est qu'il est bien r�ellement n�gatif
@@ -88,16 +86,12 @@ int LocalSearch::mutation2 ()
 	double costSuppU = params->timeCost[noeudUPredCour][xSuivCour] 
 	- params->timeCost[noeudUPredCour][noeudUCour] 
 	- params->timeCost[noeudUCour][xCour] 
-	- params->timeCost[xCour][xSuivCour]
-	- params->cli[noeudUCour].serviceDuration
-	- params->cli[xCour].serviceDuration ;
+	- params->timeCost[xCour][xSuivCour];
 
 	double costSuppV = params->timeCost[noeudVCour][noeudUCour] 
 	+ params->timeCost[noeudUCour][xCour] 
 	+ params->timeCost[xCour][yCour] 
-	- params->timeCost[noeudVCour][yCour]
-	+ params->cli[noeudUCour].serviceDuration
-	+ params->cli[xCour].serviceDuration ;
+	- params->timeCost[noeudVCour][yCour];
 
 	if (routeU != routeV)
 	{
@@ -130,16 +124,12 @@ int LocalSearch::mutation3 ()
 	double costSuppU = params->timeCost[noeudUPredCour][xSuivCour] 
 	- params->timeCost[noeudUPredCour][noeudUCour] 
 	- params->timeCost[noeudUCour][xCour] 
-	- params->timeCost[xCour][xSuivCour]
-	- params->cli[noeudUCour].serviceDuration
-	- params->cli[xCour].serviceDuration ;
+	- params->timeCost[xCour][xSuivCour];
 
 	double costSuppV = params->timeCost[noeudVCour][xCour] 
 	+ params->timeCost[xCour][noeudUCour] 
 	+ params->timeCost[noeudUCour][yCour] 
-	- params->timeCost[noeudVCour][yCour]
-	+ params->cli[noeudUCour].serviceDuration
-	+ params->cli[xCour].serviceDuration ;
+	- params->timeCost[noeudVCour][yCour];
 
 	if (routeU != routeV)
 	{
@@ -172,16 +162,12 @@ int LocalSearch::mutation4 ()
 	double costSuppU = params->timeCost[noeudUPredCour][noeudVCour] 
 	+ params->timeCost[noeudVCour][xCour]
 	- params->timeCost[noeudUPredCour][noeudUCour] 
-	- params->timeCost[noeudUCour][xCour]
-	+ params->cli[noeudVCour].serviceDuration
-	- params->cli[noeudUCour].serviceDuration ;
+	- params->timeCost[noeudUCour][xCour];
 
 	double costSuppV = params->timeCost[noeudVPredCour][noeudUCour] 
 	+ params->timeCost[noeudUCour][yCour]
 	- params->timeCost[noeudVPredCour][noeudVCour] 
-	- params->timeCost[noeudVCour][yCour]
-	- params->cli[noeudVCour].serviceDuration
-	+ params->cli[noeudUCour].serviceDuration ;
+	- params->timeCost[noeudVCour][yCour];
 
 	if (routeU != routeV)
 	{
@@ -217,19 +203,13 @@ int LocalSearch::mutation5 ()
 	+ params->timeCost[noeudVCour][xSuivCour]
 	- params->timeCost[noeudUPredCour][noeudUCour] 
 	- params->timeCost[noeudUCour][xCour] 
-	- params->timeCost[xCour][xSuivCour]
-	+ params->cli[noeudVCour].serviceDuration
-	- params->cli[noeudUCour].serviceDuration
-	- params->cli[xCour].serviceDuration ;
+	- params->timeCost[xCour][xSuivCour];
 
 	double costSuppV = params->timeCost[noeudVPredCour][noeudUCour] 
 	+ params->timeCost[xCour][yCour]
 	+ params->timeCost[noeudUCour][xCour]
-	- params->timeCost[noeudVPred->cour][noeudVCour] 
-	- params->timeCost[noeudVCour][yCour]
-	- params->cli[noeudVCour].serviceDuration
-	+ params->cli[noeudUCour].serviceDuration
-	+ params->cli[xCour].serviceDuration ;
+	- params->timeCost[noeudVPred->idx][noeudVCour] 
+	- params->timeCost[noeudVCour][yCour];
 	
 	if (routeU != routeV)
 	{
@@ -262,22 +242,14 @@ int LocalSearch::mutation6 ()
 	+ params->timeCost[yCour][xSuivCour]
 	- params->timeCost[noeudUPredCour][noeudUCour] 
 	- params->timeCost[noeudUCour][xCour] 
-	- params->timeCost[xCour][xSuivCour]
-	+ params->cli[noeudVCour].serviceDuration
-	+ params->cli[yCour].serviceDuration 
-	- params->cli[noeudUCour].serviceDuration 
-	- params->cli[xCour].serviceDuration ;
+	- params->timeCost[xCour][xSuivCour];
 
 	double costSuppV = params->timeCost[noeudVPredCour][noeudUCour] 
 	+ params->timeCost[noeudUCour][xCour]
 	+ params->timeCost[xCour][ySuivCour]
 	- params->timeCost[noeudVPredCour][noeudVCour] 
 	- params->timeCost[noeudVCour][yCour]
-	- params->timeCost[yCour][ySuivCour]
-	- params->cli[noeudVCour].serviceDuration
-	- params->cli[yCour].serviceDuration 
-	+ params->cli[noeudUCour].serviceDuration 
-	+ params->cli[xCour].serviceDuration ;
+	- params->timeCost[yCour][ySuivCour];
 	
 	if (routeU != routeV)
 	{
@@ -312,7 +284,7 @@ int LocalSearch::mutation7 ()
 	Noeud * nodeNum = noeudXSuiv ;
 	Noeud * temp ;
 
-	if  ((routeU->cour != routeV->cour) || noeudU->suiv == noeudV || noeudU->place > noeudV->place ) {  return 0 ; }
+	if  ((routeU->idx != routeV->idx) || noeudU->suiv == noeudV || noeudU->place > noeudV->place ) {  return 0 ; }
 
 	double cost = params->timeCost[noeudUCour][noeudVCour] + params->timeCost[xCour][yCour]
 	- params->timeCost[noeudUCour][xCour] - params->timeCost[noeudVCour][yCour] ;
@@ -348,12 +320,12 @@ int LocalSearch::mutation7 ()
 int LocalSearch::mutation8 ()
 {
 	// TODO : heterogenous fleet, 2 types de mutations suivant les camions choisis pour chaque segment
-	if  ( routeU->cour == routeV->cour || routeU->depot->cour != routeV->depot->cour) { return 0 ; }
+	if  ( routeU->idx == routeV->idx || routeU->depot->idx != routeV->depot->idx) { return 0 ; }
 
 	double chargeResteU = routeU->charge - noeudU->chargeAvant ;
 	double chargeResteV = routeV->charge - noeudV->chargeAvant ;
-	double tempsU = noeudU->est + params->cli[noeudUCour].serviceDuration ;
-	double tempsV = noeudV->est + params->cli[noeudVCour].serviceDuration ;
+	double tempsU = noeudU->est;
+	double tempsV = noeudV->est;
 	double tempsResteU = routeU->temps - tempsU - params->timeCost[noeudUCour][xCour] ;
 	double tempsResteV = routeV->temps - tempsV - params->timeCost[noeudVCour][yCour] ;
 
@@ -448,14 +420,14 @@ int LocalSearch::mutation8 ()
 // If T(noeudU) != T(noeudV) , replace (noeudU,x) and (noeudV,y) by (noeudU,y) and (noeudV,x)
 int LocalSearch::mutation9 ()
 {
-	if  (routeU->cour == routeV->cour || routeU->depot->cour != routeV->depot->cour) { return 0 ; }
+	if  (routeU->idx == routeV->idx || routeU->depot->idx != routeV->depot->idx) { return 0 ; }
 
 	Noeud * count ;
 
 	double chargeResteU = routeU->charge - noeudU->chargeAvant ;
 	double chargeResteV = routeV->charge - noeudV->chargeAvant ;
-	double tempsU = noeudU->est + params->cli[noeudUCour].serviceDuration ;
-	double tempsV = noeudV->est + params->cli[noeudVCour].serviceDuration ;
+	double tempsU = noeudU->est;
+	double tempsV = noeudV->est;
 	double tempsResteU = routeU->temps - tempsU - params->timeCost[noeudUCour][xCour] ;
 	double tempsResteV = routeV->temps - tempsV - params->timeCost[noeudVCour][yCour] ;
 

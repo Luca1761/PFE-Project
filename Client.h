@@ -15,11 +15,6 @@ struct couple {
 	double y;
 };
 
-struct pattern {
-	int pat;
-	int dep;
-};
-
 class Client
 {
 public:
@@ -42,7 +37,7 @@ public:
 	double maxInventory ;
 
 	// daily demand of the customer.
-	vector<double>dailyDemand ;
+	vector<double> dailyDemand ;
 
 	// daily inventory cost of the customer
 	double inventoryCost ;

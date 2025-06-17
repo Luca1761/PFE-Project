@@ -1,5 +1,5 @@
 /*                       Algorithme - HGSADC                         */
-/*                    Propri�t� de Thibaut VIDAL                     */
+/*                    Propriete de Thibaut VIDAL                     */
 /*                    thibaut.vidal@cirrelt.ca                       */
 
 #ifndef POPULATION_H
@@ -19,12 +19,12 @@ using namespace std ;
 struct SousPop
 {
 	// individus de la sous-population
-	vector <Individu *> individus ;
+	vector<Individu*> individus ;
 
 	// nombre de ces individus
 	int nbIndiv ;
 
-	// nombre de generations ecoul�es
+	// nombre de generations ecoulees
 	int nbGenerations ;
 };
 
@@ -38,22 +38,22 @@ class Population
    // clock time when the best individual was found
    clock_t timeBest ;
 
-   // liste qui repertorie si les XXX derniers individus produits �taient valides en terme de charge ou non
+   // liste qui repertorie si les XXX derniers individus produits etaient valides en terme de charge ou non
    list <bool> listeValiditeCharge ;
 
-    // liste qui repertorie si les XXX derniers individus produits �taient valides en terme de temps ou non
+    // liste qui repertorie si les XXX derniers individus produits etaient valides en terme de temps ou non
    list <bool> listeValiditeTemps ;
 
    // auxiliary data structure to apply the local search
    Individu * trainer;
 
-   // entrainement des individus qui sont cr��s
+   // entrainement des individus qui sont crees
    void education(Individu * indiv);
-   void educationprint(Individu * indiv);
-   // fonction booleenne verifiant si le fitness n'existe pas d�ja
+
+   // fonction booleenne verifiant si le fitness n'existe pas deja
    bool fitExist ( SousPop * pop, Individu * indiv ) ;
 
-   // place un individu donn� dans le tableau
+   // place un individu donne dans le tableau
    // retourne -1 si echec sinon sa position dans la population
    int placeIndividu (SousPop * pop, Individu * indiv);
 
@@ -62,16 +62,16 @@ class Population
    // calcule le fitness etendu des elements de la sous-population
    void evalExtFit(SousPop * pop);
 
-   // ajoute un individu � la population
-   // la population se d�brouille pour le placer o� il lui semble bon
-   // updateNbValides est mis � true si on veut mettre� jour la proportion de valides aussi 
+   // ajoute un individu a la population
+   // la population se debrouille pour le placer ou il lui semble bon
+   // updateNbValides est mis a true si on veut mettree jour la proportion de valides aussi 
    // retourne -1 si echec, sinon sa nouvelle position dans la population
    int addIndividu (Individu * indiv);
 
    // enleve un individu de la population en fonction de la replacement policy
    void removeIndividu(SousPop * pop, int p);
 
-   // met � jour les individus les plus proches d'une population
+   // met a jour les individus les plus proches d'une population
    // en fonction de l'arrivant
    void updateProximity (SousPop * pop, Individu * indiv);
 
@@ -90,7 +90,7 @@ class Population
    // differents individus invalides presents dans la population
    SousPop * invalides;
 
-   // getter de 1 individu al�atoire
+   // getter de 1 individu aleatoire
    Individu * getIndividuRand (double & rangRelatif);
 
    // getter de 1 individu par binary tournament
@@ -110,9 +110,9 @@ class Population
    // compromis entre fitness et diversite
    int selectCompromis (SousPop * souspop) ;
 
-   // recalcule l'evaluation des individus a partir des violation
-   // puis effectue un tri � bulles de la population
-   // operateur de tri peu efficace mais fonction appell�e tr�s rarement
+   // recalcule l'evaluation des individus a partir des violations
+   // puis effectue un tri a bulles de la population
+   // operateur de tri peu efficace mais fonction appellee tres rarement
    void validatePen ();
 
    // getter simple d'un individu
@@ -121,7 +121,7 @@ class Population
    // exporte la meilleure solution
    void ExportPop (string nomFichier,bool add) ;
 
-   // teste et exporte la BKS si elle est meilleure que la solution situ�e � sa place
+   // teste et exporte la BKS si elle est meilleure que la solution situee ea sa place
    void ExportBKS (string nomFichier) ;
 
    // retourne la fraction d'individus valides en terme de charge

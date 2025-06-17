@@ -92,16 +92,16 @@ public:
 │
 └── ...
 */
-  vector<vector<Noeud *>> clients;
+  vector<vector<Noeud*>> clients;
 
   // noeuds associ�s aux depots utilis�s
-  vector<vector<Noeud *>> depots;
+  vector<vector<Noeud*>> depots;
 
   // noeuds associ�s aux terminaisons des routes (doublon des depots)
-  vector<vector<Noeud *>> depotsFin;
+  vector<vector<Noeud*>> depotsFin;
 
   // vecteur repertoriant des donnees sur les routes routes
-  vector<vector<Route *>> routes;
+  vector<vector<Route*>> routes;
 
   // demandPerDay[i][j] -> The load to be delivered to each customer [j] on day [i]
   vector<vector<double>> demandPerDay;
@@ -167,9 +167,6 @@ public:
   // Evaluates the current objective function from the model
   double evaluateCurrentCost(int client);
   double evaluateCurrentCost_stockout (int client);
-
-  // Evaluates the current objective function of the whole solution
-  double evaluateSolutionCost();
 
   // Prints some useful information on the current solution
   void printInventoryLevels(std::ostream& file,bool add);

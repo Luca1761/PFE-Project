@@ -6,11 +6,10 @@
 // constructeur
 Population::Population(Params *params) : params(params)
 {
-	Individu *randomIndiv;
 	trainer = new Individu(params, 1.0);
 	delete trainer->localSearch;   	
 	trainer->localSearch = new LocalSearch(params, trainer);
-
+	
 	double temp = params->penalityCapa;
 	double temp2 = params->penalityLength;
 	valides = new SousPop(); 
@@ -21,8 +20,6 @@ Population::Population(Params *params) : params(params)
 	invalides->nbGenerations = 0;
 	bool compter = true;
 
-	// TODO -- for testing for now
-
 	for (int i = 0; i < params->mu * 2; i++)
 	{
 		if (i == params->mu)
@@ -31,22 +28,18 @@ Population::Population(Params *params) : params(params)
 			params->penalityLength *= 50;
 			compter = false;
 		}
-		randomIndiv = new Individu(params, 1.0);  
+		Individu *randomIndiv = new Individu(params, 1.0);  
 
 		education(randomIndiv);
-		if (compter)
-			updateNbValides(randomIndiv);
+		if (compter) updateNbValides(randomIndiv);
 		addIndividu(randomIndiv);
 		delete randomIndiv;
 	}
 
-	// on initialise par d�faut � 100, comme si tout �tait valide au d�but
+	// on initialise par defaut a 100, comme si tout etait valide au debut
 	// mais c'est arbitraire
-	for (int i = 0; i < 100; i++) 
-	{
-		listeValiditeCharge.push_back(true);
-		listeValiditeTemps.push_back(true);
-	}
+	listeValiditeCharge = list<bool> (100, true);
+	listeValiditeTemps = list<bool> (100, true);
 
 	params->penalityCapa = temp;
 	params->penalityLength = temp2;
@@ -92,18 +85,14 @@ void Population::evalExtFit(SousPop *pop)
 		pop->individus[classement[i]]->fitnessEtendu = pop->individus[classement[i]]->fitRank + ((float)1.0 - (float)params->el / (float)pop->nbIndiv) * pop->individus[classement[i]]->divRank;
 	}
 }
+
 int Population::addIndividu(Individu *indiv)
 {
-	SousPop *souspop;
+	SousPop *souspop = (indiv->estValide) ? valides : invalides;
 	int k, result;
 
-	if (indiv->estValide)
-		souspop = valides;
-	else
-		souspop = invalides;
-
 	result = placeIndividu(souspop, indiv);
-	// il faut �ventuellement enlever la moiti� de la pop
+	// il faut eventuellement enlever la moitie de la pop
 	if (result != -1 && souspop->nbIndiv > params->mu + params->lambda)
 	{
 
@@ -115,11 +104,10 @@ int Population::addIndividu(Individu *indiv)
 
 		souspop->nbGenerations++;
 	}
-
 	return result;
 }
 
-// met � jour les individus les plus proches d'une population
+// met a jour les individus les plus proches d'une population
 // en fonction de l'arrivant
 
 void Population::updateProximity(SousPop *pop, Individu *indiv)
@@ -244,8 +232,8 @@ void Population::removeIndividu(SousPop *pop, int p)
 	delete partant;
 }
 // recalcule l'evaluation des individus a partir des violation
-// puis effectue un tri � bulles de la population
-// operateur de tri peu efficace mais fonction appell�e tr�s rarement
+// puis effectue un tri a bulles de la population
+// operateur de tri peu efficace mais fonction appelee tres rarement
 void Population::validatePen()
 {
 	Individu *indiv;
@@ -275,25 +263,25 @@ Individu *Population::getIndividuBinT(double &rangRelatif)
 	place1 = params->rng->genrand64_int64() % (valides->nbIndiv + invalides->nbIndiv);
 	if (place1 >= valides->nbIndiv)
 	{
-		individu1 = invalides->individus[place1 - valides->nbIndiv];
-		rangRelatif1 = (double)(place1 - valides->nbIndiv) / (double)invalides->nbIndiv;
-	}
-	else
+		place1 -= valides->nbIndiv;
+		individu1 = invalides->individus[place1];
+		rangRelatif1 = (double) place1 / (double)invalides->nbIndiv;
+	} else
 	{
 		individu1 = valides->individus[place1];
-		rangRelatif1 = (double)place1 / (double)valides->nbIndiv;
+		rangRelatif1 = (double) place1 / (double)valides->nbIndiv;
 	}
 
 	place2 = params->rng->genrand64_int64() % (valides->nbIndiv + invalides->nbIndiv);
 	if (place2 >= valides->nbIndiv)
 	{
-		individu2 = invalides->individus[place2 - valides->nbIndiv];
-		rangRelatif2 = (double)(place2 - valides->nbIndiv) / (double)invalides->nbIndiv;
-	}
-	else
+		place2 -= valides->nbIndiv;
+		individu2 = invalides->individus[place2];
+		rangRelatif2 = (double) place2 / (double)invalides->nbIndiv;
+	} else
 	{
 		individu2 = valides->individus[place2];
-		rangRelatif2 = (double)place2 / (double)valides->nbIndiv;
+		rangRelatif2 = (double) place2 / (double)valides->nbIndiv;
 	}
 
 	evalExtFit(valides);
@@ -345,18 +333,14 @@ Individu *Population::getIndividuPourc(int pourcentage, double &rangRelatif)
 }
 Individu *Population::getIndividuBestValide()
 {
-	if (valides->nbIndiv != 0)
-		return valides->individus[0];
-	else
-		return NULL;
+	if (valides->nbIndiv != 0) return valides->individus[0];
+	else return NULL;
 }
 
 Individu *Population::getIndividuBestInvalide()
 {
-	if (invalides->nbIndiv != 0)
-		return invalides->individus[0];
-	else
-		return NULL;
+	if (invalides->nbIndiv != 0) return invalides->individus[0];
+	else return NULL;
 }
 
 // getter simple d'un individu
@@ -365,14 +349,13 @@ Individu *Population::getIndividu(int p)
 	return valides->individus[p];
 }
 // recopie un Individu dans un autre
-// ATTENTION !!! ne recopie que le chromP, chromT et les attributs du fitness
+// ATTENTION !!! ne recopie que le chromT et les attributs du fitness
 void Population::recopieIndividu(Individu *destination, Individu *source)
 {
 	destination->chromT = source->chromT;
 	destination->chromL = source->chromL;
 	destination->chromR = source->chromR;
 	destination->coutSol = source->coutSol;
-	destination->isFitnessComputed = source->isFitnessComputed;
 	destination->estValide = source->estValide;
 	destination->suivants = source->suivants;
 	destination->precedents = source->precedents;
@@ -450,25 +433,25 @@ void Population::ExportPop(string nomFichier,bool add)
 				if (!loc->depots[k][i]->suiv->estUnDepot)
 				{
 
-					myfile << " " << loc->routes[k][i]->depot->cour << " " << (k - 1) % params->ancienNbDays + 1 << " " << compteur << " " << loc->routes[k][i]->temps << " "
+					myfile << " " << loc->routes[k][i]->depot->idx << " " << (k - 1) % params->ancienNbDays + 1 << " " << compteur << " " << loc->routes[k][i]->temps << " "
 						   << loc->routes[k][i]->charge << " ";
 
 					// on place la route dans un vecteur de noeuds clients
 					noeudActuel = loc->routes[k][i]->depot->suiv;
-					cost = params->timeCost[loc->routes[k][i]->depot->cour][noeudActuel->cour];
+					cost = params->timeCost[loc->routes[k][i]->depot->idx][noeudActuel->idx];
 
 					rout.clear();
 					routTime.clear();
-					rout.push_back(loc->routes[k][i]->depot->cour);
+					rout.push_back(loc->routes[k][i]->depot->idx);
 					routTime.push_back(0);
-					rout.push_back(noeudActuel->cour);
+					rout.push_back(noeudActuel->idx);
 					routTime.push_back(cost);
 
 					while (!noeudActuel->estUnDepot)
 					{
-						cost += params->cli[noeudActuel->cour].serviceDuration + params->timeCost[noeudActuel->cour][noeudActuel->suiv->cour];
+						cost += params->timeCost[noeudActuel->idx][noeudActuel->suiv->idx];
 						noeudActuel = noeudActuel->suiv;
-						rout.push_back(noeudActuel->cour);
+						rout.push_back(noeudActuel->idx);
 						routTime.push_back(cost);
 					}
 

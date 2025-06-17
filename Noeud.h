@@ -17,8 +17,6 @@ int destination ;
 
 double cout ;
 
-double type ;
-
 };
 
 class Noeud
@@ -30,7 +28,7 @@ public :
 bool estUnDepot ;
 // est un depot ou un client
 
-int cour ;
+int idx ;
 // indice du depot ou du client represente
 
 int place ;
@@ -80,7 +78,7 @@ vector < int > moves ;
 Noeud(void);
 // constructeur 1	
 
-Noeud(bool estUnDepot, int cour, int jour, bool estPresent, Noeud * suiv , Noeud * pred, Route * route, double est);
+Noeud(bool estUnDepot, int idx, int jour, bool estPresent, Noeud * suiv , Noeud * pred, Route * route, double est);
 // constructeur 2
 
 ~Noeud(void);

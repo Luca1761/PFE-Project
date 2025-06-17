@@ -24,13 +24,13 @@ using namespace std ;
 class LocalSearch ;
 
 struct coutSol {
-  // valeur du fitness comportant les p�nalit�s, si il a ete calcule
+  // valeur du fitness comportant les penalites, si il a ete calcule
   double evaluation ;
 
-  // valeur du fitness non p�nalis�
+  // valeur du fitness non penalise
   double fitness ;
 
-  // violations de capacit�
+  // violations de capacite
   double capacityViol ;
 
   // violation de longueur 
@@ -71,53 +71,41 @@ class Individu
 
   // The giant tour of each individual 
   // chromT [i][j] -> jour i, client j dans la succession des clients du jour i
-  vector < vector<int> > chromT ;
+  vector<vector<int>> chromT ;
 
   // chromL [i][j] -> The load to be delivered to each customer [j] on day [i]
-  vector < vector<double> > chromL ;
+  vector<vector<double>> chromL ;
 
   // Keeps the indices of the beginning of the routes, when they have been computed
-  // chromT [i][j] -> jour i, route j , donne la position du premier client de cette route
-  vector < vector<int> > chromR ;
-
-  // List of patterns used for the visits (relevant only for the PVRP)
-  vector < pattern > chromP ;
+  // chromR [i][j] -> jour i, route j , donne la position du premier client de cette route
+  vector<vector<int>> chromR ;
   
   // For each node, the next nodes (several in case the PVRP where deliveries take place on several days)
   // Used for the distance measure
-  vector < vector<int> > suivants ;
+  vector<vector<int>> suivants ;
 
   // The same as previously, but using the predecessors 
-  vector < vector<int> > precedents ;
+  vector<vector<int>> precedents ;
 
-  // Function to compute suivants and precedents
-
-  void computeSuivants ();
   // Auxiliary data structure to run the Split
   // potentiels[i+1] -> distance pour atteindre le sommet i
   // de la sequence
   // potentiels[0] = 0 et non   
   // potentiels[1] = distance du sommet 0
-  vector < vector <double> > potentiels ;
+  vector<vector<double>> potentiels ;
 
   // pour chaque jour le tableau de [nbCamions] [predecesseur]
   // potentiels[i+1] -> predecesseur de i
-  vector < vector < vector<int> > > pred ;
-
-  // says is the fitness has been evaluated
-  bool isFitnessComputed ;
+  vector<vector<vector<int>>> pred ;
 
   // says if the individual is a feasible solution
   bool estValide ;
-
-  // Auxiliary data structure used in crossover POX2 (for the PVRP)
-  vector < int > toPlace ;
 
   // distance measure
   double distance(Individu * indiv2);
 
   // individus class�s par proximit� dans la population, pour les politiques de remplacement
-  list <proxData> plusProches;
+  list<proxData> plusProches;
 
   // ajoute un element proche dans les structures de proximit�
   void addProche(Individu * indiv) ;
@@ -130,23 +118,23 @@ class Individu
 
   // structure de donnee associee a l'individu au sein de la recherche locale
   // seul le rejeton de Genetic.cpp possede cette structure
-  // sinon elle n'est pas initialis�e
+  // sinon elle n'est pas initialisee
   LocalSearch * localSearch ;
 
   // fonction Split pour tous les jours
-  // essaye d�ja le split simple
-  // si la solution ne respecte pas le nombre de camions : essaye le split � flotte limit�e
+  // essaye deja le split simple
+  // si la solution ne respecte pas le nombre de camions : essaye le split a flotte limitee
   void generalSplit();
 
-  // fonction split ne respectant pas forc�ment le nombre de v�hicules
-  // retourne 1 si succ�s, 0 sinon
+  // fonction split ne respectant pas forcement le nombre de vehicules
+  // retourne 1 si succes, 0 sinon
   int splitSimple(int k) ;
 
-  // fonction split pour probl�mes � flotte limit�e
+  // fonction split pour problemes a flotte limitee
   void splitLF(int k) ;
 
-  // fonction qui se charge d'�valuer exactement les violations
-  // et de remplir tous les champs d'�valuation de solution
+  // fonction qui se charge d'evaluer exactement les violations
+  // et de remplir tous les champs d'evaluation de solution
   void measureSol() ;
 
   // initialisation du vecteur potentiels
@@ -155,8 +143,6 @@ class Individu
   // mise a jour de l'objet localSearch, 
   // Attention, Split doit avoir ete calcule avant
   void updateLS() ;
-  int randomizedPartition(std::vector<Route*>& arr, int low, int high);
-  void randomizedQuickSort(std::vector<Route*>& arr, int low, int high);
 
   // Inverse procedure, after local search to return to a giant tour solution representation and thus fill the chromT table.
   void updateIndiv() ;

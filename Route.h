@@ -31,7 +31,7 @@ LocalSearch * myLS ;
 public:
 
 // numero de la route
-int cour ;
+int idx ;
 
 // day associated to the route
 int day ;
@@ -49,14 +49,14 @@ double charge ;
 double maxRouteTime ;
 
 // chargement maximum de la route
-double vehicleCapacity ;
+double capacity ;
 
 // valide ou non
 bool isFeasible ;
 
 inline double excedentCharge(double charge)
 {
-	return std::max<double>(0,charge-vehicleCapacity);
+	return std::max<double>(0,charge-capacity);
 }
 
 inline double excedentLength(double length)
@@ -64,29 +64,29 @@ inline double excedentLength(double length)
 	return std::max<double>(0,length-maxRouteTime);
 }
 
-// coordonn�es du centroide de la route
+// coordonnees du centroide de la route
 // ainsi que l'angle pris par rapport au segment (0,0) (0,1)
-// utilis� pour refaire le giant tour apres la LS
-// pas d'utilit� lors de la recherche locale
+// utilise pour refaire le giant tour apres la LS
+// pas d'utilite lors de la recherche locale
 double centroidX ;
 double centroidY ;
 double centroidAngle ;
 
-// calcule les coordonn�es du centroide
+// calcule les coordonnees du centroide
 void updateCentroidCoord ();
 
-// met � jour les charges partielles de la route associ�e au noeud U
+// met a jour les charges partielles de la route associ�e au noeud U
 void updateRouteData () ;
 void printRouteData (std::ostream& file) ;
 // pour chaque noeud, stocke le cout de l'insertion dans la route
-vector < Insertion > bestInsertion ;
+vector<Insertion> bestInsertion ;
 
 // pour chaque noeud, booleen indiquant si tous les mouvements impliquant ce noeud
-// et cette route ont �t� test�s sans succ�s
-vector <bool> nodeAndRouteTested ;
+// et cette route ont ete testes sans succes
+vector<bool> nodeAndRouteTested ;
 
-// pour un client donn�, trouve la meilleure position d'insertion
-// �ventuellement fait le calcul pour tous les clients d'un coup, ou pour plusieurs
+// pour un client donne, trouve la meilleure position d'insertion
+// eventuellement fait le calcul pour tous les clients d'un coup, ou pour plusieurs
 void evalInsertClient (Noeud * U) ;
 void evalInsertClientp (Noeud * U) ;
 // no insertion is calculated
@@ -97,7 +97,7 @@ void reinitSingleDayMoves();
 
 Route(void);
 
-Route(int cour, int day, Noeud * depot, double temps, double charge, double maxRouteTime, double vehicleCapacity, Params * params, LocalSearch * myLS);
+Route(int idx, int day, Noeud * depot, double temps, double charge, double maxRouteTime, double capacity, Params * params, LocalSearch * myLS);
 
 ~Route(void);
 };

@@ -4,9 +4,6 @@
 Individu::Individu(Params *params) : params(params)
 {
 	vector<int> tempVect;
-	pattern p;
-	p.dep = 0;
-	p.pat = 0;
 	localSearch = new LocalSearch();
 
 	for (int i = 0; i <= params->nbDays; i++)
@@ -16,9 +13,6 @@ Individu::Individu(Params *params) : params(params)
 		for (int j = 0; j < params->nombreVehicules[i]; j++)
 			chromR[i].push_back(-1);
 	}
-
-	for (int i = 0; i < params->nbClients + params->nbDepots; i++)
-		chromP.push_back(p);
 
 	for (int i = 0; i < params->nbDepots + params->nbClients; i++)
 	{
@@ -33,7 +27,6 @@ Individu::Individu(Params *params, double facteurSurete) : params(params)
 	vector<int> tempVect;
 	vector<vector<int>> tempVect2;
 	localSearch = new LocalSearch();
-	isFitnessComputed = false;
 	coutSol.evaluation = 0;
 	coutSol.fitness = 0;
 	coutSol.capacityViol = 0;
@@ -42,7 +35,6 @@ Individu::Individu(Params *params, double facteurSurete) : params(params)
 
 	// IRP, this construction has to be fully changed.
 	// There is no more concept of pattern
-	// And the chromP is useless
 	// So, for now let's simply assume that we serve all customers in one delivery on day 1 (we ignore the product availability at the supplier for now)
 	// Later on we will arrange this construction
 	chromT = vector<vector<int>>(params->nbDays + 1);
@@ -160,7 +152,6 @@ void Individu::generalSplit()
 	// After Split
 	// we call a function that fills all other data structures and computes the cost
 	measureSol();
-	isFitnessComputed = true;
 
 	if (params->borneSplit > 1000)
 		throw string("Erreur Split");
@@ -181,7 +172,7 @@ void Individu::generalSplit()
 int Individu::splitSimple(int k)
 {
 	// on va utiliser la ligne 1 des potentiels et structures pred
-	double load, distance, time, time2, cost;
+	double load, distance, cost;
 	int s0, s1, sb, j;
 	potentiels[1][0] = 0;
 	s0 = params->ordreVehicules[k][0].depotNumber;
@@ -190,33 +181,25 @@ int Individu::splitSimple(int k)
 	{
 		load = 0;
 		distance = 0;
-		time = 0; // needed to check the duration constraint for the PVRP, not needed for CVRP
 		j = i;
-		while (j < (int)chromT[k].size() && load <= params->ordreVehicules[k][0].vehicleCapacity * params->borneSplit)
+		while (j < (int)chromT[k].size() && load <= params->ordreVehicules[k][0].capacity * params->borneSplit)
 		{
 			s1 = chromT[k][j];
 			load += chromL[k][s1];
 			if (i == j)
 			{
 				distance = params->timeCost[s0][s1];
-				time = params->timeCost[s0][s1];
 			}
 			else
 			{
 				sb = chromT[k][j - 1];
 				distance += params->timeCost[sb][s1];
-				time += params->cli[sb].serviceDuration + params->timeCost[sb][s1];
 			}
 
 			// computing the penalized cost
 			cost = distance + params->timeCost[s1][s0];
-			if (load > params->ordreVehicules[k][0].vehicleCapacity)
-				cost += (load - params->ordreVehicules[k][0].vehicleCapacity) * params->penalityCapa;
-
-			// needed to check the duration constraint for the PVRP, not needed for CVRP
-			time2 = time + params->cli[s1].serviceDuration + params->timeCost[s1][s0];
-			if (time2 > params->ordreVehicules[k][0].maxRouteTime)
-				cost += (time2 - params->ordreVehicules[k][0].maxRouteTime) * params->penalityLength;
+			if (load > params->ordreVehicules[k][0].capacity)
+				cost += (load - params->ordreVehicules[k][0].capacity) * params->penalityCapa;
 
 			if (potentiels[1][i] + cost < potentiels[1][j + 1]) // basic Bellman algorithm
 			{
@@ -247,7 +230,7 @@ int Individu::splitSimple(int k)
 // fonction split pour probl�mes � flotte limit�e
 void Individu::splitLF(int k)
 {
-	double load, distance, time, time2, cost;
+	double load, distance, cost;
 	int sb, s0, s1, i, j;
 
 	// pour chaque camion
@@ -264,34 +247,26 @@ void Individu::splitLF(int k)
 			}
 			load = 0;
 			distance = 0;
-			time = 0;
 			j = i;
 
-			while (j < (int)chromT[k].size() && load <= params->ordreVehicules[k][cam].vehicleCapacity * params->borneSplit)
+			while (j < (int)chromT[k].size() && load <= params->ordreVehicules[k][cam].capacity * params->borneSplit)
 			{
 				s1 = chromT[k][j];
 				load += chromL[k][s1];
 				if (i == j)
 				{
 					distance = params->timeCost[s0][s1];
-					time = params->timeCost[s0][s1];
 				}
 				else
 				{
 					sb = chromT[k][j - 1];
 					distance += params->timeCost[sb][s1];
-					time += params->cli[sb].serviceDuration + params->timeCost[sb][s1];
 				}
 
 				// computing the penalized cost
 				cost = distance + params->timeCost[s1][s0];
-				if (load > params->ordreVehicules[k][cam].vehicleCapacity)
-					cost += (load - params->ordreVehicules[k][cam].vehicleCapacity) * params->penalityCapa;
-
-				// needed to check the duration constraint for the PVRP, not needed for CVRP
-				time2 = time + params->cli[s1].serviceDuration + params->timeCost[s1][s0];
-				if (time2 > params->ordreVehicules[k][cam].maxRouteTime)
-					cost += (time2 - params->ordreVehicules[k][cam].maxRouteTime) * params->penalityLength;
+				if (load > params->ordreVehicules[k][cam].capacity)
+					cost += (load - params->ordreVehicules[k][cam].capacity) * params->penalityCapa;
 
 				if (potentiels[cam][i] + cost < potentiels[cam + 1][j + 1]) // Basic Bellman iteration
 				{
@@ -315,7 +290,7 @@ void Individu::measureSol()
 {
 	int depot;
 	int i, j;
-	double distance, load, time;
+	double distance, load;
 	coutSol.fitness = 0;
 	coutSol.capacityViol = 0;
 	coutSol.lengthViol = 0;
@@ -345,39 +320,30 @@ void Individu::measureSol()
 			{
 				distance = params->timeCost[depot][chromT[kk][i]] + params->timeCost[chromT[kk][i]][depot];
 				load = chromL[kk][chromT[kk][i]];
-				time = params->timeCost[depot][chromT[kk][i]];
-				time += params->cli[chromT[kk][i]].serviceDuration + params->timeCost[chromT[kk][i]][depot];
-				if (time > params->ordreVehicules[kk][params->nombreVehicules[kk] - jj - 1].maxRouteTime)
-					coutSol.lengthViol += time - params->ordreVehicules[kk][params->nombreVehicules[kk] - jj - 1].maxRouteTime;
 				nbServices++;
 			}
 			else
 			{
 				distance = params->timeCost[depot][chromT[kk][i]];
 				load = 0;
-				time = params->timeCost[depot][chromT[kk][i]];
 
 				// infos sommets milieu
 				for (int k = i; k <= j - 2; k++)
 				{
-					time += params->cli[chromT[kk][k]].serviceDuration + params->timeCost[chromT[kk][k]][chromT[kk][k + 1]];
 					distance += params->timeCost[chromT[kk][k]][chromT[kk][k + 1]];
 					load += chromL[kk][chromT[kk][k]];
 					nbServices++;
 				}
 
 				// infos sommet fin
-				time += params->cli[chromT[kk][j - 1]].serviceDuration + params->timeCost[chromT[kk][j - 1]][depot];
 				distance += params->timeCost[chromT[kk][j - 1]][depot];
 				load += chromL[kk][chromT[kk][j - 1]];
-				if (time > params->ordreVehicules[kk][params->nombreVehicules[kk] - jj - 1].maxRouteTime)
-					coutSol.lengthViol += time - params->ordreVehicules[kk][params->nombreVehicules[kk] - jj - 1].maxRouteTime;
 				nbServices++;
 			}
 
 			coutSol.fitness += distance;
-			if (load > params->ordreVehicules[kk][params->nombreVehicules[kk] - jj - 1].vehicleCapacity)
-				coutSol.capacityViol += load - params->ordreVehicules[kk][params->nombreVehicules[kk] - jj - 1].vehicleCapacity;
+			if (load > params->ordreVehicules[kk][params->nombreVehicules[kk] - jj - 1].capacity)
+				coutSol.capacityViol += load - params->ordreVehicules[kk][params->nombreVehicules[kk] - jj - 1].capacity;
 
 			j = i;
 		}
@@ -404,18 +370,8 @@ void Individu::measureSol()
 			}
 		}
 	}
-
-	else
-		for (int k = 1; k <= params->ancienNbDays; k++)
-		{
-			for (int i = params->nbDepots; i < params->nbDepots + params->nbClients; i++)
-				coutSol.fitness += chromL[k][i] * (params->ancienNbDays + 1 - k) * (params->cli[i].inventoryCost - params->inventoryCostSupplier);
-		}
 	// And the necessary constants
-	if (params->isstockout)
-		coutSol.fitness += params->objectiveConstant_stockout;
-	else
-		coutSol.fitness += params->objectiveConstant;
+	coutSol.fitness += params->objectiveConstant_stockout;
 
 	if (coutSol.capacityViol < 0.0001 && coutSol.lengthViol < 0.0001)
 		estValide = true;
@@ -490,7 +446,7 @@ void Individu::updateLS()
 				myClient->estPresent = true;
 				myDepot->suiv = myClient;
 				myDepotFin->pred = myClient;
-				localSearch->ordreParcours[kk].push_back(myClient->cour);
+				localSearch->ordreParcours[kk].push_back(myClient->idx);
 			}
 			else if (j > i + 1)
 			{
@@ -502,7 +458,7 @@ void Individu::updateLS()
 				myClient->route = myRoute;
 				myClient->estPresent = true;
 				myDepot->suiv = myClient;
-				localSearch->ordreParcours[kk].push_back(myClient->cour);
+				localSearch->ordreParcours[kk].push_back(myClient->idx);
 
 				// infos sommet fin
 				myClient = localSearch->clients[kk][chromT[kk][j - 1]];
@@ -511,7 +467,7 @@ void Individu::updateLS()
 				myClient->route = myRoute;
 				myClient->estPresent = true;
 				myDepotFin->pred = myClient;
-				localSearch->ordreParcours[kk].push_back(myClient->cour);
+				localSearch->ordreParcours[kk].push_back(myClient->idx);
 
 				// infos sommets milieu
 				for (int k = (int)i + 1; k <= j - 2; k++)
@@ -521,7 +477,7 @@ void Individu::updateLS()
 					myClient->suiv = localSearch->clients[kk][chromT[kk][k + 1]];
 					myClient->route = myRoute;
 					myClient->estPresent = true;
-					localSearch->ordreParcours[kk].push_back(myClient->cour);
+					localSearch->ordreParcours[kk].push_back(myClient->idx);
 				}
 			}
 			j = i;
@@ -548,24 +504,6 @@ int partition(std::vector<Route *> &arr, int low, int high)
 	return (i + 1);
 }
 
-int Individu::randomizedPartition(std::vector<Route *> &arr, int low, int high)
-{
-	// int random = low + rand() % (high - low);
-	int random = low + params->rng->genrand64_int64() % (high - low);
-	std::swap(arr[random], arr[high]);
-	return partition(arr, low, high);
-}
-
-void Individu::randomizedQuickSort(std::vector<Route *> &arr, int low, int high)
-{
-	if (low < high)
-	{
-		int pi = randomizedPartition(arr, low, high);
-		randomizedQuickSort(arr, low, pi - 1);
-		randomizedQuickSort(arr, pi + 1, high);
-	}
-}
-
 // mise � jour du chromT suite aux modification de localSearch
 void Individu::updateIndiv()
 {
@@ -583,9 +521,6 @@ void Individu::updateIndiv()
 		for (int r = 0; r < (int)ordreRoutesAngle.size(); r++)
 			ordreRoutesAngle[r]->updateCentroidCoord();
 
-		if (params->triCentroides)
-			randomizedQuickSort(ordreRoutesAngle, 0, ordreRoutesAngle.size() - 1);
-
 		// on recopie les noeuds dans le chromosome
 
 		chromT[kk].clear();
@@ -594,7 +529,7 @@ void Individu::updateIndiv()
 			node = ordreRoutesAngle[r]->depot->suiv;
 			while (!node->estUnDepot)
 			{
-				chromT[kk].push_back(node->cour);
+				chromT[kk].push_back(node->idx);
 				node = node->suiv;
 			}
 		}
@@ -646,73 +581,18 @@ double Individu::distance(Individu *indiv2)
 
 	// Inventory Routing
 	// distance based on number of customers which have different service days
-	if (params->isInventoryRouting)
+
+	for (int j = params->nbDepots; j < params->nbClients + params->nbDepots; j++)
 	{
-		for (int j = params->nbDepots; j < params->nbClients + params->nbDepots; j++)
-		{
-			isIdentical = true;
-			for (int k = 1; k <= params->nbDays; k++)
-				if ((chromL[k][j] < 0.0001 && indiv2->chromL[k][j] > 0.0001) || (indiv2->chromL[k][j] < 0.0001 && chromL[k][j] > 0.0001))
-					isIdentical = false;
-			if (isIdentical == false)
-				note++;
-		}
-	}
-	// CVRP case, broken-pairs distance
-	else
-	{
-		for (int j = params->nbDepots; j < params->nbClients + params->nbDepots; j++)
-		{
-			isIdentical = true;
-			for (int s = 0; s < (int)suivants[j].size(); s++)
-				if ((suivants[j][s] != indiv2->suivants[j][s] || precedents[j][s] != indiv2->precedents[j][s]) && (precedents[j][s] != indiv2->suivants[j][s] || suivants[j][s] != indiv2->precedents[j][s]))
-					isIdentical = false;
-			if (!isIdentical)
-				note++;
-		}
+		isIdentical = true;
+		for (int k = 1; k <= params->nbDays; k++)
+			if ((chromL[k][j] < 0.0001 && indiv2->chromL[k][j] > 0.0001) || (indiv2->chromL[k][j] < 0.0001 && chromL[k][j] > 0.0001))
+				isIdentical = false;
+		if (isIdentical == false)
+			note++;
 	}
 
 	return ((double)note / (double)(params->nbClients));
-}
-
-// calcul des suivants
-void Individu::computeSuivants()
-{
-	vector<int> vide;
-	int s, jj;
-	for (int i = 0; i < params->nbDepots + params->nbClients; i++)
-	{
-		suivants[i] = vide;
-		precedents[i] = vide;
-	}
-
-	// on va noter pour chaque individu et chaque client
-	// la liste des clients plac�s juste apr�s lui dans le giant tour pour chaque jour
-	for (int k = 1; k <= params->nbDays; k++)
-		if (chromT[k].size() != 0)
-		{
-			for (int i = 0; i < (int)chromT[k].size() - 1; i++)
-				suivants[chromT[k][i]].push_back(chromT[k][i + 1]);
-
-			for (int i = 1; i < (int)chromT[k].size(); i++)
-				precedents[chromT[k][i]].push_back(chromT[k][i - 1]);
-
-			suivants[chromT[k][chromT[k].size() - 1]].push_back(chromT[k][0]);
-			precedents[chromT[k][0]].push_back(chromT[k][chromT[k].size() - 1]);
-
-			// on enl�ve ceux qui sont des fins de routes
-			s = (int)chromT[k].size();
-			jj = 0;
-			while (s != 0 && jj < params->nombreVehicules[k])
-			{
-				suivants[chromT[k][s - 1]].pop_back();
-				suivants[chromT[k][s - 1]].push_back(params->ordreVehicules[k][params->nombreVehicules[k] - jj - 1].depotNumber);
-				s = pred[k][params->nombreVehicules[k] - jj][s];
-				precedents[chromT[k][s]].pop_back();
-				precedents[chromT[k][s]].push_back(params->ordreVehicules[k][params->nombreVehicules[k] - jj - 1].depotNumber);
-				jj++;
-			}
-		}
 }
 
 // ajoute un element proche dans les structures de proximit�

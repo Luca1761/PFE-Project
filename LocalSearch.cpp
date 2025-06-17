@@ -93,27 +93,27 @@ int LocalSearch::mutationSameDay(int day)
       noeudUPred = noeudU->pred;
       x = noeudU->suiv;
       noeudXSuiv = x->suiv;
-      xSuivCour = x->suiv->cour;
+      xSuivCour = x->suiv->idx;
       routeU = noeudU->route;
-      noeudUCour = noeudU->cour;
-      noeudUPredCour = noeudUPred->cour;
-      xCour = x->cour;
+      noeudUCour = noeudU->idx;
+      noeudUPredCour = noeudUPred->idx;
+      xCour = x->idx;
 
       size2 = (int)noeudU->moves.size();
       for (int posV = 0; posV < size2 && moveEffectue == 0; posV++)
       {
         noeudV = clients[day][noeudU->moves[posV]];
-        if (!noeudV->route->nodeAndRouteTested[noeudU->cour] ||
-            !noeudU->route->nodeAndRouteTested[noeudU->cour] || firstLoop)
+        if (!noeudV->route->nodeAndRouteTested[noeudU->idx] ||
+            !noeudU->route->nodeAndRouteTested[noeudU->idx] || firstLoop)
         {
           noeudVPred = noeudV->pred;
           y = noeudV->suiv;
           noeudYSuiv = y->suiv;
-          ySuivCour = y->suiv->cour;
+          ySuivCour = y->suiv->idx;
           routeV = noeudV->route;
-          noeudVCour = noeudV->cour;
-          noeudVPredCour = noeudVPred->cour;
-          yCour = y->cour;
+          noeudVCour = noeudV->idx;
+          noeudVPredCour = noeudVPred->idx;
+          yCour = y->idx;
 
           if (moveEffectue != 1)
             moveEffectue = mutation1();
@@ -123,7 +123,7 @@ int LocalSearch::mutationSameDay(int day)
             moveEffectue = mutation3();
 
           // les mutations 4 et 6 (switch) , sont sym�triques
-          if (noeudU->cour <= noeudV->cour)
+          if (noeudU->idx <= noeudV->idx)
           {
             if (moveEffectue != 1)
               moveEffectue = mutation4();
@@ -149,24 +149,24 @@ int LocalSearch::mutationSameDay(int day)
         }
       }
 
-  // c'est un d�pot on tente l'insertion derriere le depot de ce jour
-      // si il ya corr�lation
-      if (params->isCorrelated1[noeudU->cour][depots[day][0]->cour] &&
+  // c'est un depot on tente l'insertion derriere le depot de ce jour
+      // si il ya correlation
+      if (params->isCorrelated1[noeudU->idx][depots[day][0]->idx] &&
           moveEffectue != 1)
         for (int route = 0; route < (int)depots[day].size(); route++)
         {
           noeudV = depots[day][route];
-          if (!noeudV->route->nodeAndRouteTested[noeudU->cour] ||
-              !noeudU->route->nodeAndRouteTested[noeudU->cour] || firstLoop)
+          if (!noeudV->route->nodeAndRouteTested[noeudU->idx] ||
+              !noeudU->route->nodeAndRouteTested[noeudU->idx] || firstLoop)
           {
             noeudVPred = noeudV->pred;
             y = noeudV->suiv;
             noeudYSuiv = y->suiv;
-            ySuivCour = y->suiv->cour;
+            ySuivCour = y->suiv->idx;
             routeV = noeudV->route;
-            noeudVCour = noeudV->cour;
-            noeudVPredCour = noeudVPred->cour;
-            yCour = y->cour;
+            noeudVCour = noeudV->idx;
+            noeudVPredCour = noeudVPred->idx;
+            yCour = y->idx;
 
             if (moveEffectue != 1)
               moveEffectue = mutation1();
@@ -346,91 +346,21 @@ double LocalSearch::evaluateCurrentCost(int client)
 
       // the detour cost
       myCost +=
-          params->timeCost[noeudClient->cour][noeudClient->suiv->cour] +
-          params->timeCost[noeudClient->pred->cour][noeudClient->cour] -
-          params->timeCost[noeudClient->pred->cour][noeudClient->suiv->cour];
+          params->timeCost[noeudClient->idx][noeudClient->suiv->idx] +
+          params->timeCost[noeudClient->pred->idx][noeudClient->idx] -
+          params->timeCost[noeudClient->pred->idx][noeudClient->suiv->idx];
 
       // and the possible excess capacity
       myCost += params->penalityCapa *
                 (std::max<double>(0., noeudClient->route->charge -
-                                          noeudClient->route->vehicleCapacity) -
+                                          noeudClient->route->capacity) -
                  std::max<double>(0., noeudClient->route->charge -
-                                          noeudClient->route->vehicleCapacity -
+                                          noeudClient->route->capacity -
                                           demandPerDay[k][client]));
     }
   }
   return myCost;
 }
-
-
-// Evaluates the current objective function of the whole solution
-double LocalSearch::evaluateSolutionCost()
-{
-  double myCost = 0.;
-  if (params ->isstockout == true){
-    for (int k = 1; k <= params->ancienNbDays; k++){
-      for (int r = 0; r < params->nombreVehicules[k]; r++){
-        myCost += routes[k][r]->temps;
-        myCost += params->penalityCapa * std::max<double>(
-                      routes[k][r]->charge - routes[k][r]->vehicleCapacity, 0.);
-      }
-    }
-     // And the necessary constants (inventory cost on depot only )
-    myCost += params->objectiveConstant_stockout;
-        
-    vector  <double> I(params->nbDepots + params->nbClients);
-    for (int i = params->nbDepots; i < params->nbDepots + params->nbClients; i++) {
-      I[i] = params->cli[i].startingInventory;
-    }
-      
-    // Adding inventory cost
-    for (int k = 1; k <= params->ancienNbDays; k++)
-      for (int i = params->nbDepots; i < params->nbDepots + params->nbClients; i++) // all the customers
-      {
-        //inventory cost at customer i 
-        myCost += std::max<double>(0, I[i] + demandPerDay[k][i]- params->cli[i].dailyDemand[k]) 
-                  * params->cli[i].inventoryCost;
-        
-        // minus depot holding cost from constant value 
-        myCost -= demandPerDay[k][i] * (params->ancienNbDays + 1 - k) 
-                  * params->inventoryCostSupplier;
-        
-        //stock-out penalty
-        myCost += std::max<double> (0,  params->cli[i].dailyDemand[k]-demandPerDay[k][i]-I[i]) 
-                  * params->cli[i].stockoutCost;    
-        I[i] = std::max<double>(0, I[i] + demandPerDay[k][i]- params->cli[i].dailyDemand[k]);
-      }
-    return myCost;
-  }
-  //******************************************************************************
-
-  else{
-      // Summing distance and load penalty
-      for (int k = 1; k <= params->ancienNbDays; k++)
-      {
-        for (int r = 0; r < params->nombreVehicules[k]; r++)
-        {
-          myCost += routes[k][r]->temps;
-          myCost += params->penalityCapa *
-                    std::max<double>(
-                        routes[k][r]->charge - routes[k][r]->vehicleCapacity, 0.);
-        }
-      }
-      // Adding inventory cost
-      for (int k = 1; k <= params->ancienNbDays; k++)
-        for (int i = params->nbDepots; i < params->nbDepots + params->nbClients; i++) // all the customers
-          myCost += demandPerDay[k][i] * (params->ancienNbDays + 1 - k) *
-                    (params->cli[i].inventoryCost - params->inventoryCostSupplier);
-
-      // And the necessary constants
-      myCost += params->objectiveConstant;
-
-      return myCost;
-  }
-  
-}
-
-
 
 // Evaluates the current objective function of the whole solution
 void LocalSearch::printInventoryLevels(std::ostream& file,bool add)
@@ -453,7 +383,7 @@ void LocalSearch::printInventoryLevels(std::ostream& file,bool add)
       routes[k][r]->printRouteData(file);
       loadCosts +=
           params->penalityCapa *
-          std::max<double>(routes[k][r]->charge - routes[k][r]->vehicleCapacity,
+          std::max<double>(routes[k][r]->charge - routes[k][r]->capacity,
                            0.);
     }
   }
@@ -550,7 +480,7 @@ void LocalSearch::removeNoeud(Noeud *U)
   U->route->updateRouteData();
 
   // on g�re les autres structures de donn�es
-  removeOP(U->jour, U->cour);
+  removeOP(U->jour, U->idx);
   U->estPresent = false;
 
   // signifier que les insertions sur cette route ne sont plus bonnes
@@ -574,7 +504,7 @@ void LocalSearch::addNoeud(Noeud *U)
   U->route->updateRouteData();
 
   // on g�re les autres structures de donn�es
-  addOP(U->jour, U->cour);
+  addOP(U->jour, U->idx);
   U->estPresent = true;
 
   // signifier que les insertions sur cette route ne sont plus bonnes
@@ -598,7 +528,7 @@ void LocalSearch::computeCoutInsertion(Noeud *client)
 
     myRoute = routes[client->jour][r];
     myRoute->evalInsertClient(client);
-    client->allInsertions.push_back(myRoute->bestInsertion[client->cour]);
+    client->allInsertions.push_back(myRoute->bestInsertion[client->idx]);
   }
 
   // eliminate dominated insertions
@@ -629,15 +559,15 @@ double LocalSearch::evaluateCurrentCost_stockout(int client)
 
       // the detour cost
         myCost +=
-            params->timeCost[noeudClient->cour][noeudClient->suiv->cour] +
-            params->timeCost[noeudClient->pred->cour][noeudClient->cour] -
-            params->timeCost[noeudClient->pred->cour][noeudClient->suiv->cour];
+            params->timeCost[noeudClient->idx][noeudClient->suiv->idx] +
+            params->timeCost[noeudClient->pred->idx][noeudClient->idx] -
+            params->timeCost[noeudClient->pred->idx][noeudClient->suiv->idx];
 
       // and the possible excess capacity, the privous penalty are calculated already.
-        double x1 = noeudClient->route->charge -  noeudClient->route->vehicleCapacity;
+        double x1 = noeudClient->route->charge -  noeudClient->route->capacity;
         if(eq(x1,0)) x1 = 0;
         double x2=noeudClient->route->charge -
-                  noeudClient->route->vehicleCapacity - demandPerDay[k][client];
+                  noeudClient->route->capacity - demandPerDay[k][client];
         if(eq(x2,0)) x2 = 0;
         myCost += params->penalityCapa *(std::max<double>(0., x1) - std::max<double>(0., x2));
         myCost += 1000000*std::max<double> (0., I + demandPerDay[k][client]- params->cli[client].maxInventory);
@@ -665,12 +595,7 @@ LocalSearch::LocalSearch(Params *params, Individu *individu)
   vector<Noeud *> tempNoeud; 
   vector<Route *> tempRoute;
 
-  vector<bool> tempB2;
-  vector<vector<bool>> tempB;
-  vector<vector<int>> temp;
   vector<int> temp2;
-  vector<vector<paireJours>> tempPair;
-  vector<paireJours> tempPair2;
   Noeud *myDepot;
   Noeud *myDepotFin;
   Route *myRoute;
@@ -704,7 +629,7 @@ LocalSearch::LocalSearch(Params *params, Individu *individu)
                              kk, false, NULL, NULL, NULL, 0);
       myRoute = new Route(
           i, kk, myDepot, 0, 0, params->ordreVehicules[kk][i].maxRouteTime,
-          params->ordreVehicules[kk][i].vehicleCapacity, params, this);
+          params->ordreVehicules[kk][i].capacity, params, this);
       myDepot->route = myRoute;
       myDepotFin->route = myRoute;
       routes[kk].push_back(myRoute);

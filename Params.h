@@ -64,12 +64,6 @@ class Params {
   // adresse de la BKS
   string pathToBKS;
 
-  // flag indiquant si l'on doit trier les routes dans l'ordre des centroides
-  bool triCentroides;
-
-  // entier indiquant le nombre max d'alternances RI/PI
-  int maxLSPhases;
-
   // debut de l'algo
   clock_t debut;
 
@@ -127,32 +121,15 @@ class Params {
 
   // PARAMETRES DE L'INSTANCE //
 
-  // type du probleme
-  /*		   0 (VRP) - Christofides format
-         1 (PVRP)
-         2 (MDVRP)
-         3 (SDVRP)
-                     38 (IRP)
-                                          */
-  int type;
-
   // rounding convention
   bool isRoundingInteger;
   bool isRoundingTwoDigits;
 
   // Constant value in the objective
-  double objectiveConstant;
   double objectiveConstant_stockout;
-  void computeConstant();
   void computeConstant_stockout();
-  // pr�sence d'un probl�me MultiDepot ;
-  bool multiDepot;
-
-  // pr�sence d'un probl�me P�riodique ;
-  bool periodique;
 
   // pr�sence d'un probl�me IRP ;
-  bool isInventoryRouting;
   bool isstockout;
 
   // nombre de sommets clients
@@ -171,28 +148,24 @@ class Params {
   // correspond � l'indice du premier client dans le tableau C
   int nbDepots;
 
-  // pour chaque jour, somme des capacites des vehicules
-  vector<double> dayCapacity;
+  // sequence des vehicules utilisables chaque jour avec les contraintes et
+  // depots associes
+  vector<vector<Vehicle>> ordreVehicules;
 
-  // sequence des v�hicules utilisables chaque jour avec les contraintes et
-  // d�pots associ�s
-  vector<vector<Vehicle> > ordreVehicules;
-
-  // nombre de v�hicules utilisables par jour
+  // nombre de vehicules utilisables par jour
   vector<int> nombreVehicules;
 
   // vecteur des depots et clients 客户，depot向量
   //vector<Client> cli;
-
   vector<Client> cli;
 
-  // temps de trajet , calcul�s lors du parsing
-  vector<vector<double> > timeCost;
+  // temps de trajet , calcules lors du parsing
+  vector<vector<double>> timeCost;
 
-  // crit�re de corr�lation
+  // critere de correlation
   vector<vector<bool> > isCorrelated1;
 
-  // crit�re de corr�lation
+  // critere de correlation
   vector<vector<bool> > isCorrelated2;
 
   // SPECIFIC DATA FOR THE INVENTORY ROUTING PROBLEM //
@@ -246,9 +219,9 @@ class Params {
   void adjustDemands(double randomValue);
   // constructeur de Params qui remplit les structures en les pr�levant dans le
   // fichier
-  Params(string nomInstance, string nomSolution, int type, int nbVeh,
+  Params(string nomInstance, string nomSolution, int nbVeh,
          string nomBKS, int seedRNG);
-  Params(string nomInstance, string nomSolution, int type, int nbVeh, int seedRNG, int rou,bool stockout, 
+  Params(string nomInstance, string nomSolution, int nbVeh, int seedRNG, int rou,bool stockout, 
           double randomValue, normal_distribution<double> dist);
 
   // Transformation de probl�me, le nouveau fichier params cr�� correspond � un

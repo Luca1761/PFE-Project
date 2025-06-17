@@ -3,13 +3,11 @@
 
 Route::Route(void){}
 
-Route::Route(int cour, int day, Noeud * depot, double temps, double charge, double maxRouteTime, double vehicleCapacity, Params * params, LocalSearch * myLS) : 
-cour(cour), day(day), depot(depot), temps(temps) , charge(charge), maxRouteTime(maxRouteTime), vehicleCapacity(vehicleCapacity), params(params), myLS(myLS)
+Route::Route(int idx, int day, Noeud * depot, double temps, double charge, double maxRouteTime, double capacity, Params * params, LocalSearch * myLS) : 
+idx(idx), day(day), depot(depot), temps(temps) , charge(charge), maxRouteTime(maxRouteTime), capacity(capacity), params(params), myLS(myLS)
 {
-	bestInsertion = vector <Insertion> (params->nbClients + params->nbDepots);
-
-	for (int i=0 ; i < params->nbClients + params->nbDepots ; i++ )
-		nodeAndRouteTested.push_back(false);
+	bestInsertion = vector<Insertion>(params->nbClients + params->nbDepots);
+	nodeAndRouteTested = vector<bool>(params->nbClients + params->nbDepots, false);
 }
 
 Route::~Route(void){}
@@ -21,7 +19,7 @@ void Route::printRouteData(std::ostream& file)
 	double charge = 0 ;
 	double earlT = 0 ;
 
-	// on parcourt du debut � la fin
+	// on parcourt du debut a la fin
 	Noeud * noeud = depot ;
 	noeud->place = place ;
 	depot->chargeAvant = 0 ;
@@ -30,12 +28,12 @@ void Route::printRouteData(std::ostream& file)
 	while ( !noeud->estUnDepot || firstIt )
 	{
 		firstIt = false ;
-		file <<" node[ "<<noeud->cour <<" ] ->";
+		file <<" node[ "<<noeud->idx <<" ] ->";
 		noeud = noeud->suiv ;
 		place ++ ;
 		noeud->place = place ;
-		charge += myLS->demandPerDay[day][noeud->cour];
-		earlT += params->cli[noeud->pred->cour].serviceDuration + params->timeCost[noeud->pred->cour][noeud->cour] ;
+		charge += myLS->demandPerDay[day][noeud->idx];
+		earlT += params->timeCost[noeud->pred->idx][noeud->idx] ;
 		noeud->chargeAvant = charge ;
 		noeud->est = earlT ;
 	}
@@ -64,8 +62,8 @@ void Route::updateRouteData ()
 		noeud = noeud->suiv ;
 		place ++ ;
 		noeud->place = place ;
-		charge += myLS->demandPerDay[day][noeud->cour];
-		earlT += params->cli[noeud->pred->cour].serviceDuration + params->timeCost[noeud->pred->cour][noeud->cour] ;
+		charge += myLS->demandPerDay[day][noeud->idx];
+		earlT += params->timeCost[noeud->pred->idx][noeud->idx] ;
 		noeud->chargeAvant = charge ;
 		noeud->est = earlT ;
 	}
@@ -73,7 +71,7 @@ void Route::updateRouteData ()
 	noeud->route->temps = earlT ;
 	noeud->route->charge = charge ;
 
-	if (charge < vehicleCapacity + 0.0001 && earlT < maxRouteTime + 0.0001) isFeasible = true ;
+	if (charge < capacity + 0.0001 && earlT < maxRouteTime + 0.0001) isFeasible = true ;
 	else isFeasible = false;
 
 	initiateInsertions();
@@ -82,37 +80,37 @@ void Route::evalInsertClientp (Noeud * U)
 {
 	Noeud * courNoeud ;
 	double cout;
-	bestInsertion[U->cour].detour = 1.e30 ;
-	bestInsertion[U->cour].place = NULL ;
-	bestInsertion[U->cour].load = -1.e30 ;
+	bestInsertion[U->idx].detour = 1.e30 ;
+	bestInsertion[U->idx].place = NULL ;
+	bestInsertion[U->idx].load = -1.e30 ;
 	
 	bool firstIt = true ;
 	if ( U->route != this || !U->estPresent )
 	{
-		bestInsertion[U->cour].load = std::max<double>(0.,vehicleCapacity - charge);
+		bestInsertion[U->idx].load = std::max<double>(0.,capacity - charge);
 		courNoeud = depot ;
 		while (!courNoeud->estUnDepot || firstIt == true )
 		{
 			firstIt = false ;
-			cout = params->timeCost[courNoeud->cour][U->cour] 
-			+ params->timeCost[U->cour][courNoeud->suiv->cour] 
-			- params->timeCost[courNoeud->cour][courNoeud->suiv->cour] ;
+			cout = params->timeCost[courNoeud->idx][U->idx] 
+			+ params->timeCost[U->idx][courNoeud->suiv->idx] 
+			- params->timeCost[courNoeud->idx][courNoeud->suiv->idx] ;
 
-			if ( cout < bestInsertion[U->cour].detour - 0.0001 )
+			if ( cout < bestInsertion[U->idx].detour - 0.0001 )
 			{ 
-				bestInsertion[U->cour].detour = cout ;
-				bestInsertion[U->cour].place = courNoeud ;
+				bestInsertion[U->idx].detour = cout ;
+				bestInsertion[U->idx].place = courNoeud ;
 			}
 			courNoeud = courNoeud->suiv ;
 		}
 	}
 	else // U is already  in our route
 	{
-		bestInsertion[U->cour].load = std::max<double>(0.,vehicleCapacity + myLS->demandPerDay[day][U->cour] - charge);
-		bestInsertion[U->cour].detour = params->timeCost[U->pred->cour][U->cour] - params->timeCost[U->pred->cour][U->suiv->cour]   
-										+ params->timeCost[U->cour][U->suiv->cour] ;
-		bestInsertion[U->cour].place = U->pred ;
-		std::cout << "else detour "<<bestInsertion[U->cour].detour<< " pre "<<U->pred->cour <<" next "<<U->suiv->cour<<endl;
+		bestInsertion[U->idx].load = std::max<double>(0.,capacity + myLS->demandPerDay[day][U->idx] - charge);
+		bestInsertion[U->idx].detour = params->timeCost[U->pred->idx][U->idx] - params->timeCost[U->pred->idx][U->suiv->idx]   
+										+ params->timeCost[U->idx][U->suiv->idx] ;
+		bestInsertion[U->idx].place = U->pred ;
+		std::cout << "else detour "<<bestInsertion[U->idx].detour<< " pre "<<U->pred->idx <<" next "<<U->suiv->idx<<endl;
 
 		// however, we'll see if there's a better insertion possible
 		// temporarily we'll remove the node from the chain�e list (in O(1))
@@ -124,16 +122,16 @@ void Route::evalInsertClientp (Noeud * U)
 		while (!courNoeud->estUnDepot || firstIt == true )
 		{
 			firstIt = false ;
-			cout = params->timeCost[courNoeud->cour][U->cour] 
-			+ params->timeCost[U->cour][courNoeud->suiv->cour]
-			- params->timeCost[courNoeud->cour][courNoeud->suiv->cour] ;
+			cout = params->timeCost[courNoeud->idx][U->idx] 
+			+ params->timeCost[U->idx][courNoeud->suiv->idx]
+			- params->timeCost[courNoeud->idx][courNoeud->suiv->idx] ;
 
 			// au final on peut placer d'une meilleure mani�re
-			if (cout < bestInsertion[U->cour].detour - 0.0001)
+			if (cout < bestInsertion[U->idx].detour - 0.0001)
 			{ 
-				bestInsertion[U->cour].detour = cout ;
-				bestInsertion[U->cour].place = courNoeud ;
-				std::cout << "better "<<bestInsertion[U->cour].detour;
+				bestInsertion[U->idx].detour = cout ;
+				bestInsertion[U->idx].place = courNoeud ;
+				std::cout << "better "<<bestInsertion[U->idx].detour;
 			}
 			courNoeud = courNoeud->suiv ;
 		}
@@ -151,37 +149,37 @@ void Route::evalInsertClient (Noeud * U)
 	
 	Noeud * courNoeud ;
 	double cout;
-	bestInsertion[U->cour].detour = 1.e30 ;
-	bestInsertion[U->cour].place = NULL ;
-	bestInsertion[U->cour].load = -1.e30 ;
+	bestInsertion[U->idx].detour = 1.e30 ;
+	bestInsertion[U->idx].place = NULL ;
+	bestInsertion[U->idx].load = -1.e30 ;
 	
 	bool firstIt = true ;
 	if ( U->route != this || !U->estPresent )
 	{
-		bestInsertion[U->cour].load = std::max<double>(0.,vehicleCapacity - charge);
+		bestInsertion[U->idx].load = std::max<double>(0.,capacity - charge);
 		courNoeud = depot ;
 		while (!courNoeud->estUnDepot || firstIt == true )
 		{
 			firstIt = false ;
-			cout = params->timeCost[courNoeud->cour][U->cour] 
-			+ params->timeCost[U->cour][courNoeud->suiv->cour] 
-			- params->timeCost[courNoeud->cour][courNoeud->suiv->cour] ;
+			cout = params->timeCost[courNoeud->idx][U->idx] 
+			+ params->timeCost[U->idx][courNoeud->suiv->idx] 
+			- params->timeCost[courNoeud->idx][courNoeud->suiv->idx] ;
 			
 			
-			if ( cout < bestInsertion[U->cour].detour - 0.0001 )
+			if ( cout < bestInsertion[U->idx].detour - 0.0001 )
 			{ 
-				bestInsertion[U->cour].detour = cout ;
-				bestInsertion[U->cour].place = courNoeud ;
+				bestInsertion[U->idx].detour = cout ;
+				bestInsertion[U->idx].place = courNoeud ;
 			}
 			courNoeud = courNoeud->suiv ;
 		}
 	}
 	else // U is already  in our route
 	{
-		bestInsertion[U->cour].load = std::max<double>(0.,vehicleCapacity + myLS->demandPerDay[day][U->cour] - charge);
-		bestInsertion[U->cour].detour = params->timeCost[U->pred->cour][U->cour] - params->timeCost[U->pred->cour][U->suiv->cour]   
-										+ params->timeCost[U->cour][U->suiv->cour] ;
-		bestInsertion[U->cour].place = U->pred ;
+		bestInsertion[U->idx].load = std::max<double>(0.,capacity + myLS->demandPerDay[day][U->idx] - charge);
+		bestInsertion[U->idx].detour = params->timeCost[U->pred->idx][U->idx] - params->timeCost[U->pred->idx][U->suiv->idx]   
+										+ params->timeCost[U->idx][U->suiv->idx] ;
+		bestInsertion[U->idx].place = U->pred ;
 
 		// however, we'll see if there's a better insertion possible
 		// temporarily we'll remove the node from the chain�e list (in O(1))
@@ -193,15 +191,15 @@ void Route::evalInsertClient (Noeud * U)
 		while (!courNoeud->estUnDepot || firstIt == true )
 		{
 			firstIt = false ;
-			cout = params->timeCost[courNoeud->cour][U->cour] 
-			+ params->timeCost[U->cour][courNoeud->suiv->cour]
-			- params->timeCost[courNoeud->cour][courNoeud->suiv->cour] ;
+			cout = params->timeCost[courNoeud->idx][U->idx] 
+			+ params->timeCost[U->idx][courNoeud->suiv->idx]
+			- params->timeCost[courNoeud->idx][courNoeud->suiv->idx] ;
 
 			// au final on peut placer d'une meilleure mani�re
-			if (cout < bestInsertion[U->cour].detour - 0.0001)
+			if (cout < bestInsertion[U->idx].detour - 0.0001)
 			{ 
-				bestInsertion[U->cour].detour = cout ;
-				bestInsertion[U->cour].place = courNoeud ;
+				bestInsertion[U->idx].detour = cout ;
+				bestInsertion[U->idx].place = courNoeud ;
 			}
 			courNoeud = courNoeud->suiv ;
 		}
@@ -240,8 +238,8 @@ void Route::updateCentroidCoord ()
 
 	while (!courNoeud->estUnDepot)
 	{
-		Xvalue += params->cli[courNoeud->cour].coord.x ;
-		Yvalue += params->cli[courNoeud->cour].coord.y ;
+		Xvalue += params->cli[courNoeud->idx].coord.x ;
+		Yvalue += params->cli[courNoeud->idx].coord.y ;
 		nbNodes ++ ;
 		courNoeud = courNoeud->suiv ;
 	}
@@ -249,5 +247,5 @@ void Route::updateCentroidCoord ()
 	centroidX = Xvalue/nbNodes ;
 	centroidY = Yvalue/nbNodes ;
 
-	centroidAngle = atan2( centroidY - params->cli[depot->cour].coord.y, centroidX - params->cli[depot->cour].coord.x );
+	centroidAngle = atan2( centroidY - params->cli[depot->idx].coord.y, centroidX - params->cli[depot->idx].coord.x );
 }

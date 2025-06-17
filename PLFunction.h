@@ -25,15 +25,10 @@ public:
 
     std::shared_ptr<LinearPiece> minimalPiece;
     double maxValue, minValue;
-
-    std::shared_ptr<LinearPiece> pieceAt0;
-    double valueAt0;
-
     PLFunction(Params *params);
 
     // initialize a PL function from arc profile
     PLFunction(Params *params, vector<Insertion> insertions, int day, int client);
-    PLFunction(Params *params, vector<Insertion> insertions, int day, int client,int daily);
 
     // initialize a PLFunction from list of pieces
     PLFunction(Params *params, vector<shared_ptr<LinearPiece>> pieces);
@@ -46,7 +41,7 @@ public:
     // get piece that fits with time t
     std::shared_ptr<LinearPiece> getPiece(double t);
     
-    std::shared_ptr<LinearPiece> getMinimalPiece_stockout(int client, double &minAt, double &minValue);
+    std::shared_ptr<LinearPiece> getMinimalPiece(int client, double &minAt, double &minValue);
 
     // check intersection of two pieces
     bool intersect(shared_ptr<LinearPiece> lp1, shared_ptr<LinearPiece> lp2, double &x, double &y);
@@ -57,7 +52,6 @@ public:
     void addHoldingf(double InventoryCost);
     void addStockoutf(double stockoutCost);
     void moveUp(double y_axis);
-    std::shared_ptr<PLFunction> update0(double min0);
 
     std::shared_ptr<PLFunction> getInBound(double lb, double ub, bool updateValueAt0 = false);
 

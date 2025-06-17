@@ -10,28 +10,13 @@ using namespace std;
 class commandline
 {
 private:
-    // dit si la ligne de commande est valide
-    bool command_ok;
-
-    // temps alloue en calcul
-    int cpu_time;
 
     // seed
     int seed;
     int rou;
     bool stockout;
-    bool backward;
 
     int nb_scenarios;
-
-    // instance type, if given
-    int type;
-
-    // relaxation type, if given
-    int relax;
-
-    // nbClients, if given
-    int nbCli;
 
     // nbVehicles, if given
     int nbVeh;
@@ -54,7 +39,7 @@ private:
     // remplit l'attribut BKS_name
     void set_BKS_name(string to_parse);
 
-    // donne une valeur par default a la solution
+    // donne une valeur par defaut a la solution
     // en fonction du nom de l'instance
     void set_default_sorties_name(string to_parse);
 
@@ -65,7 +50,7 @@ public:
     // destructeur
     ~commandline();
 
-    void set_debug_prams(string instance);
+    void set_debug_params(string instance);
 
     // renvoie le chemin de l'instance
     string get_path_to_instance();
@@ -79,15 +64,9 @@ public:
     // renvoie le temps cpu allou
     int get_cpu_time();
 
-    // renvoie le type de l'instance
-    int get_type();
     int get_stockout();
     int get_rou();
-    bool get_backward();
     int get_nb_scenarios(); 
-    
-    // renvoie le nombre de clients
-    int get_nbCli();
 
     // renvoie le nombre de v�hicules optimal connu
     int get_nbVeh();
@@ -95,7 +74,5 @@ public:
     // renvoie la seed
     int get_seed();
 
-    // dit si la ligne de commande est valide
-    bool is_valid();
 };
 #endif
