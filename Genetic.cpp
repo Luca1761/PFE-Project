@@ -100,7 +100,7 @@ void Genetic::evolve(int maxIter, int maxIterNonProd, int nbRec)
 void Genetic::muter()
 {
 	rejeton->updateLS();
-	rejeton->localSearch->runSearchTotal(false);
+	rejeton->localSearchList[0]->runSearchTotal(false);
 	
 	rejeton->updateIndiv();
 	population->updateNbValides(rejeton);
@@ -112,31 +112,31 @@ void Genetic::reparer()
 	double temp, temp2;
 	bool continuer = false;
 
-	temp = params->penalityCapa;
-	temp2 = params->penalityLength;
+	temp = paramsList[0]->penalityCapa;
+	temp2 = paramsList[0]->penalityLength;
 
 	/*First tentative*/
-	params->penalityCapa *= 10;
-	params->penalityLength *= 10;
-	if (params->rng->genrand64_real1() < params->pRep)
+	paramsList[0]->penalityCapa *= 10;
+	paramsList[0]->penalityLength *= 10;
+	if (paramsList[0]->rng->genrand64_real1() < paramsList[0]->pRep)
 	{
 		rejeton->updateLS();
-		rejeton->localSearch->runSearchTotal(true);
+		rejeton->localSearchList[0]->runSearchTotal(true);
 		rejeton->updateIndiv();
 
 		/* Second tentative*/
 		if (!rejeton->estValide)
 		{
-			params->penalityCapa *= 500;
-			params->penalityLength *= 500;
+			paramsList[0]->penalityCapa *= 500;
+			paramsList[0]->penalityLength *= 500;
 			rejeton->generalSplit();
 			rejeton->updateLS();
-			rejeton->localSearch->runSearchTotal(true);
+			rejeton->localSearchList[0]->runSearchTotal(true);
 			rejeton->updateIndiv();
 		}
 	}
-	params->penalityCapa = temp;
-	params->penalityLength = temp2;
+	paramsList[0]->penalityCapa = temp;
+	paramsList[0]->penalityLength = temp2;
 }
 
 // gestion des penalites
@@ -145,27 +145,23 @@ void Genetic::gererPenalites()
 	double fractionCharge = population->fractionValidesCharge();
 	double fractionTemps = population->fractionValidesTemps();
 
-	if (fractionCharge < params->minValides && params->penalityCapa < 1000)
-		params->penalityCapa = params->penalityCapa * 1.2;
-	else if (fractionCharge > params->maxValides && params->penalityCapa > 0.01)
-		params->penalityCapa = params->penalityCapa * 0.85;
+	if (fractionCharge < paramsList[0]->minValides && paramsList[0]->penalityCapa < 1000)
+		paramsList[0]->penalityCapa = paramsList[0]->penalityCapa * 1.2;
+	else if (fractionCharge > paramsList[0]->maxValides && paramsList[0]->penalityCapa > 0.01)
+		paramsList[0]->penalityCapa = paramsList[0]->penalityCapa * 0.85;
 
-	if (fractionTemps < params->minValides && params->penalityLength < 1000)
-		params->penalityLength = params->penalityLength * 1.2;
-	else if (fractionTemps > params->maxValides && params->penalityLength > 0.01)
-		params->penalityLength = params->penalityLength * 0.85;
+	if (fractionTemps < paramsList[0]->minValides && paramsList[0]->penalityLength < 1000)
+		paramsList[0]->penalityLength = paramsList[0]->penalityLength * 1.2;
+	else if (fractionTemps > paramsList[0]->maxValides && paramsList[0]->penalityLength > 0.01)
+		paramsList[0]->penalityLength = paramsList[0]->penalityLength * 0.85;
 
 	population->validatePen();
 }
 
-Genetic::Genetic(Params *params, Population *population, clock_t ticks, bool traces) : params(params), population(population), ticks(ticks), traces(traces)
+Genetic::Genetic(vector<Params*> pl, Population *population, clock_t ticks, bool traces) : paramsList(pl), population(population), ticks(ticks), traces(traces)
 {
-	rejeton = new Individu(params, 1.0);
-	rejeton2 = new Individu(params, 1.0);
-	delete rejeton->localSearch;
-	delete rejeton2->localSearch;
-	rejeton->localSearch = new LocalSearch(params, rejeton);
-	rejeton2->localSearch = new LocalSearch(params, rejeton2);
+	rejeton = new Individu(paramsList);
+	rejeton2 = new Individu(paramsList);
 }
 
 void Genetic::crossPOX2()
@@ -181,25 +177,25 @@ void Genetic::crossPOX2()
 	// Reinitializing the chromL of the rejeton (will become the child)
 	// Keeping for each day and each customer the total sum of delivered load and initial inventory
 	// (when inserting a customer, need to make sure that we are not exceeding this)
-	for (int k = 1; k <= params->nbDays; k++)
-		for (int i = params->nbDepots; i < params->nbDepots + params->nbClients; i++)
+	for (int k = 1; k <= paramsList[0]->nbDays; k++)
+		for (int i = paramsList[0]->nbDepots; i < paramsList[0]->nbDepots + paramsList[0]->nbClients; i++)
 			rejeton->chromL[k][i] = 0.;
 
 	// Keeping a vector to remember if a delivery has already been inserted for on day k for customer i
-	vector<vector<bool>> hasBeenInserted = vector<vector<bool>>(params->nbDays + 1, vector<bool>(params->nbClients + params->nbDepots, false));
+	vector<vector<bool>> hasBeenInserted = vector<vector<bool>>(paramsList[0]->nbDays + 1, vector<bool>(paramsList[0]->nbClients + paramsList[0]->nbDepots, false));
 
 	// choosing the type of inheritance for each day (nothing, all, or mixed)
-	for (int k = 1; k <= params->nbDays; k++)
+	for (int k = 1; k <= paramsList[0]->nbDays; k++)
 		joursPerturb.push_back(k);
 
 	// std::random_shuffle(joursPerturb.begin(), joursPerturb.end());
 	std::random_device rd;
-	std::mt19937 g(params->seed);
+	std::mt19937 g(paramsList[0]->seed);
 	std::shuffle(joursPerturb.begin(), joursPerturb.end(), g);
 
 	// Picking j1 et j2
-	j1 = params->rng->genrand64_int64() % params->nbDays;
-	j2 = params->rng->genrand64_int64() % params->nbDays;
+	j1 = paramsList[0]->rng->genrand64_int64() % paramsList[0]->nbDays;
+	j2 = paramsList[0]->rng->genrand64_int64() % paramsList[0]->nbDays;
 	if (j1 > j2)
 	{
 		int temp = j2;
@@ -209,14 +205,14 @@ void Genetic::crossPOX2()
 
 	// Inheriting the data from rejeton1.
 	// For each day, we will keep a sequence going from debut to fin
-	for (int k = 0; k < params->nbDays; k++)
+	for (int k = 0; k < paramsList[0]->nbDays; k++)
 	{
 		day = joursPerturb[k];
 		// on recopie un segment
 		if (k < j1 && !rejeton->chromT[day].empty())
 		{
-			debut = (int)(params->rng->genrand64_int64() % rejeton->chromT[day].size());
-			fin = (int)(params->rng->genrand64_int64() % rejeton->chromT[day].size());
+			debut = (int)(paramsList[0]->rng->genrand64_int64() % rejeton->chromT[day].size());
+			fin = (int)(paramsList[0]->rng->genrand64_int64() % rejeton->chromT[day].size());
 			tableauFin.push_back(fin);
 			int j = debut;
 			garder.clear();
@@ -252,7 +248,7 @@ void Genetic::crossPOX2()
 	}
 	
 	// completing with rejeton 2
-	for (int k = 0; k < params->nbDays; k++)
+	for (int k = 0; k < paramsList[0]->nbDays; k++)
 	{
 		day = joursPerturb[k];
 		fin = tableauFin[k];

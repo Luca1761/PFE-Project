@@ -53,10 +53,10 @@ int mainSIRP(int argc, char *argv[])
   //     c.get_nbVeh(), c.get_path_to_BKS(), c.get_seed(),c.get_rou(), c.get_stockout(), c.get_nb_scenarios());
       
   // initial population 
-  Population *population = new Population(paramsList[0]);
+  Population *population = new Population(paramsList);
 
   // we create the solver
-  Genetic solver(paramsList[0], population, nb_ticks_allowed, true);
+  Genetic solver(paramsList, population, nb_ticks_allowed, true);
   
   // on lance l'evolution   launch evolution
   

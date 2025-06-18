@@ -4,16 +4,20 @@
 #include <cmath>
 #include <sstream>
 // constructeur
-Population::Population(Params *params) : params(params)
+
+Population::Population(vector<Params*> paramsList) : paramsList(paramsList)
 {
-	trainer = new Individu(params, 1.0);
-	delete trainer->localSearch;   	
-	trainer->localSearch = new LocalSearch(params, trainer);
-	
+
+	nbScenario = paramsList.size();
+	params = paramsList[0];
+
+	trainer = new Individu(paramsList);
+
 	double temp = params->penalityCapa;
 	double temp2 = params->penalityLength;
 	valides = new SousPop(); 
 	invalides = new SousPop();
+
 	valides->nbIndiv = 0;
 	invalides->nbIndiv = 0;
 	valides->nbGenerations = 0;
@@ -28,7 +32,7 @@ Population::Population(Params *params) : params(params)
 			params->penalityLength *= 50;
 			compter = false;
 		}
-		Individu *randomIndiv = new Individu(params, 1.0);  
+		Individu *randomIndiv = new Individu(paramsList);  
 
 		education(randomIndiv);
 		if (compter) updateNbValides(randomIndiv);
@@ -161,7 +165,7 @@ void Population::diversify()
 			params->penalityCapa *= 50;
 			params->penalityLength *= 50;
 		}
-		randomIndiv = new Individu(params, 1.0);
+		randomIndiv = new Individu(paramsList);
 		education(randomIndiv);
 		addIndividu(randomIndiv);
 		delete randomIndiv;
@@ -174,7 +178,7 @@ void Population::diversify()
 int Population::placeIndividu(SousPop *pop, Individu *indiv)
 {
 
-	Individu *monIndiv = new Individu(params);
+	Individu *monIndiv = new Individu(paramsList);
 	recopieIndividu(monIndiv, indiv);
 
 	// regarde si son fitness est suffisamment espace
@@ -388,7 +392,7 @@ void Population::ExportPop(string nomFichier,bool add)
 		params->penalityLength = 10000;
 		education(bestValide);
 		// le trainer a gard� les infos des routes de bestValide
-		loc = trainer->localSearch;
+		loc = trainer->localSearchList[0];
 		params->penalityCapa = temp;
 		params->penalityLength = temp2;
 
@@ -618,7 +622,7 @@ void Population::education(Individu *indiv)
 	recopieIndividu(trainer, indiv);
 	trainer->generalSplit();
 	trainer->updateLS();
-	trainer->localSearch->runSearchTotal(false);
+	trainer->localSearchList[0]->runSearchTotal(false);
 	trainer->updateIndiv();
 	recopieIndividu(indiv, trainer);
 }

@@ -35,7 +35,7 @@ private:
 	int nbIter ;
 
 	// Pointer towards the parameters of the problem
-	Params * params ;
+	vector<Params*> paramsList;
 
 	// traces d'execution ou non
 	bool traces ;
@@ -79,7 +79,7 @@ public:
     void evolve(int maxIter , int maxIterNonProd, int nbRec) ;
 
 	// constructeur du solveur genetique
-	Genetic(Params * params,Population * population, clock_t ticks, bool traces);
+	Genetic(vector<Params *> paramsList,Population * population, clock_t ticks, bool traces);
 
 	// destructeur
 	~Genetic(void);

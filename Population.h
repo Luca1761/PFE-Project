@@ -34,6 +34,9 @@ class Population
 
    // Acces aux parametres de l'instance et du genetique
    Params * params ;
+   vector<Params*> paramsList;
+
+   int nbScenario;
 
    // clock time when the best individual was found
    clock_t timeBest ;
@@ -146,7 +149,7 @@ class Population
    void updateNbValides (Individu * indiv);
 
    //constructeur
-   Population(Params * params);
+   Population(vector<Params*> paramsList);
 
    //destructeur
    ~Population();

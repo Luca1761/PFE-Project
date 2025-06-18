@@ -53,9 +53,11 @@ class Individu
  private:
 
  // Acces aux parametres de l'instance et du genetique
- Params * params ;
+ vector<Params*> paramsList;
 
  public:
+
+  int nbScenario;
 
   // fitness etendu
   double fitnessEtendu ;
@@ -119,7 +121,8 @@ class Individu
   // structure de donnee associee a l'individu au sein de la recherche locale
   // seul le rejeton de Genetic.cpp possede cette structure
   // sinon elle n'est pas initialisee
-  LocalSearch * localSearch ;
+
+  vector<LocalSearch *> localSearchList;
 
   // fonction Split pour tous les jours
   // essaye deja le split simple
@@ -151,11 +154,7 @@ class Individu
   // customer maximum inventory
   double maxFeasibleDeliveryQuantity(int day, int client); 
 
-  // constructor of an individual as a simple container
-  Individu(Params * params);
-
-  // constructor of a random individual with all research structures 
-  Individu(Params * params, double facteurSurete );
+  Individu(vector<Params*> params);
 
   //destructeur
   ~Individu();
