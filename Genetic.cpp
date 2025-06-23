@@ -99,10 +99,10 @@ void Genetic::evolve(int maxIter, int maxIterNonProd, int nbRec)
 // effectue la mutation
 void Genetic::muter()
 {
-	rejeton->updateLS();
+	rejeton->updateLS_scenario();
 	rejeton->localSearchList[0]->runSearchTotal(false);
 	
-	rejeton->updateIndiv();
+	rejeton->updateIndiv_scenario();
 	population->updateNbValides(rejeton);
 }
 
@@ -120,19 +120,19 @@ void Genetic::reparer()
 	paramsList[0]->penalityLength *= 10;
 	if (paramsList[0]->rng->genrand64_real1() < paramsList[0]->pRep)
 	{
-		rejeton->updateLS();
+		rejeton->updateLS_scenario();
 		rejeton->localSearchList[0]->runSearchTotal(true);
-		rejeton->updateIndiv();
+		rejeton->updateIndiv_scenario();
 
 		/* Second tentative*/
 		if (!rejeton->estValide)
 		{
 			paramsList[0]->penalityCapa *= 500;
 			paramsList[0]->penalityLength *= 500;
-			rejeton->generalSplit();
-			rejeton->updateLS();
+			rejeton->generalSplit_scenario();
+			rejeton->updateLS_scenario();
 			rejeton->localSearchList[0]->runSearchTotal(true);
-			rejeton->updateIndiv();
+			rejeton->updateIndiv_scenario();
 		}
 	}
 	paramsList[0]->penalityCapa = temp;
@@ -274,7 +274,7 @@ void Genetic::crossPOX2()
 	
 	
 
-	rejeton->generalSplit();
+	rejeton->generalSplit_scenario();
 }
 
 Genetic::~Genetic(void)
