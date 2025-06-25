@@ -69,7 +69,14 @@ class Individu
   float fitRank ;
 
   // evaluation de la solution
-  struct coutSol coutSol ;
+  struct coutSol coutSol;
+  struct coutSol_scenario {
+    vector<double> evaluation;
+    vector<double> fitness;
+    vector<double> capacityViol;
+    vector<double> lengthViol;
+  };
+  coutSol_scenario coutSol_scenario;
 
   // The giant tour of each individual 
   // chromT [i][j] -> jour i, client j dans la succession des clients du jour i
@@ -77,17 +84,6 @@ class Individu
 
   // chromL [i][j] -> The load to be delivered to each customer [j] on day [i]
   vector<vector<double>> chromL ;
-
-  // Keeps the indices of the beginning of the routes, when they have been computed
-  // chromR [i][j] -> jour i, route j , donne la position du premier client de cette route
-  vector<vector<int>> chromR ;
-  
-  // For each node, the next nodes (several in case the PVRP where deliveries take place on several days)
-  // Used for the distance measure
-  vector<vector<int>> suivants ;
-
-  // The same as previously, but using the predecessors 
-  vector<vector<int>> precedents ;
 
   // Auxiliary data structure to run the Split
   // potentiels[i+1] -> distance pour atteindre le sommet i
@@ -127,34 +123,37 @@ class Individu
   // fonction Split pour tous les jours
   // essaye deja le split simple
   // si la solution ne respecte pas le nombre de camions : essaye le split a flotte limitee
-  void generalSplit();
+  void generalSplit_scenario();
 
   // fonction split ne respectant pas forcement le nombre de vehicules
   // retourne 1 si succes, 0 sinon
-  int splitSimple(int k) ;
+  int splitSimple_scenario(int k, Params *paramsTemp, int scenario) ;
+  int splitSimpleDay1();
 
   // fonction split pour problemes a flotte limitee
   void splitLF(int k) ;
+  void splitLF_scenario(int k, Params *paramsTemp, int scenario);
 
   // fonction qui se charge d'evaluer exactement les violations
   // et de remplir tous les champs d'evaluation de solution
   void measureSol() ;
+  void measureSol_scenario();
 
   // initialisation du vecteur potentiels
-  void initPot(int day) ;
+  void initPot_scenario(int k, int scenario) ;
 
   // mise a jour de l'objet localSearch, 
   // Attention, Split doit avoir ete calcule avant
-  void updateLS() ;
+  void updateLS_scenario() ;
 
   // Inverse procedure, after local search to return to a giant tour solution representation and thus fill the chromT table.
-  void updateIndiv() ;
+  void updateIndiv_scenario() ;
 
   // Computes the maximum amount of load that can be delivered to client on a day k without exceeding the 
   // customer maximum inventory
   double maxFeasibleDeliveryQuantity(int day, int client); 
 
-  Individu(vector<Params*> params);
+  Individu(vector<Params*> pl);
 
   //destructeur
   ~Individu();
