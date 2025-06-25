@@ -62,8 +62,7 @@ void Genetic::evolve(int maxIter, int maxIterNonProd, int nbRec)
 			cout << "NEW BEST FEASIBLE ";
 			cout << rejeton->coutSol.evaluation;	
 			cout << " Cost : " << rejeton->coutSol.fitness
-				 << " capacity Violation : " << rejeton->coutSol.capacityViol
-				 << " length Violation : " << rejeton->coutSol.lengthViol;
+				 << " capacity Violation : " << rejeton->coutSol.capacityViol;
 			cout << endl;
 			cout << endl;
 		}
@@ -113,11 +112,9 @@ void Genetic::reparer()
 	bool continuer = false;
 
 	temp = paramsList[0]->penalityCapa;
-	temp2 = paramsList[0]->penalityLength;
 
 	/*First tentative*/
 	paramsList[0]->penalityCapa *= 10;
-	paramsList[0]->penalityLength *= 10;
 	if (paramsList[0]->rng->genrand64_real1() < paramsList[0]->pRep)
 	{
 		rejeton->updateLS_scenario();
@@ -128,7 +125,6 @@ void Genetic::reparer()
 		if (!rejeton->estValide)
 		{
 			paramsList[0]->penalityCapa *= 500;
-			paramsList[0]->penalityLength *= 500;
 			rejeton->generalSplit_scenario();
 			rejeton->updateLS_scenario();
 			rejeton->localSearchList[0]->runSearchTotal(true);
@@ -136,24 +132,17 @@ void Genetic::reparer()
 		}
 	}
 	paramsList[0]->penalityCapa = temp;
-	paramsList[0]->penalityLength = temp2;
 }
 
 // gestion des penalites
 void Genetic::gererPenalites()
 {
 	double fractionCharge = population->fractionValidesCharge();
-	double fractionTemps = population->fractionValidesTemps();
 
 	if (fractionCharge < paramsList[0]->minValides && paramsList[0]->penalityCapa < 1000)
 		paramsList[0]->penalityCapa = paramsList[0]->penalityCapa * 1.2;
 	else if (fractionCharge > paramsList[0]->maxValides && paramsList[0]->penalityCapa > 0.01)
 		paramsList[0]->penalityCapa = paramsList[0]->penalityCapa * 0.85;
-
-	if (fractionTemps < paramsList[0]->minValides && paramsList[0]->penalityLength < 1000)
-		paramsList[0]->penalityLength = paramsList[0]->penalityLength * 1.2;
-	else if (fractionTemps > paramsList[0]->maxValides && paramsList[0]->penalityLength > 0.01)
-		paramsList[0]->penalityLength = paramsList[0]->penalityLength * 0.85;
 
 	population->validatePen();
 }

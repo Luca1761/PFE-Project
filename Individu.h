@@ -33,8 +33,7 @@ struct coutSol {
   // violations de capacite
   double capacityViol ;
 
-  // violation de longueur 
-  double lengthViol ;
+  double day1Cost;
 };
 
 class Individu ;
@@ -74,7 +73,6 @@ class Individu
     vector<double> evaluation;
     vector<double> fitness;
     vector<double> capacityViol;
-    vector<double> lengthViol;
   };
   coutSol_scenario coutSol_scenario;
 

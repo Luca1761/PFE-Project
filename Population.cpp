@@ -5,7 +5,7 @@
 #include <sstream>
 // constructeur
 
-Population::Population(vector<Params*> paramsList) : paramsList(paramsList)
+Population::Population(vector<Params*> pl) : paramsList(pl)
 {
 
 	nbScenario = paramsList.size();
@@ -14,7 +14,7 @@ Population::Population(vector<Params*> paramsList) : paramsList(paramsList)
 	trainer = new Individu(paramsList);
 
 	double temp = params->penalityCapa;
-	double temp2 = params->penalityLength;
+	
 	valides = new SousPop(); 
 	invalides = new SousPop();
 
@@ -23,18 +23,24 @@ Population::Population(vector<Params*> paramsList) : paramsList(paramsList)
 	valides->nbGenerations = 0;
 	invalides->nbGenerations = 0;
 	bool compter = true;
+	
+	vector<double> saveCapa;
+	vector<double> saveLength;
 
-	for (int i = 0; i < params->mu * 2; i++)
+	for (int scenario = 0; scenario < nbScenario; scenario++) {
+		saveCapa.push_back(paramsList[scenario]->penalityCapa);
+	}
+
+	for (int i = 0; i < paramsList[0]->mu * 2; i++)
 	{
-		if (i == params->mu)
+		if (i == paramsList[0]->mu)
 		{
-			params->penalityCapa *= 50;
-			params->penalityLength *= 50;
+			paramsList[0]->penalityCapa *= 50;
 			compter = false;
 		}
 		Individu *randomIndiv = new Individu(paramsList);  
 
-		education(randomIndiv);
+		education_scenario(randomIndiv);
 		if (compter) updateNbValides(randomIndiv);
 		addIndividu(randomIndiv);
 		delete randomIndiv;
@@ -43,10 +49,9 @@ Population::Population(vector<Params*> paramsList) : paramsList(paramsList)
 	// on initialise par defaut a 100, comme si tout etait valide au debut
 	// mais c'est arbitraire
 	listeValiditeCharge = list<bool> (100, true);
-	listeValiditeTemps = list<bool> (100, true);
-
-	params->penalityCapa = temp;
-	params->penalityLength = temp2;
+	for (int scenario = 0; scenario < nbScenario; scenario++) {
+		paramsList[scenario]->penalityCapa = saveCapa[scenario];
+	}
 }
 
 // destructeur
@@ -143,7 +148,6 @@ void Population::diversify()
 {
 	Individu *randomIndiv;
 	double temp = params->penalityCapa;
-	double temp2 = params->penalityLength;
 
 	while (valides->nbIndiv > (int)(params->rho * (double)params->mu))
 	{
@@ -163,7 +167,6 @@ void Population::diversify()
 		if (i == params->mu)
 		{
 			params->penalityCapa *= 50;
-			params->penalityLength *= 50;
 		}
 		randomIndiv = new Individu(paramsList);
 		education(randomIndiv);
@@ -172,7 +175,6 @@ void Population::diversify()
 	}
 
 	params->penalityCapa = temp;
-	params->penalityLength = temp2;
 }
 
 int Population::placeIndividu(SousPop *pop, Individu *indiv)
@@ -243,7 +245,7 @@ void Population::validatePen()
 	Individu *indiv;
 	// on met � jour les evaluations
 	for (int i = 0; i < invalides->nbIndiv; i++)
-		invalides->individus[i]->coutSol.evaluation = invalides->individus[i]->coutSol.fitness + params->penalityCapa * invalides->individus[i]->coutSol.capacityViol + params->penalityLength * invalides->individus[i]->coutSol.lengthViol;
+		invalides->individus[i]->coutSol.evaluation = invalides->individus[i]->coutSol.fitness + params->penalityCapa * invalides->individus[i]->coutSol.capacityViol;
 
 	for (int i = 0; i < invalides->nbIndiv; i++)
 		for (int j = 0; j < invalides->nbIndiv - i - 1; j++)
@@ -358,11 +360,8 @@ void Population::recopieIndividu(Individu *destination, Individu *source)
 {
 	destination->chromT = source->chromT;
 	destination->chromL = source->chromL;
-	destination->chromR = source->chromR;
 	destination->coutSol = source->coutSol;
 	destination->estValide = source->estValide;
-	destination->suivants = source->suivants;
-	destination->precedents = source->precedents;
 }
 
 void Population::ExportPop(string nomFichier,bool add)
@@ -387,14 +386,11 @@ void Population::ExportPop(string nomFichier,bool add)
 		// We are obliged to set very strong parameters so that the splitting does not produce a from the best valid solution
 		// so that the splitting does not produce a from the best valid solution
 		temp = params->penalityCapa;
-		temp2 = params->penalityLength;
 		params->penalityCapa = 10000;
-		params->penalityLength = 10000;
 		education(bestValide);
 		// le trainer a gard� les infos des routes de bestValide
 		loc = trainer->localSearchList[0];
 		params->penalityCapa = temp;
-		params->penalityLength = temp2;
 
 		myfile.precision(10);
 		cout.precision(10);
@@ -537,17 +533,6 @@ double Population::fractionValidesCharge()
 	return double(count) / (double)(100);
 }
 
-// retourne la fraction d'individus valides en terme de temps
-double Population::fractionValidesTemps()
-{
-	int count = 0;
-	for (list<bool>::iterator it = listeValiditeTemps.begin(); it != listeValiditeTemps.end(); ++it)
-		if (*it == true)
-			count++;
-
-	return double(count) / (double)(100);
-}
-
 double Population::getDiversity(SousPop *pop)
 {
 	double total = 0;
@@ -620,10 +605,20 @@ int Population::selectCompromis(SousPop *souspop)
 void Population::education(Individu *indiv)
 {
 	recopieIndividu(trainer, indiv);
-	trainer->generalSplit();
-	trainer->updateLS();
+	trainer->generalSplit_scenario();
+	trainer->updateLS_scenario();
 	trainer->localSearchList[0]->runSearchTotal(false);
-	trainer->updateIndiv();
+	trainer->updateIndiv_scenario();
+	recopieIndividu(indiv, trainer);
+}
+
+void Population::education_scenario(Individu *indiv)
+{
+	recopieIndividu(trainer, indiv);
+	trainer->generalSplit_scenario();
+	trainer->updateLS_scenario();
+	trainer->localSearchList[0]->runSearchTotal(false);
+	trainer->updateIndiv_scenario();
 	recopieIndividu(indiv, trainer);
 }
 
@@ -633,8 +628,6 @@ void Population::updateNbValides(Individu *indiv)
 {
 	listeValiditeCharge.push_back(indiv->coutSol.capacityViol < 0.0001);
 	listeValiditeCharge.pop_front();
-	listeValiditeTemps.push_back(indiv->coutSol.lengthViol < 0.0001);
-	listeValiditeTemps.pop_front();
 }
 
 void Population::afficheEtat(int nbIter)
@@ -657,6 +650,6 @@ void Population::afficheEtat(int nbIter)
 
 	cout << " | Moy " << getMoyenneValides() << " " << getMoyenneInvalides()
 		 << " | Div " << getDiversity(valides) << " " << getDiversity(invalides)
-		 << " | Val " << fractionValidesCharge() << " " << fractionValidesTemps()
-		 << " | Pen " << params->penalityCapa << " " << params->penalityLength << " | Pop " << valides->nbIndiv << " " << invalides->nbIndiv << endl;
+		 << " | Val " << fractionValidesCharge()
+		 << " | Pen " << params->penalityCapa << " | Pop " << valides->nbIndiv << " " << invalides->nbIndiv << endl;
 }

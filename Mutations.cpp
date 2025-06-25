@@ -58,14 +58,10 @@ int LocalSearch::mutation1 ()
 	// pas d'incidence pour l'instant mais attention
 	if (routeU != routeV)
 	{
-	costSuppU += routeU->excedentLength(routeU->temps + costSuppU)*params->penalityLength
-	- routeU->excedentLength(routeU->temps)*params->penalityLength
-	+ routeU->excedentCharge(routeU->charge - demandPerDay[dayCour][noeudUCour])*params->penalityCapa
+	costSuppU += routeU->excedentCharge(routeU->charge - demandPerDay[dayCour][noeudUCour])*params->penalityCapa
 	- routeU->excedentCharge(routeU->charge)*params->penalityCapa ;
 
-	costSuppV += (routeV->excedentLength(routeV->temps + costSuppV) 
-	- routeV->excedentLength(routeV->temps))*params->penalityLength
-	+ routeV->excedentCharge(routeV->charge + demandPerDay[dayCour][noeudUCour])*params->penalityCapa
+	costSuppV += routeV->excedentCharge(routeV->charge + demandPerDay[dayCour][noeudUCour])*params->penalityCapa
 	- routeV->excedentCharge(routeV->charge)*params->penalityCapa ;
 	}
 
@@ -95,14 +91,10 @@ int LocalSearch::mutation2 ()
 
 	if (routeU != routeV)
 	{
-	costSuppU += routeU->excedentLength(routeU->temps + costSuppU)*params->penalityLength
-	- routeU->excedentLength(routeU->temps)*params->penalityLength
-	+ routeU->excedentCharge(routeU->charge - demandPerDay[dayCour][noeudUCour] - demandPerDay[dayCour][xCour])*params->penalityCapa
+	costSuppU += routeU->excedentCharge(routeU->charge - demandPerDay[dayCour][noeudUCour] - demandPerDay[dayCour][xCour])*params->penalityCapa
 	- routeU->excedentCharge(routeU->charge)*params->penalityCapa ;
 	
-	costSuppV += ( routeV->excedentLength(routeV->temps + costSuppV) 
-	- routeV->excedentLength(routeV->temps))*params->penalityLength
-	+ routeV->excedentCharge(routeV->charge + demandPerDay[dayCour][noeudUCour] + demandPerDay[dayCour][xCour])*params->penalityCapa
+	costSuppV += routeV->excedentCharge(routeV->charge + demandPerDay[dayCour][noeudUCour] + demandPerDay[dayCour][xCour])*params->penalityCapa
 	- routeV->excedentCharge(routeV->charge)*params->penalityCapa ;
 	}
 
@@ -133,14 +125,10 @@ int LocalSearch::mutation3 ()
 
 	if (routeU != routeV)
 	{
-	costSuppU += routeU->excedentLength(routeU->temps + costSuppU)*params->penalityLength
-	- routeU->excedentLength(routeU->temps)*params->penalityLength
-	+ routeU->excedentCharge(routeU->charge - demandPerDay[dayCour][noeudUCour] - demandPerDay[dayCour][xCour])*params->penalityCapa
+	costSuppU += routeU->excedentCharge(routeU->charge - demandPerDay[dayCour][noeudUCour] - demandPerDay[dayCour][xCour])*params->penalityCapa
 	- routeU->excedentCharge(routeU->charge)*params->penalityCapa ;
 	
-	costSuppV += (routeV->excedentLength(routeV->temps + costSuppV) 
-	- routeV->excedentLength(routeV->temps))*params->penalityLength
-	+ routeV->excedentCharge(routeV->charge + demandPerDay[dayCour][noeudUCour] + demandPerDay[dayCour][xCour])*params->penalityCapa
+	costSuppV += routeV->excedentCharge(routeV->charge + demandPerDay[dayCour][noeudUCour] + demandPerDay[dayCour][xCour])*params->penalityCapa
 	- routeV->excedentCharge(routeV->charge)*params->penalityCapa ;
 	}
 
@@ -171,14 +159,10 @@ int LocalSearch::mutation4 ()
 
 	if (routeU != routeV)
 	{
-	costSuppU += routeU->excedentLength(routeU->temps + costSuppU)*params->penalityLength
-	- routeU->excedentLength(routeU->temps)*params->penalityLength
-	+ routeU->excedentCharge(routeU->charge + demandPerDay[dayCour][noeudVCour] - demandPerDay[dayCour][noeudUCour])*params->penalityCapa
+	costSuppU += routeU->excedentCharge(routeU->charge + demandPerDay[dayCour][noeudVCour] - demandPerDay[dayCour][noeudUCour])*params->penalityCapa
 	- routeU->excedentCharge(routeU->charge)*params->penalityCapa ;
 	
-	costSuppV += (routeV->excedentLength(routeV->temps + costSuppV) 
-	- routeV->excedentLength(routeV->temps))*params->penalityLength
-	+ routeV->excedentCharge(routeV->charge + demandPerDay[dayCour][noeudUCour] - demandPerDay[dayCour][noeudVCour])*params->penalityCapa
+	costSuppV += routeV->excedentCharge(routeV->charge + demandPerDay[dayCour][noeudUCour] - demandPerDay[dayCour][noeudVCour])*params->penalityCapa
 	- routeV->excedentCharge(routeV->charge)*params->penalityCapa ;
 	}
 
@@ -213,14 +197,10 @@ int LocalSearch::mutation5 ()
 	
 	if (routeU != routeV)
 	{
-	costSuppU += routeU->excedentLength(routeU->temps + costSuppU)*params->penalityLength
-	- routeU->excedentLength(routeU->temps)*params->penalityLength
-	+ routeU->excedentCharge(routeU->charge + demandPerDay[dayCour][noeudVCour] - demandPerDay[dayCour][noeudUCour] - demandPerDay[dayCour][xCour])*params->penalityCapa
+	costSuppU += routeU->excedentCharge(routeU->charge + demandPerDay[dayCour][noeudVCour] - demandPerDay[dayCour][noeudUCour] - demandPerDay[dayCour][xCour])*params->penalityCapa
 	- routeU->excedentCharge(routeU->charge)*params->penalityCapa ;
 
-	costSuppV += (routeV->excedentLength(routeV->temps + costSuppV) 
-	- routeV->excedentLength(routeV->temps))*params->penalityLength
-	+ routeV->excedentCharge(routeV->charge + demandPerDay[dayCour][noeudUCour] + demandPerDay[dayCour][xCour] - demandPerDay[dayCour][noeudVCour])*params->penalityCapa
+	costSuppV += routeV->excedentCharge(routeV->charge + demandPerDay[dayCour][noeudUCour] + demandPerDay[dayCour][xCour] - demandPerDay[dayCour][noeudVCour])*params->penalityCapa
 	- routeV->excedentCharge(routeV->charge)*params->penalityCapa ;
 	}
 
@@ -253,14 +233,10 @@ int LocalSearch::mutation6 ()
 	
 	if (routeU != routeV)
 	{
-	costSuppU += routeU->excedentLength(routeU->temps + costSuppU)*params->penalityLength
-	- routeU->excedentLength(routeU->temps)*params->penalityLength
-	+ routeU->excedentCharge(routeU->charge + demandPerDay[dayCour][noeudVCour] + demandPerDay[dayCour][yCour] - demandPerDay[dayCour][noeudUCour] - demandPerDay[dayCour][xCour])*params->penalityCapa
+	costSuppU += routeU->excedentCharge(routeU->charge + demandPerDay[dayCour][noeudVCour] + demandPerDay[dayCour][yCour] - demandPerDay[dayCour][noeudUCour] - demandPerDay[dayCour][xCour])*params->penalityCapa
 	- routeU->excedentCharge(routeU->charge)*params->penalityCapa ;
 	
-	costSuppV += (routeV->excedentLength(routeV->temps + costSuppV) 
-	- routeV->excedentLength(routeV->temps))*params->penalityLength
-	+ routeV->excedentCharge(routeV->charge + demandPerDay[dayCour][noeudUCour] + demandPerDay[dayCour][xCour] - demandPerDay[dayCour][noeudVCour] - demandPerDay[dayCour][yCour])*params->penalityCapa
+	costSuppV += routeV->excedentCharge(routeV->charge + demandPerDay[dayCour][noeudUCour] + demandPerDay[dayCour][xCour] - demandPerDay[dayCour][noeudVCour] - demandPerDay[dayCour][yCour])*params->penalityCapa
 	- routeV->excedentCharge(routeV->charge)*params->penalityCapa ;
 	}
 
@@ -333,11 +309,7 @@ int LocalSearch::mutation8 ()
 	+ params->timeCost[xCour][yCour]
 	- params->timeCost[noeudUCour][xCour] 
 	- params->timeCost[noeudVCour][yCour]
-    + ( routeU->excedentLength(tempsU + tempsV + params->timeCost[noeudUCour][noeudVCour])
-	+ routeV->excedentLength(tempsResteU + tempsResteV + params->timeCost[xCour][yCour])
-	- routeU->excedentLength(routeU->temps)
-	- routeV->excedentLength(routeV->temps))*params->penalityLength
-	+ routeU->excedentCharge(noeudU->chargeAvant + noeudV->chargeAvant)*params->penalityCapa
+    + routeU->excedentCharge(noeudU->chargeAvant + noeudV->chargeAvant)*params->penalityCapa
 	+ routeV->excedentCharge(chargeResteV + chargeResteU)*params->penalityCapa
 	- routeU->excedentCharge(routeU->charge)*params->penalityCapa
 	- routeV->excedentCharge(routeV->charge)*params->penalityCapa ;
@@ -435,10 +407,6 @@ int LocalSearch::mutation9 ()
 	+ params->timeCost[noeudVCour][xCour]
 	- params->timeCost[noeudUCour][xCour] 
 	- params->timeCost[noeudVCour][yCour]
-	+ ( routeU->excedentLength(tempsU + tempsResteV + params->timeCost[noeudUCour][yCour] )
-	+ routeV->excedentLength(tempsResteU + tempsV + params->timeCost[noeudVCour][xCour] )
-	- routeU->excedentLength(routeU->temps)
-	- routeV->excedentLength(routeV->temps))*params->penalityLength
 	+ (routeU->excedentCharge(noeudU->chargeAvant + chargeResteV)
 	+ routeV->excedentCharge(noeudV->chargeAvant + chargeResteU)
 	- routeU->excedentCharge(routeU->charge)

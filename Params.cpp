@@ -156,7 +156,6 @@ void Params::setMethodParams()
 
 	// parametres lies aux pEnalites adaptatives
 	penalityCapa = 50;
-	penalityLength = 10; // Initial penalty values // o
 	minValides = 0.2;	// Target range for the number of feasible solutions // **
 	maxValides = 0.25;	// Target range for the number of feasible solutions // **
 	distMin = 0.01;		// Distance in terms of objective function under which the solutions are considered to be the same // o
@@ -317,7 +316,6 @@ Params::Params(Params *params, int decom, int *serieVisites, Vehicle **serieVehi
 	// affectation des autres parametres
 	setMethodParams();
 	penalityCapa = params->penalityCapa;
-	penalityLength = params->penalityLength;
 
 	mu = params->mu;
 	lambda = params->lambda;

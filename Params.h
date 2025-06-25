@@ -107,9 +107,6 @@ class Params {
   // coefficient de penalite associe a une violation de capacite
   double penalityCapa;
 
-  // coefficient de penalite associe a une violation de longueur
-  double penalityLength;
-
   // limite basse sur les indiv valides
   double minValides;
 

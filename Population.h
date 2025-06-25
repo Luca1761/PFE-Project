@@ -44,9 +44,6 @@ class Population
    // liste qui repertorie si les XXX derniers individus produits etaient valides en terme de charge ou non
    list <bool> listeValiditeCharge ;
 
-    // liste qui repertorie si les XXX derniers individus produits etaient valides en terme de temps ou non
-   list <bool> listeValiditeTemps ;
-
    // auxiliary data structure to apply the local search
    Individu * trainer;
 
@@ -131,9 +128,6 @@ class Population
 
    // retourne la fraction d'individus valides en terme de charge
    double fractionValidesCharge () ;
-
-   // retourne la fraction d'individus valides en terme de temps
-   double fractionValidesTemps () ;
 
    // diversite de la population
    double getDiversity(SousPop * pop);
