@@ -53,6 +53,8 @@ class Population
    // entrainement des individus qui sont crees
    void education(Individu * indiv);
 
+   void education_scenario(Individu * indiv);
+
    // fonction booleenne verifiant si le fitness n'existe pas deja
    bool fitExist ( SousPop * pop, Individu * indiv ) ;
 
