@@ -5,11 +5,12 @@
       "name": "C/C++ Runner: Debug Session",
       "type": "cppdbg",
       "request": "launch",
-      "args": [],
+      "args": ["Data/Small/Istanze001005h3/abs2n15_4.dat", "-veh", "5", "-stock", "1000000", "-seed", "55", "-scenarios", "1"],
       "stopAtEntry": false,
       "externalConsole": true,
-      "cwd": "c:/Users/lucas/Documents/HGS-IRP",
-      "program": "c:/Users/lucas/Documents/HGS-IRP/build/Debug/outDebug",
+      // "C:\Users\lucas\Documents\PFE-Project\build\Debug\outDebug.exe"
+      "cwd": "C:/Users/lucas/Documents/PFE-Project",
+      "program": "C:/Users/lucas/Documents/PFE-Project/build/Debug/outDebug.exe",
       "MIMode": "gdb",
       "miDebuggerPath": "gdb",
       "setupCommands": [

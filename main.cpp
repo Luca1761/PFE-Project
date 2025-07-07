@@ -1,7 +1,7 @@
 /*                       Algorithme - HGSADC                         */
-/*                    Propri�t� de Thibaut VIDAL                     */
+/*                    Propriete de Thibaut VIDAL                     */
 /*                    thibaut.vidal@cirrelt.ca                       */
-/*  Utilisation non autoris�e sans permission explicite des auteurs  */
+/*  Utilisation non autorisee sans permission explicite des auteurs  */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -25,7 +25,7 @@ int mainSIRP(int argc, char *argv[])
 
   int nbScenarios = c.get_nb_scenarios();
   mt19937 gen(c.get_seed());  
-  normal_distribution<double> dist(0, 0);
+  normal_distribution<double> dist;
 
   vector<double> randomNumbers = vector<double>(nbScenarios, 0.0);
   for (int i = 0; i < nbScenarios; i++) {
@@ -33,8 +33,8 @@ int mainSIRP(int argc, char *argv[])
   }
 
   vector<Params*> paramsList;
-  for(int i = 0; i < nbScenarios; i++) {
-    double randomValue = randomNumbers[i];
+  for(int scenario = 0; scenario < nbScenarios; scenario++) {
+    double randomValue = randomNumbers[scenario];
     Params* param = new Params(
       c.get_path_to_instance(), 
       c.get_path_to_solution(),
@@ -45,14 +45,13 @@ int mainSIRP(int argc, char *argv[])
       randomValue,   
       dist           
     );
+
     paramsList.push_back(param);
   }
-
-  // Params *mesParametres = new Params(
-  //     c.get_path_to_instance(), c.get_path_to_solution(), c.get_type(),
-  //     c.get_nbVeh(), c.get_path_to_BKS(), c.get_seed(),c.get_rou(), c.get_stockout(), c.get_nb_scenarios());
-      
   // initial population 
+  for (int scenario = 0; scenario < nbScenarios; scenario++) {
+    paramsList[scenario]->adjustDemands(randomValue);
+  }
   Population *population = new Population(paramsList);
 
   // we create the solver
@@ -61,14 +60,8 @@ int mainSIRP(int argc, char *argv[])
   // on lance l'evolution   launch evolution
   
   int max_iter = 100000;
-  int maxIterNonProd = 10000;
+  int maxIterNonProd = 100000;
   solver.evolve(max_iter, maxIterNonProd, 1);
-
-
-
-
-
-
 
   
   population->ExportPop(c.get_path_to_solution(),true);

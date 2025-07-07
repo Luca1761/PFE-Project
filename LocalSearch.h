@@ -17,7 +17,6 @@
 #include <vector>
 #include "Individu.h"
 #include "LotSizingSolver.h"
-// #include "Model_LotSizingPI.h"
 #include "Noeud.h"
 #include "Route.h"
 
@@ -121,6 +120,8 @@ public:
   // intra-jours possibles
   // retourne le nombre de mouvements effectu�s
   int mutationDifferentDay();
+
+  void runSearchSameDay(bool isRepPhase);
   // Neighborhoods
 
   /* RELOCATE */

@@ -25,7 +25,7 @@ void Noeud::removeDominatedInsertions (double penalityCapa)
 	newVector.push_back(allInsertions[0]);
 	Insertion courInsertion = allInsertions[0];
 
-	for (int i=1 ; i < (int)allInsertions.size() ; i++)
+	for (int i = 1 ; i < (int)allInsertions.size() ; i++)
 	{
 		if (allInsertions[i].load > courInsertion.load + 0.0001 && 
 			courInsertion.detour + penalityCapa * (allInsertions[i].load - courInsertion.load) > allInsertions[i].detour + 0.0001 )
@@ -36,7 +36,11 @@ void Noeud::removeDominatedInsertions (double penalityCapa)
 	}
 
 	// and replace the old structure by the new one
-	allInsertions = newVector;
+	// if (allInsertions.size() != newVector.size()) {
+	// 	std::cout << "it happens" << std::endl;
+	// 	std::cout << allInsertions.size() << " " << newVector.size() << std::endl;
+	// }
+	// allInsertions = newVector;
 }
 
 Noeud::~Noeud(void){}

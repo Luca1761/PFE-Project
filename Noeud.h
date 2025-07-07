@@ -54,13 +54,13 @@ Route * route ;
 // route associee 
 
 double chargeAvant ;
-// charge de la portion de route situ�e avant lui (lui compris)
+// charge de la portion de route situee avant lui (lui compris)
 
 double est ;
 // start time of service
 
-vector <Insertion> allInsertions ;
 //  List of possible insertions in different routes
+vector <Insertion> allInsertions ;
 
 void removeDominatedInsertions (double penalityCapa);
 // Removing dominated insertions

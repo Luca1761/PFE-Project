@@ -33,7 +33,6 @@ class Population
    private:
 
    // Acces aux parametres de l'instance et du genetique
-   Params * params ;
    vector<Params*> paramsList;
 
    int nbScenario;
@@ -46,9 +45,6 @@ class Population
 
    // auxiliary data structure to apply the local search
    Individu * trainer;
-
-   // entrainement des individus qui sont crees
-   void education(Individu * indiv);
 
    void education_scenario(Individu * indiv);
 

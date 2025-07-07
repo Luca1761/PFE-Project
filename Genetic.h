@@ -33,6 +33,8 @@ private:
 
 	// Number of iterations before stopping
 	int nbIter ;
+	
+	int nbScenario;
 
 	// Pointer towards the parameters of the problem
 	vector<Params*> paramsList;
@@ -50,14 +52,15 @@ private:
 	Individu * rejeton2 ;
 
 	// effectue la mutation
-	void muter();
+	void muter_scenario();
 
 	// eventuellement effectue une reparation de la solution
-	void reparer();
+	void reparer_scenario();
 
 	// procedure de crossover
 	// retourne -1 si l'individu ainsi cree n'est pas valide
 	void crossPOX2();
+	int crossPOX_scenario();
 
 	// tableau utilise lors des crossovers
 	vector<int> freqClient ;
@@ -69,7 +72,7 @@ private:
 	void diversify();
 
 	// gestion des penalites
-	void gererPenalites();
+	void gererPenalites_scenario();
 
 public:
 

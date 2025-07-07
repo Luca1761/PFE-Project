@@ -19,6 +19,7 @@ Des getters auraient pu etre faits afin de restreindre l'acces mais dans un souc
 #include "Noeud.h"
 #include "Params.h"
 #include "LocalSearch.h"
+#include <thread>
 using namespace std ;
 
 class LocalSearch ;
@@ -68,13 +69,13 @@ class Individu
   float fitRank ;
 
   // evaluation de la solution
-  struct coutSol coutSol;
+  struct coutSol coutSol;  //Coût global de la solution
   struct coutSol_scenario {
-    vector<double> evaluation;
-    vector<double> fitness;
-    vector<double> capacityViol;
+    vector<double> evaluation;    //coûts totaux des scénarios
+    vector<double> fitness;       //coûts sans les pénalités d'excès de stock
+    vector<double> capacityViol;  //coûts de pénalités de capacité
   };
-  coutSol_scenario coutSol_scenario;
+  coutSol_scenario coutSol_scenario; //Coûts de chaque scénario
 
   // The giant tour of each individual 
   // chromT [i][j] -> jour i, client j dans la succession des clients du jour i
@@ -126,15 +127,13 @@ class Individu
   // fonction split ne respectant pas forcement le nombre de vehicules
   // retourne 1 si succes, 0 sinon
   int splitSimple_scenario(int k, Params *paramsTemp, int scenario) ;
-  int splitSimpleDay1();
+  bool splitSimpleDay1();
 
   // fonction split pour problemes a flotte limitee
-  void splitLF(int k) ;
   void splitLF_scenario(int k, Params *paramsTemp, int scenario);
 
   // fonction qui se charge d'evaluer exactement les violations
   // et de remplir tous les champs d'evaluation de solution
-  void measureSol() ;
   void measureSol_scenario();
 
   // initialisation du vecteur potentiels
@@ -143,6 +142,10 @@ class Individu
   // mise a jour de l'objet localSearch, 
   // Attention, Split doit avoir ete calcule avant
   void updateLS_scenario() ;
+
+  void localSearchRunSearch_scenario();
+  void muterDifferentScenarioDP();
+  int mutationDP(int client, bool &rechercheTerminee);
 
   // Inverse procedure, after local search to return to a giant tour solution representation and thus fill the chromT table.
   void updateIndiv_scenario() ;

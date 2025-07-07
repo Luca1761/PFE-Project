@@ -21,8 +21,6 @@ Params::Params(string nomInstance, string nomSolution, int nbVeh, int seedRNG, i
 		throw string(" Unable to open file ");
 	}	
 
-	adjustDemands(randomValue);
-
 	setMethodParams();
 
 	computeDistancierFromCoords();

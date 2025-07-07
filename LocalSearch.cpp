@@ -2,17 +2,33 @@
 #include <algorithm>
 // lance la recherche locale
 
-void LocalSearch::runSearchTotal(bool isRepPhase)
+// void LocalSearch::runSearchTotal(bool isRepPhase)
+// {
+//   this->isRepPhase = isRepPhase;
+//   updateMoves();
+//   for (int day = 1; day <= params->nbDays; day++)
+//     mutationSameDay(day);
+//   mutationDifferentDay();
+//   updateMoves();
+//   for (int day = 1; day <= params->nbDays; day++)
+//     mutationSameDay(day);
+// }
+
+void LocalSearch::runSearchSameDay(bool isRepPhase)
 {
   this->isRepPhase = isRepPhase;
-  updateMoves();
-  for (int day = 1; day <= params->nbDays; day++)
-    mutationSameDay(day);
-
-  mutationDifferentDay();
-  updateMoves();
-  for (int day = 1; day <= params->nbDays; day++)
-    mutationSameDay(day);
+  int nbMoves = 0;
+  int nbTotal = 0;
+  int nbPhases = 0;
+  bool traces = false;
+  while (nbMoves > 0 && nbPhases < 10000)
+  {
+    nbMoves = 0;
+    updateMoves();
+    for (int day = 1; day <= params->nbDays; day++)
+      nbMoves += mutationSameDay(day);
+    nbPhases++;
+  }
 }
 
 
@@ -251,81 +267,82 @@ void LocalSearch::addOP(int day, int client)
 // change the choices of visit periods and quantity for "client"
 int LocalSearch::mutation11(int client)
 {
-  Noeud *noeudTravail;
-  double currentCost;
-  // First, make sure all insertion costs are computed
-  for (int k = 1; k <= params->ancienNbDays; k++){
-    noeudTravail = clients[k][client]; //node* day k client
-    computeCoutInsertion(noeudTravail); // detour,place (dominated) for each route
-  }
-  // Compute the current lot sizing solution cost (from the model point of view)
-  //before optimizatio  currentCost = evaluateCurrentCost(client);
-  currentCost = evaluateCurrentCost_stockout(client);
-  /* Generate the structures of the subproblem */
+  // Noeud *noeudTravail;
+  // double currentCost;
+  // // First, make sure all insertion costs are computed
+  // for (int k = 1; k <= params->ancienNbDays; k++){
+  //   noeudTravail = clients[k][client]; //node* day k client
+  //   computeCoutInsertion(noeudTravail); // detour,place (dominated) for each route
+  // }
+  // // Compute the current lot sizing solution cost (from the model point of view)
+  // //before optimizatio  currentCost = evaluateCurrentCost(client);
+  // currentCost = evaluateCurrentCost_stockout(client);
+  // /* Generate the structures of the subproblem */
   
-  vector<vector<Insertion>> insertions = vector<vector<Insertion>>(params->nbDays);
-  vector<double> quantities = vector<double>(params->nbDays);
-  vector<int> breakpoints = vector<int>(params->nbDays);
-  double objective;
-  for (int k = 1; k <= params->nbDays; k++)
-  {
-    insertions[k - 1] = clients[k][client]->allInsertions;
-  }
+  // vector<vector<Insertion>> insertions = vector<vector<Insertion>>(params->nbDays);
+  // vector<double> quantities = vector<double>(params->nbDays);
+  // vector<int> breakpoints = vector<int>(params->nbDays);
+  // double objective;
+  // for (int k = 1; k <= params->nbDays; k++)
+  // {
+  //   insertions[k - 1] = clients[k][client]->allInsertions;
+  // }
   
-  unique_ptr<LotSizingSolver> lotsizingSolver(
-      make_unique<LotSizingSolver>(params, insertions, client));
+  // unique_ptr<LotSizingSolver> lotsizingSolver(
+  //     make_unique<LotSizingSolver>(params, insertions, client));
     
-  bool ok = true;
-  ok = lotsizingSolver->solveStockoutBackward();
+  // bool ok = true;
+  // ok = lotsizingSolver->solveStockoutBackward();
   
-  objective = lotsizingSolver->objective;
-  quantities = lotsizingSolver->quantities;
-  if(lt(currentCost,objective-0.01)) return 0;
+  // objective = lotsizingSolver->objective;
+  // quantities = lotsizingSolver->quantities;
+  // if(lt(currentCost,objective-0.01)) return 0;
 
 
-  /* APPLYING THE MOVEMENT */
-  // Later on we will verify whether it's an improving move or not to trigger a
-  // good termination.
+  // /* APPLYING THE MOVEMENT */
+  // // Later on we will verify whether it's an improving move or not to trigger a
+  // // good termination.
 
-  // First, removing all occurences of the node.
-  for (int k = 1; k <= params->ancienNbDays; k++)
-  {
-    noeudTravail = clients[k][client];
-    if (noeudTravail->estPresent){
+  // // First, removing all occurences of the node.
+  // for (int k = 1; k <= params->ancienNbDays; k++)
+  // {
+  //   noeudTravail = clients[k][client];
+  //   if (noeudTravail->estPresent){
       
-      removeNoeud(noeudTravail);
-    }
-    demandPerDay[k][client] = 0.;
+  //     removeNoeud(noeudTravail);
+  //   }
+  //   demandPerDay[k][client] = 0.;
 
-  }
-  // Then looking at the solution of the model and inserting in the good place
-  for (int k = 1; k <= params->ancienNbDays; k++)
-  {
-    if (quantities[k - 1] > 0.0001 || (lotsizingSolver->breakpoints[k - 1]&&gt(0,lotsizingSolver->breakpoints[k - 1]->detour) )) // don't forget that in the model the index      // goes from 0 to t-1
-    {
-      demandPerDay[k][client] = round(quantities[k - 1]);
+  // }
+  // // Then looking at the solution of the model and inserting in the good place
+  // for (int k = 1; k <= params->ancienNbDays; k++)
+  // {
+  //   if (quantities[k - 1] > 0.0001 || (lotsizingSolver->breakpoints[k - 1]&&gt(0,lotsizingSolver->breakpoints[k - 1]->detour) )) // don't forget that in the model the index      // goes from 0 to t-1
+  //   {
+  //     demandPerDay[k][client] = round(quantities[k - 1]);
       
-      clients[k][client]->placeInsertion = lotsizingSolver->breakpoints[k - 1]->place;
+  //     clients[k][client]->placeInsertion = lotsizingSolver->breakpoints[k - 1]->place;
  
-      addNoeud(clients[k][client]);
-    }
-  }
+  //     addNoeud(clients[k][client]);
+  //   }
+  // }
 
-  double realCost = evaluateCurrentCost_stockout(client);
-  if (fabs(realCost- objective)>0.01) {
-    std::cout << "The solution doesn't give the expected cost" << std::endl;
-    std::cout << "Cost: " << realCost << "; Expected cost: " << objective << std::endl;
-    throw string("Cost error");
-    return 0;
-  }
-  if (currentCost-objective >=0.01 )// An improving move has been found,
-                                        // the search is not finished.
-  {
-    rechercheTerminee = false;
-    return 1;
-  }
-  else
-    return 0;
+  // double realCost = evaluateCurrentCost_stockout(client);
+  // if (fabs(realCost- objective)>0.01) {
+  //   std::cout << "The solution doesn't give the expected cost" << std::endl;
+  //   std::cout << "Cost: " << realCost << "; Expected cost: " << objective << std::endl;
+  //   throw string("Cost error");
+  //   return 0;
+  // }
+  // if (currentCost-objective >=0.01 )// An improving move has been found,
+  //                                       // the search is not finished.
+  // {
+  //   rechercheTerminee = false;
+  //   return 1;
+  // }
+  // else
+  //   return 0;
+  return 1;
 }
 
 double LocalSearch::evaluateCurrentCost(int client)

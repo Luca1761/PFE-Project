@@ -34,6 +34,30 @@ void PLFunction::clear()
     maxValue = -MAXCOST;
 }
 
+PLFunction::PLFunction(Params *params, Insertion insertion, int client){
+    nbPieces = 0;
+    pieces = vector<shared_ptr<LinearPiece>>();
+    minimalPiece = nullptr;
+    minValue = MAXCOST;
+    maxValue = -MAXCOST;
+    double lim = std::min(insertion.load, params->cli[client].maxInventory);
+    double cost1 = insertion.detour - params->inventoryCostSupplier * (double)(params->nbDays) * lim;
+    shared_ptr<LinearPiece> tmp(make_shared<LinearPiece>(0, insertion.detour, lim, cost1));
+    tmp->fromInst = make_shared<Insertion>(insertion.detour, insertion.load, insertion.place);
+    append(tmp);
+    // this->print();
+    
+    if (insertion.load < params->cli[client].maxInventory) {
+        // std::cout << "oui" << std::endl;
+        double cost = insertion.detour + params->penalityCapa * std::max(0.0, params->cli[client].maxInventory - insertion.load) - params->inventoryCostSupplier * (double)(params->nbDays) * params->cli[client].maxInventory;;
+        shared_ptr<LinearPiece> tmp2(make_shared<LinearPiece>(insertion.load, cost1, params->cli[client].maxInventory, cost));
+        tmp2->fromInst = make_shared<Insertion>(insertion.detour, insertion.load, insertion.place);
+        append(tmp2);
+        // this->print();
+    }
+}
+
+
 PLFunction::PLFunction(Params *params, vector<Insertion> insertions, int day, int client) : params(params)
 {
     if (insertions.size() == 0)
