@@ -54,10 +54,6 @@ public:
   
   void updateMoves();
   
-  vector<int> ordreJours;
-  
-  bool deplacementIntraJour;
-  
   bool firstLoop;
 
   Noeud *noeudU;
@@ -93,17 +89,17 @@ public:
 */
   vector<vector<Noeud*>> clients;
 
-  // noeuds associ�s aux depots utilis�s
+  // noeuds associes aux depots utilises
   vector<vector<Noeud*>> depots;
 
-  // noeuds associ�s aux terminaisons des routes (doublon des depots)
+  // noeuds associes aux terminaisons des routes (doublon des depots)
   vector<vector<Noeud*>> depotsFin;
 
   // vecteur repertoriant des donnees sur les routes routes
   vector<vector<Route*>> routes;
 
-  // demandPerDay[i][j] -> The load to be delivered to each customer [j] on day [i]
-  vector<vector<double>> demandPerDay;
+  // deliveryPerDay[i][j] -> The load to be delivered to each customer [j] on day [i]
+  vector<vector<double>> deliveryPerDay;
 
   // lance la recherche locale avec changement de jours
   void runSearchTotal(bool isRepPhase);
@@ -119,7 +115,6 @@ public:
   // effectue un parcours complet de tous les changement de pattern et swap
   // intra-jours possibles
   // retourne le nombre de mouvements effectu�s
-  int mutationDifferentDay();
 
   void runSearchSameDay(bool isRepPhase);
   // Neighborhoods
