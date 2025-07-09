@@ -56,6 +56,8 @@ class Params {
   // graine du g�n�rateur
   int seed;
 
+  normal_distribution<double> dist;
+
   // adresse de l'instance
   string pathToInstance;
 
@@ -220,7 +222,7 @@ class Params {
   Params(string nomInstance, string nomSolution, int nbVeh,
          string nomBKS, int seedRNG);
   Params(string nomInstance, string nomSolution, int nbVeh, int seedRNG, int rou,bool stockout, 
-          double randomValue, normal_distribution<double> dist);
+          double randomValue);
 
   // Transformation de probl�me, le nouveau fichier params cr�� correspond � un
   // sous-probl�me:

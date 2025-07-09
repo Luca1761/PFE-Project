@@ -1,7 +1,7 @@
 #include "Params.h"
 
 // creating the parameters from the instance file
-Params::Params(string nomInstance, string nomSolution, int nbVeh, int seedRNG, int rou,bool stockout, double randomValue, normal_distribution<double> dist) : 
+Params::Params(string nomInstance, string nomSolution, int nbVeh, int seedRNG, int rou,bool stockout, double randomValue) : 
 	nbVehiculesPerDep(nbVeh), seed(seedRNG), isstockout(stockout), ancienNbDays(nbDays), pathToInstance(nomInstance), pathToSolution(nomSolution)
 {
 
@@ -21,6 +21,8 @@ Params::Params(string nomInstance, string nomSolution, int nbVeh, int seedRNG, i
 		throw string(" Unable to open file ");
 	}	
 
+	adjustDemands(randomValue);
+
 	setMethodParams();
 
 	computeDistancierFromCoords();
@@ -35,18 +37,17 @@ Params::Params(string nomInstance, string nomSolution, int nbVeh, int seedRNG, i
 
 void Params::adjustDemands(double rv) {
     mt19937 gen(seed + static_cast<int>(rv * 10000)); 
-    normal_distribution<double> normDist(0.0, 1.0);    
-
+	
     for (int i = 0; i < nbClients + nbDepots; i++) {
 		if (cli[i].custIdx == 0) continue; 
 		std::cout << "Client " << i << ": ";
 		std::cout << "original " << cli[i].dailyDemand[1] << " // " << cli[i].maxInventory << " // ";
         for (int k = 1; k <= nbDays; k++) {
+			normal_distribution<double> normDist(cli[i].dailyDemand[k], 10.0);    
             double x = normDist(gen);        // x ~ N(0,1)
-            double coeff = x / 4.0 + 0.35;         
-            coeff = max<double>(0.2, coeff);   
-			coeff = min<double>(coeff, 0.8);
-            cli[i].dailyDemand[k] = round(cli[i].maxInventory * coeff);
+            x = max<double>(0.0, x);   
+			x = min<double>(x, cli[i].maxInventory);
+            cli[i].dailyDemand[k] = round(x);
 			std::cout << cli[i].dailyDemand[k] << " ";
         }
 		std::cout << std::endl;
