@@ -191,7 +191,7 @@ void Params::preleveDonnees(string nomInstance, int rou, bool stockout)
 		nombreVehicules.push_back(nbDepots * nbVehiculesPerDep);
 		for (int i = 0; i < nbDepots; i++)
 			for (int j = 0; j < nbVehiculesPerDep; j++)
-				ordreVehicules[kk].push_back(Vehicle(i, 1000000, capacity));
+				ordreVehicules[kk].push_back(Vehicle(i, capacity));
 	}
 	// Liste des clients
 	for (int i = 0; i < nbClients + nbDepots; i++)

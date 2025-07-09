@@ -104,7 +104,7 @@ class Params {
 
   int nbScenarios;
 
-  // probabilit� de recherche locale totale pour la reparation (PVRP)
+  // probabilite de recherche locale totale pour la reparation (PVRP)
   double pRep;
 
   // coefficient de penalite associe a une violation de capacite
