@@ -1,7 +1,7 @@
 #include "Noeud.h"
 
 Noeud::Noeud(void){}
-Noeud::Noeud(bool estUnDepot, int idx,int jour, bool estPresent, Noeud * suiv , Noeud * pred, Route * route, double est) 
+Noeud::Noeud(bool estUnDepot, int idx, int jour, bool estPresent, Noeud * suiv , Noeud * pred, Route * route, double est) 
 : estUnDepot(estUnDepot),idx(idx),jour(jour), estPresent(estPresent),suiv(suiv), pred(pred), route(route), est(est)
 {
 coutInsertion = 1.e30 ;
