@@ -45,9 +45,6 @@ double temps ;
 // chargement total sur la route
 double charge ;
 
-// duree maximum de la route
-double maxRouteTime ;
-
 // chargement maximum de la route
 double capacity ;
 
@@ -57,11 +54,6 @@ bool isFeasible ;
 inline double excedentCharge(double charge)
 {
 	return std::max<double>(0,charge-capacity);
-}
-
-inline double excedentLength(double length)
-{
-	return std::max<double>(0,length-maxRouteTime);
 }
 
 // coordonnees du centroide de la route
@@ -97,7 +89,7 @@ void reinitSingleDayMoves();
 
 Route(void);
 
-Route(int idx, int day, Noeud * depot, double temps, double charge, double maxRouteTime, double capacity, Params * params, LocalSearch * myLS);
+Route(int idx, int day, Noeud * depot, double temps, double charge, double capacity, Params * params, LocalSearch * myLS);
 
 ~Route(void);
 };

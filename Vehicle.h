@@ -18,13 +18,10 @@ public:
 // identification of the related depot
 int depotNumber ;     
 
-// duration limit
-double maxRouteTime ;
-
 // capacity limit
 double capacity ;
 
-Vehicle(int depotNumber,double maxRouteTime,double capacity);
+Vehicle(int depotNumber, double capacity);
 ~Vehicle(void);
 };
 

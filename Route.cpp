@@ -3,8 +3,8 @@
 
 Route::Route(void){}
 
-Route::Route(int idx, int day, Noeud * depot, double temps, double charge, double maxRouteTime, double capacity, Params * params, LocalSearch * myLS) : 
-idx(idx), day(day), depot(depot), temps(temps) , charge(charge), maxRouteTime(maxRouteTime), capacity(capacity), params(params), myLS(myLS)
+Route::Route(int idx, int day, Noeud * depot, double temps, double charge, double capacity, Params * params, LocalSearch * myLS) : 
+idx(idx), day(day), depot(depot), temps(temps) , charge(charge), capacity(capacity), params(params), myLS(myLS)
 {
 	bestInsertion = vector<Insertion>(params->nbClients + params->nbDepots);
 	nodeAndRouteTested = vector<bool>(params->nbClients + params->nbDepots, false);
@@ -71,7 +71,7 @@ void Route::updateRouteData ()
 	noeud->route->temps = earlT ;
 	noeud->route->charge = charge ;
 
-	if (charge < capacity + 0.0001 && earlT < maxRouteTime + 0.0001) isFeasible = true ;
+	if (charge < capacity + 0.0001) isFeasible = true ;
 	else isFeasible = false;
 
 	initiateInsertions();
