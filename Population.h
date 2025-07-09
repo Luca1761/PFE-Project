@@ -23,9 +23,6 @@ struct SousPop
 
 	// nombre de ces individus
 	int nbIndiv ;
-
-	// nombre de generations ecoulees
-	int nbGenerations ;
 };
 
 class Population
@@ -41,7 +38,7 @@ class Population
    clock_t timeBest ;
 
    // liste qui repertorie si les XXX derniers individus produits etaient valides en terme de charge ou non
-   list <bool> listeValiditeCharge ;
+   list<bool> listeValiditeCharge ;
 
    // auxiliary data structure to apply the local search
    Individu * trainer;

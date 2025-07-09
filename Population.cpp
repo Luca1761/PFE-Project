@@ -15,20 +15,16 @@ Population::Population(vector<Params*> pl) : paramsList(pl)
 
 	valides->nbIndiv = 0;
 	invalides->nbIndiv = 0;
-	valides->nbGenerations = 0;
-	invalides->nbGenerations = 0;
 	bool compter = true;
 	
 	vector<double> saveCapa(nbScenario);
 
-	for (int scenario = 0; scenario < nbScenario; scenario++)
+	for (unsigned int scenario = 0; scenario < nbScenario; scenario++)
 		saveCapa[scenario] = paramsList[scenario]->penalityCapa;
 
-	for (int i = 0; i < paramsList[0]->mu * 2; i++)
-	{
-		if (i == paramsList[0]->mu)
-		{
-			for (int scenario = 0; scenario < nbScenario; scenario++) {
+	for (int i = 0; i < paramsList[0]->mu * 2; i++) {
+		if (i == paramsList[0]->mu) {
+			for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
 				paramsList[scenario]->penalityCapa *= 50;
 			}
 			compter = false;
@@ -44,7 +40,7 @@ Population::Population(vector<Params*> pl) : paramsList(pl)
 	// on initialise par defaut a 100, comme si tout etait valide au debut
 	// mais c'est arbitraire
 	listeValiditeCharge = list<bool> (100, true);
-	for (int scenario = 0; scenario < nbScenario; scenario++) {
+	for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
 		paramsList[scenario]->penalityCapa = saveCapa[scenario];
 	}
 }
@@ -105,8 +101,6 @@ int Population::addIndividu(Individu *indiv)
 			k = selectCompromis(souspop);
 			removeIndividu(souspop, k);
 		}
-
-		souspop->nbGenerations++;
 	}
 	return result;
 }
