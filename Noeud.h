@@ -69,9 +69,6 @@ double coutInsertion ;
 // cout insertion dans ce jour si il devait �tre ins�r�
 Noeud * placeInsertion ;
 // noeud o� serait ins�r�
-bool firstLoop ;
-// recherche global, dit si on est au premier parcours ou non
-
 
 vector < int > moves ;
 // mouvements possibles

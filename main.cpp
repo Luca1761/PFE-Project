@@ -25,8 +25,8 @@ int mainSIRP(int argc, char *argv[])
 
   int nbScenarios = c.get_nb_scenarios();
   mt19937 gen(c.get_seed());  
-  normal_distribution<double> dist;
-
+  
+  normal_distribution<double> dist(0.5, 0.15);
   vector<double> randomNumbers = vector<double>(nbScenarios, 0.0);
   for (int i = 0; i < nbScenarios; i++) {
     randomNumbers[i] = dist(gen);
@@ -42,16 +42,12 @@ int mainSIRP(int argc, char *argv[])
       c.get_seed(),
       c.get_rou(), 
       c.get_stockout(),
-      randomValue,   
-      dist           
+      randomValue      
     );
-
+    
     paramsList.push_back(param);
   }
   // initial population 
-  for (int scenario = 0; scenario < nbScenarios; scenario++) {
-    paramsList[scenario]->adjustDemands(randomValue);
-  }
   Population *population = new Population(paramsList);
 
   // we create the solver

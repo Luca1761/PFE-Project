@@ -32,7 +32,7 @@ void Route::printRouteData(std::ostream& file)
 		noeud = noeud->suiv ;
 		place ++ ;
 		noeud->place = place ;
-		charge += myLS->demandPerDay[day][noeud->idx];
+		charge += myLS->deliveryPerDay[day][noeud->idx];
 		earlT += params->timeCost[noeud->pred->idx][noeud->idx] ;
 		noeud->chargeAvant = charge ;
 		noeud->est = earlT ;
@@ -62,7 +62,7 @@ void Route::updateRouteData ()
 		noeud = noeud->suiv ;
 		place ++ ;
 		noeud->place = place ;
-		charge += myLS->demandPerDay[day][noeud->idx];
+		charge += myLS->deliveryPerDay[day][noeud->idx];
 		earlT += params->timeCost[noeud->pred->idx][noeud->idx] ;
 		noeud->chargeAvant = charge ;
 		noeud->est = earlT ;
@@ -106,7 +106,7 @@ void Route::evalInsertClientp (Noeud * U)
 	}
 	else // U is already  in our route
 	{
-		bestInsertion[U->idx].load = std::max<double>(0.,capacity + myLS->demandPerDay[day][U->idx] - charge);
+		bestInsertion[U->idx].load = std::max<double>(0.,capacity + myLS->deliveryPerDay[day][U->idx] - charge);
 		bestInsertion[U->idx].detour = params->timeCost[U->pred->idx][U->idx] - params->timeCost[U->pred->idx][U->suiv->idx]   
 										+ params->timeCost[U->idx][U->suiv->idx] ;
 		bestInsertion[U->idx].place = U->pred ;
@@ -176,7 +176,7 @@ void Route::evalInsertClient (Noeud * U)
 	}
 	else // U is already  in our route
 	{
-		bestInsertion[U->idx].load = std::max<double>(0.,capacity + myLS->demandPerDay[day][U->idx] - charge);
+		bestInsertion[U->idx].load = std::max<double>(0.,capacity + myLS->deliveryPerDay[day][U->idx] - charge);
 		bestInsertion[U->idx].detour = params->timeCost[U->pred->idx][U->idx] - params->timeCost[U->pred->idx][U->suiv->idx]   
 										+ params->timeCost[U->idx][U->suiv->idx] ;
 		bestInsertion[U->idx].place = U->pred ;
