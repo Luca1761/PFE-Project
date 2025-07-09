@@ -33,8 +33,6 @@ struct coutSol {
 
   // violations de capacite
   double capacityViol ;
-
-  double day1Cost;
 };
 
 class Individu ;
