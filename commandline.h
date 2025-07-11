@@ -17,6 +17,7 @@ private:
     bool stockout;
 
     int nb_scenarios;
+    int var;
 
     // nbVehicles, if given
     int nbVeh;
@@ -67,6 +68,7 @@ public:
     int get_stockout();
     int get_rou();
     int get_nb_scenarios(); 
+    int get_var();
 
     // renvoie le nombre de v�hicules optimal connu
     int get_nbVeh();

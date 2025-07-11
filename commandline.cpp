@@ -37,9 +37,6 @@ void commandline::set_default_sorties_name(string to_parse)
 // constructeur
 commandline::commandline(int argc, char *argv[])
 {
-  bool isTime = false;
-  bool isOutput = false;
-  bool isBKS = false;
   if (argc > 24 || argc < 2)
   {
     cout << "incorrect command line" << endl;
@@ -71,6 +68,8 @@ commandline::commandline(int argc, char *argv[])
           stockout = true;
       } else if (string(argv[i]) == "-scenarios"){
           nb_scenarios = atoi(argv[i + 1]);
+      } else if (string(argv[i]) == "-var") {
+          var = atoi(argv[i + 1]);
       } else {
         cout << "Commande non reconnue : " << string(argv[i]) << endl;
         throw std::string("Commande non reconnue");
@@ -82,9 +81,6 @@ commandline::commandline(int argc, char *argv[])
 
 void commandline::set_debug_params(string instance)
 {
-  bool isTime = false;
-  bool isOutput = false;
-  bool isBKS = false;
 
   set_instance_name(instance);
   set_default_sorties_name(instance);
@@ -107,6 +103,8 @@ string commandline::get_path_to_BKS() { return BKS_name; }
 int commandline::get_stockout() { return stockout; }
 
 int commandline::get_nb_scenarios() {return nb_scenarios; }
+
+int commandline::get_var() {return var; }
 
 int commandline::get_rou() { return rou; }
 
