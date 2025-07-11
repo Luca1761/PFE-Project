@@ -42,6 +42,7 @@ int mainSIRP(int argc, char *argv[])
       c.get_seed(),
       c.get_rou(), 
       c.get_stockout(),
+      c.get_var(),
       randomValue      
     );
     
@@ -65,7 +66,7 @@ int mainSIRP(int argc, char *argv[])
   population->ExportBKS(c.get_path_to_BKS());
 
   // on desalloue la memoire
-  for (int i = 0; i < nbScenarios; i++)
+  for (unsigned int i = 0; i < nbScenarios; i++)
     delete paramsList[i];
   return 0;
   
