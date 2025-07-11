@@ -84,9 +84,6 @@ class Params {
   // crit�re de proximit� des individus (RI -- constante)
   int proxCst;
 
-  // crit�re de proximit� des individus (PI -- constante)
-  int prox2Cst;
-
   // nombre d'individus pris en compte dans la mesure de distance
   int nbCountDistMeasure;
 
@@ -165,9 +162,6 @@ class Params {
   // critere de correlation
   vector<vector<bool> > isCorrelated1;
 
-  // critere de correlation
-  vector<vector<bool> > isCorrelated2;
-
   // SPECIFIC DATA FOR THE INVENTORY ROUTING PROBLEM //
 
   // availableSupply[t] gives the new additional supply at day t.
@@ -216,12 +210,12 @@ class Params {
   // modifie al�atoirement les tableaux de proximit� des clients
   void shuffleProches();
 
-  void adjustDemands(double randomValue);
+  void adjustDemands(double randomValue, int var);
   // constructeur de Params qui remplit les structures en les pr�levant dans le
   // fichier
   Params(string nomInstance, string nomSolution, int nbVeh,
          string nomBKS, int seedRNG);
-  Params(string nomInstance, string nomSolution, int nbVeh, int seedRNG, int rou,bool stockout, 
+  Params(string nomInstance, string nomSolution, int nbVeh, int seedRNG, int rou,bool stockout, int var,
           double randomValue);
 
   // Transformation de probl�me, le nouveau fichier params cr�� correspond � un

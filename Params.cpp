@@ -1,7 +1,7 @@
 #include "Params.h"
 
 // creating the parameters from the instance file
-Params::Params(string nomInstance, string nomSolution, int nbVeh, int seedRNG, int rou,bool stockout, double randomValue) : 
+Params::Params(string nomInstance, string nomSolution, int nbVeh, int seedRNG, int rou,bool stockout, int var, double randomValue) : 
 	nbVehiculesPerDep(nbVeh), seed(seedRNG), isstockout(stockout), ancienNbDays(nbDays), pathToInstance(nomInstance), pathToSolution(nomSolution)
 {
 
@@ -21,7 +21,7 @@ Params::Params(string nomInstance, string nomSolution, int nbVeh, int seedRNG, i
 		throw string(" Unable to open file ");
 	}	
 
-	adjustDemands(randomValue);
+	adjustDemands(randomValue, var);
 
 	setMethodParams();
 
@@ -35,7 +35,7 @@ Params::Params(string nomInstance, string nomSolution, int nbVeh, int seedRNG, i
 	
 }
 
-void Params::adjustDemands(double rv) {
+void Params::adjustDemands(double rv, int var) {
     mt19937 gen(seed + static_cast<int>(rv * 10000)); 
 	
     for (int i = 0; i < nbClients + nbDepots; i++) {
@@ -43,7 +43,7 @@ void Params::adjustDemands(double rv) {
 		std::cout << "Client " << i << ": ";
 		std::cout << "original " << cli[i].dailyDemand[1] << " // " << cli[i].maxInventory << " // ";
         for (int k = 1; k <= nbDays; k++) {
-			normal_distribution<double> normDist(cli[i].dailyDemand[k], 10.0);    
+			normal_distribution<double> normDist(cli[i].dailyDemand[k], (double) var);    
             double x = normDist(gen);        // x ~ N(0,1)
             x = max<double>(0.0, x);   
 			x = min<double>(x, cli[i].maxInventory);
@@ -150,7 +150,6 @@ void Params::setMethodParams()
 	// parameters of the mutation
 	prox = 40;			 // granularity parameter (expressed as a percentage of the problem size -- 35%) // ***
 	proxCst = 1000000;	 // granularity parameter (expressed as a fixed maximum)
-	prox2Cst = 1000000;	 // granularity parameter on PI
 	pRep = 0.5;			 // probability of repair // o
 
 	// parametres lies aux pEnalites adaptatives
@@ -205,7 +204,6 @@ void Params::calculeStructures()
 
 	// initializing the correlation matrix
 	isCorrelated1 = vector<vector<bool>>(nbClients + nbDepots, vector<bool>(nbClients + nbDepots, false));
-	isCorrelated2 = vector<vector<bool>>(nbClients + nbDepots, vector<bool>(nbClients + nbDepots, false));
 
 	for (int i = 0; i < nbClients + nbDepots; i++)
 	{
@@ -236,8 +234,6 @@ void Params::calculeStructures()
 			cli[i].sommetsVoisins.push_back(cli[i].ordreProximite[j]);
 			isCorrelated1[i][cli[i].ordreProximite[j]] = true;
 		}
-		for (int j = 0; j < (int)cli[i].ordreProximite.size() && j < prox2Cst; j++)
-			isCorrelated2[i][cli[i].ordreProximite[j]] = true;
 	}
 
 	// on melange les proches
@@ -287,11 +283,9 @@ void Params::shuffleProches()
 	int temp, temp2;
 
 	// on introduit du d�sordre dans la liste des plus proches pour chaque client
-	for (int i = nbDepots; i < nbClients + nbDepots; i++)
-	{
+	for (int i = nbDepots; i < nbClients + nbDepots; i++) {
 		// on introduit du desordre
-		for (int a1 = 0; a1 < (int)cli[i].sommetsVoisins.size() - 1; a1++)
-		{
+		for (int a1 = 0; a1 < (int)cli[i].sommetsVoisins.size() - 1; a1++) {
 			temp2 = a1 + rng->genrand64_int64() % ((int)cli[i].sommetsVoisins.size() - a1);
 			temp = cli[i].sommetsVoisins[a1];
 			cli[i].sommetsVoisins[a1] = cli[i].sommetsVoisins[temp2];
@@ -375,10 +369,10 @@ void Params::decomposeRoutes(Params *params, int *serieVisites, Vehicle **serieV
 		cli.push_back(params->cli[correspondanceTable[i]]);
 }
 
-void Params::computeConstant_stockout()
-{
+void Params::computeConstant_stockout() {
 	objectiveConstant_stockout = 0.;
 	// Adding the total cost for supplier inventory over the planning horizon (CONSTANT IN OBJECTIVE)
-	for (int k = 1; k <= ancienNbDays; k++)
+	for (unsigned int k = 1; k <= ancienNbDays; k++) {
 		objectiveConstant_stockout += availableSupply[k] * (ancienNbDays + 1 - k) * inventoryCostSupplier;
+	}
 }
