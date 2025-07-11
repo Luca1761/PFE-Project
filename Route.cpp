@@ -43,8 +43,7 @@ void Route::printRouteData(std::ostream& file)
 
 }
 
-void Route::updateRouteData ()
-{
+void Route::updateRouteData () {
 	bool firstIt = true ;
 	int place = 0 ;
 	double charge = 0 ;
@@ -56,7 +55,7 @@ void Route::updateRouteData ()
 	depot->chargeAvant = 0 ;
 	depot->est = 0 ;
 
-	while ( !noeud->estUnDepot || firstIt )
+	while (!noeud->estUnDepot || firstIt)
 	{
 		firstIt = false ;
 		noeud = noeud->suiv ;
@@ -211,13 +210,11 @@ void Route::evalInsertClient (Noeud * U)
 }
 
 // no insertion is calculated
-void Route::initiateInsertions()
-{
-	for (int i=0 ; i < params->nbClients + params->nbDepots ; i ++ )
-	{
-		bestInsertion[i].detour = 1.e30 ;
-		bestInsertion[i].load = -1.e30 ;
-		bestInsertion[i].place = NULL ;
+void Route::initiateInsertions() {
+	for (unsigned int i = 0 ; i < params->nbClients + params->nbDepots ; i++) {
+		bestInsertion[i].detour = 1.e30;
+		bestInsertion[i].load = -1.e30;
+		bestInsertion[i].place = NULL;
 	}
 }
 
@@ -226,26 +223,4 @@ void Route::reinitSingleDayMoves()
 {
 	for (int i=0 ; i < params->nbClients + params->nbDepots ; i ++ )
 		nodeAndRouteTested[i] = false ;
-}
-
-
-void Route::updateCentroidCoord ()
-{
-	double Xvalue = 0 ;
-	double Yvalue = 0 ;
-	double nbNodes = 0 ;
-	Noeud * courNoeud  = depot->suiv ;
-
-	while (!courNoeud->estUnDepot)
-	{
-		Xvalue += params->cli[courNoeud->idx].coord.x ;
-		Yvalue += params->cli[courNoeud->idx].coord.y ;
-		nbNodes ++ ;
-		courNoeud = courNoeud->suiv ;
-	}
-
-	centroidX = Xvalue/nbNodes ;
-	centroidY = Yvalue/nbNodes ;
-
-	centroidAngle = atan2( centroidY - params->cli[depot->idx].coord.y, centroidX - params->cli[depot->idx].coord.x );
 }

@@ -23,7 +23,7 @@ class Route
 private:
 
 // acces aux donnees de l'instance
-Params * params ;
+Params * params;
 
 // access  to other features
 LocalSearch * myLS ;
@@ -51,21 +51,9 @@ double capacity ;
 // valide ou non
 bool isFeasible ;
 
-inline double excedentCharge(double charge)
-{
-	return std::max<double>(0,charge-capacity);
+inline double excedentCharge(double _charge) {
+	return std::max<double>(0, _charge - capacity);
 }
-
-// coordonnees du centroide de la route
-// ainsi que l'angle pris par rapport au segment (0,0) (0,1)
-// utilise pour refaire le giant tour apres la LS
-// pas d'utilite lors de la recherche locale
-double centroidX ;
-double centroidY ;
-double centroidAngle ;
-
-// calcule les coordonnees du centroide
-void updateCentroidCoord ();
 
 // met a jour les charges partielles de la route associ�e au noeud U
 void updateRouteData () ;
