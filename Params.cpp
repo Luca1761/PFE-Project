@@ -1,14 +1,14 @@
 #include "Params.h"
 
 // creating the parameters from the instance file
-Params::Params(string nomInstance, string nomSolution, int nbVeh, int seedRNG, int rou,bool stockout, int var, double randomValue) : 
-	nbVehiculesPerDep(nbVeh), seed(seedRNG), isstockout(stockout), ancienNbDays(nbDays), pathToInstance(nomInstance), pathToSolution(nomSolution)
+Params::Params(string nomInstance, string nomSolution, int nbVeh, int seedRNG, int rou,bool stockout, int var, double randomValue, int idxScenario) : 
+	nbVehiculesPerDep(nbVeh), seed(seedRNG), isstockout(stockout), ancienNbDays(nbDays), pathToInstance(nomInstance), pathToSolution(nomSolution), idxScenario(idxScenario)
 {
 
 	if (seed == 0)
 		rng = new Rng((unsigned long long)time(NULL));
 	else
-		rng = new Rng((unsigned long long)(seed));	
+		rng = new Rng((unsigned long long)(seed + idxScenario));	
 
 	debut = clock();
 	fichier.open(nomInstance.c_str());
@@ -282,7 +282,7 @@ void Params::shuffleProches()
 {
 	int temp, temp2;
 
-	// on introduit du d�sordre dans la liste des plus proches pour chaque client
+	// on introduit du desordre dans la liste des plus proches pour chaque client
 	for (int i = nbDepots; i < nbClients + nbDepots; i++) {
 		// on introduit du desordre
 		for (int a1 = 0; a1 < (int)cli[i].sommetsVoisins.size() - 1; a1++) {

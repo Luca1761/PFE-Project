@@ -138,6 +138,8 @@ class Params {
   // ancien nombre de jours
   int ancienNbDays;
 
+  int idxScenario;
+
   // nombre de vehicules par d�pot
   int nbVehiculesPerDep;
 
@@ -216,7 +218,7 @@ class Params {
   Params(string nomInstance, string nomSolution, int nbVeh,
          string nomBKS, int seedRNG);
   Params(string nomInstance, string nomSolution, int nbVeh, int seedRNG, int rou,bool stockout, int var,
-          double randomValue);
+          double randomValue, int idxScenario);
 
   // Transformation de probl�me, le nouveau fichier params cr�� correspond � un
   // sous-probl�me:
