@@ -515,8 +515,7 @@ void LotSizingSolver::Lastday(vector<std::shared_ptr<PLFunction>> &C, int scenar
   return;
 }
 
-bool LotSizingSolver::solveStockoutBackward()
-{
+bool LotSizingSolver::solveStockoutBackward() {
   C = vector<vector<std::shared_ptr<PLFunction>>>(nbScenario, vector<std::shared_ptr<PLFunction>>(horizon + 1));
 
   // final inventory at the end of each period
@@ -533,7 +532,7 @@ bool LotSizingSolver::solveStockoutBackward()
       C[scenario][i] = std::make_shared<PLFunction>(paramsList[scenario]); // a piecewise linear function in each period
     }
   }
-  const int GROUP_SIZE_2 = 2;
+  const int GROUP_SIZE_2 = nbScenario / 4 + 1;
 	vector<thread> threads;
 	for (int i = 0; i < nbScenario; i += GROUP_SIZE_2) {
 		int end = std::min(i + GROUP_SIZE_2, nbScenario);
