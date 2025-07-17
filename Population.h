@@ -59,7 +59,7 @@ class Population
 
    // ajoute un individu a la population
    // la population se debrouille pour le placer ou il lui semble bon
-   // updateNbValides est mis a true si on veut mettree jour la proportion de valides aussi 
+   // updateNbValides est mis a true si on veut mettre jour la proportion de valides aussi 
    // retourne -1 si echec, sinon sa nouvelle position dans la population
    int addIndividu (Individu * indiv);
 

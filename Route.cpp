@@ -55,8 +55,7 @@ void Route::updateRouteData () {
 	depot->chargeAvant = 0 ;
 	depot->est = 0 ;
 
-	while (!noeud->estUnDepot || firstIt)
-	{
+	while (!noeud->estUnDepot || firstIt) {
 		firstIt = false ;
 		noeud = noeud->suiv ;
 		place ++ ;
