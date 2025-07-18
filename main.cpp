@@ -43,7 +43,8 @@ int mainSIRP(int argc, char *argv[])
       c.get_rou(), 
       c.get_stockout(),
       c.get_var(),
-      randomValue      
+      randomValue,
+      scenario   
     );
     
     paramsList.push_back(param);
@@ -58,7 +59,7 @@ int mainSIRP(int argc, char *argv[])
   
   int max_iter = 100000;
   int maxIterNonProd = 100000;
-  solver.evolve(max_iter, maxIterNonProd, 1);
+  solver.evolve(max_iter, maxIterNonProd);
 
   
   population->ExportPop(c.get_path_to_solution(),true);
