@@ -1,8 +1,7 @@
 #include "LocalSearch.h"
 
 // effectue l'insertion du client U apres V
-void LocalSearch::insertNoeud(Noeud * U, Noeud * V)
-{
+void LocalSearch::insertNoeud(Noeud * U, Noeud * V) {
 	// mettre a jour les noeuds
 	U->pred->suiv = U->suiv ;
 	U->suiv->pred = U->pred ;
@@ -10,7 +9,6 @@ void LocalSearch::insertNoeud(Noeud * U, Noeud * V)
 	U->pred = V ;
 	U->suiv = V->suiv ;
 	V->suiv = U ;
-
 
 	U->route = routeV ;
 	routeU->updateRouteData();
@@ -53,20 +51,19 @@ int LocalSearch::mutation1 ()
 	+ params->timeCost[noeudUCour][yCour] 
 	- params->timeCost[noeudVCour][yCour];
 
-	// dans le cas ou l'on est dans la meme route , le cout n'est pas calcul� correctement en r�alit�
-	// tout ce qu'on sait c'est que si il est n�gatif c'est qu'il est bien r�ellement n�gatif
+	// dans le cas ou l'on est dans la meme route , le cout n'est pas calcule correctement en realite
+	// tout ce qu'on sait c'est que si il est negatif c'est qu'il est bien reellement negatif
 	// pas d'incidence pour l'instant mais attention
-	if (routeU != routeV)
-	{
-	costSuppU += routeU->excedentCharge(routeU->charge - deliveryPerDay[dayCour][noeudUCour])*params->penalityCapa
-	- routeU->excedentCharge(routeU->charge)*params->penalityCapa ;
+	if (routeU != routeV) {
+		costSuppU += routeU->excedentCharge(routeU->charge - deliveryPerDay[dayCour][noeudUCour])*params->penalityCapa
+		- routeU->excedentCharge(routeU->charge)*params->penalityCapa ;
 
-	costSuppV += routeV->excedentCharge(routeV->charge + deliveryPerDay[dayCour][noeudUCour])*params->penalityCapa
-	- routeV->excedentCharge(routeV->charge)*params->penalityCapa ;
+		costSuppV += routeV->excedentCharge(routeV->charge + deliveryPerDay[dayCour][noeudUCour])*params->penalityCapa
+		- routeV->excedentCharge(routeV->charge)*params->penalityCapa ;
 	}
 
-	if ( costSuppU + costSuppV > -0.0001 ) { return 0 ;}
-	if ( noeudUCour == yCour ) { return 0 ; }
+	if (costSuppU + costSuppV > -0.0001) return 0 ;
+	if (noeudUCour == yCour) return 0;
 
 	// mettre a jour les noeuds
 	insertNoeud(noeudU,noeudV);
@@ -76,7 +73,7 @@ int LocalSearch::mutation1 ()
 }
 
 // If noeudU and x are clients, remove them then insert (noeudU,x) after noeudV
-// teste si x n'est pas un depot , et si x different de noeudV, et si noeudU pas d�ja apres noeudV
+// teste si x n'est pas un depot , et si x different de noeudV, et si noeudU pas deja apres noeudV
 int LocalSearch::mutation2 ()
 {
 	double costSuppU = params->timeCost[noeudUPredCour][xSuivCour] 
@@ -132,8 +129,8 @@ int LocalSearch::mutation3 ()
 	- routeV->excedentCharge(routeV->charge)*params->penalityCapa ;
 	}
 
-	if ( costSuppU + costSuppV > -0.0001 ) { return 0 ;}
-	if ( noeudU == y ||  x == noeudV || x->estUnDepot ) { return 0 ;}
+	if ( costSuppU + costSuppV > -0.0001 ) return 0;
+	if ( noeudU == y ||  x == noeudV || x->estUnDepot ) return 0;
 
 	// mettre a jour les noeuds
 	insertNoeud(x,noeudV);
