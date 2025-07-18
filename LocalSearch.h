@@ -33,12 +33,11 @@ struct paireJours
 class LocalSearch
 {
 private:
-    Params *params;
-    bool rechercheTerminee;
-    bool isRepPhase;
-    Individu *individu;
+Individu *individu;
 
 public:
+  Params *params;
+  bool rechercheTerminee;
   // vecteur donnant l'ordre de parcours des sommets pour chaque jour, ne
   // contenant pas les sommets
   // qui n'existent pas pour le jour donn�
@@ -101,11 +100,8 @@ public:
   // deliveryPerDay[i][j] -> The load to be delivered to each customer [j] on day [i]
   vector<vector<double>> deliveryPerDay;
 
-  // lance la recherche locale avec changement de jours
-  void runSearchTotal(bool isRepPhase);
-
   // effectue une parcours complet de toutes les mutations possibles
-  // retourne le nombre de mouvements effectu�s
+  // retourne le nombre de mouvements effectues
   int mutationSameDay(int day);
 
   // pour un client, marque que tous les mouvements impliquant ce noeud ont �t�
@@ -116,7 +112,7 @@ public:
   // intra-jours possibles
   // retourne le nombre de mouvements effectu�s
 
-  void runSearchSameDay(bool isRepPhase);
+  void runSearchSameDay();
   // Neighborhoods
 
   /* RELOCATE */
@@ -158,11 +154,8 @@ public:
   // (posUreal,y) and (posVreal,x)
   int mutation9();
 
-  /* PI procedure for IRP */
-  int mutation11(int client);
   // Evaluates the current objective function from the model
-  double evaluateCurrentCost(int client);
-  double evaluateCurrentCost_stockout (int client);
+  double evaluateCurrentCost_stockout(int client);
 
   // Prints some useful information on the current solution
   void printInventoryLevels(std::ostream& file,bool add);
