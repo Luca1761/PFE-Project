@@ -15,13 +15,14 @@ Population::Population(vector<Params*> pl) : paramsList(pl)
 
 	valides->nbIndiv = 0;
 	invalides->nbIndiv = 0;
+	listeValiditeCharge = list<bool> (100, true);
 	bool compter = true;
 	
 	vector<double> saveCapa(nbScenario);
-
+	
 	for (unsigned int scenario = 0; scenario < nbScenario; scenario++)
-		saveCapa[scenario] = paramsList[scenario]->penalityCapa;
-
+	saveCapa[scenario] = paramsList[scenario]->penalityCapa;
+	
 	for (int i = 0; i < paramsList[0]->mu * 2; i++) {
 		if (i == paramsList[0]->mu) {
 			for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
@@ -30,17 +31,18 @@ Population::Population(vector<Params*> pl) : paramsList(pl)
 			compter = false;
 		}
 		Individu *randomIndiv = new Individu(paramsList);  
-
+		
 		education_scenario(randomIndiv);
 		if (compter) updateNbValides(randomIndiv);
 		addIndividu(randomIndiv);
 		delete randomIndiv;
 	}
-
+	
 	// on initialise par defaut a 100, comme si tout etait valide au debut
 	// mais c'est arbitraire
-	listeValiditeCharge = list<bool> (100, true);
-	for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
+	
+	//TO CHECK
+	for (unsigned int scenario = 0; scenario < (unsigned int) nbScenario; scenario++) {
 		paramsList[scenario]->penalityCapa = saveCapa[scenario];
 	}
 }
@@ -56,50 +58,43 @@ Population::~Population()
 
 	delete trainer;
 }
-void Population::evalExtFit(SousPop *pop)
-{
+
+void Population::evalExtFit(SousPop *pop) {
 	int temp;
 	vector<int> classement;
 	vector<double> distances;
 
-	for (int i = 0; i < pop->nbIndiv; i++)
-	{
-		classement.push_back(i);
-		distances.push_back(pop->individus[i]->distPlusProche(paramsList[0]->nbCountDistMeasure));
+	for (unsigned int indiv = 0; indiv < pop->nbIndiv; indiv++) {
+		classement.push_back(indiv);
+		distances.push_back(pop->individus[indiv]->distPlusProche(paramsList[0]->nbCountDistMeasure));
 	}
 
 	// classement des individus en fonction de leur note de distance
-	for (int n = 0; n < pop->nbIndiv; n++)
-		for (int i = 0; i < pop->nbIndiv - n - 1; i++)
-			if (distances[classement[i]] < distances[classement[i + 1]] - 0.000001)
-			{
+	for (int n = 0; n < pop->nbIndiv; n++) {
+		for (int i = 0; i < pop->nbIndiv - n - 1; i++) {
+			if (distances[classement[i]] < distances[classement[i + 1]] - 0.000001)	{
 				temp = classement[i + 1];
 				classement[i + 1] = classement[i];
 				classement[i] = temp;
 			}
+		}
+	}
 
-	for (int i = 0; i < pop->nbIndiv; i++)
-	{
+	for (unsigned int i = 0; i < pop->nbIndiv; i++) {
 		pop->individus[classement[i]]->divRank = (float)i / (float)(pop->nbIndiv - 1);
 		pop->individus[classement[i]]->fitRank = (float)classement[i] / (float)(pop->nbIndiv - 1);
 		pop->individus[classement[i]]->fitnessEtendu = pop->individus[classement[i]]->fitRank + ((float)1.0 - (float)paramsList[0]->el / (float)pop->nbIndiv) * pop->individus[classement[i]]->divRank;
 	}
 }
 
-int Population::addIndividu(Individu *indiv)
-{
+int Population::addIndividu(Individu *indiv) {
 	SousPop *souspop = (indiv->estValide) ? valides : invalides;
-	int k, result;
+	int result = placeIndividu(souspop, indiv);
 
-	result = placeIndividu(souspop, indiv);
 	// il faut eventuellement enlever la moitie de la pop
-	if (result != -1 && souspop->nbIndiv > paramsList[0]->mu + paramsList[0]->lambda)
-	{
-
-		while (souspop->nbIndiv > paramsList[0]->mu)
-		{
-			k = selectCompromis(souspop);
-			removeIndividu(souspop, k);
+	if (souspop->nbIndiv > paramsList[0]->mu + paramsList[0]->lambda) {
+		while (souspop->nbIndiv > paramsList[0]->mu) {
+			removeIndividu(souspop, selectCompromis(souspop));
 		}
 	}
 	return result;
@@ -108,11 +103,9 @@ int Population::addIndividu(Individu *indiv)
 // met a jour les individus les plus proches d'une population
 // en fonction de l'arrivant
 
-void Population::updateProximity(SousPop *pop, Individu *indiv)
-{
-	for (int k = 0; k < pop->nbIndiv; k++)
-		if (pop->individus[k] != indiv)
-		{
+void Population::updateProximity(SousPop *pop, Individu *indiv) {
+	for (unsigned int k = 0; k < pop->nbIndiv; k++)
+		if (pop->individus[k] != indiv) {
 			pop->individus[k]->addProche(indiv);
 			indiv->addProche(pop->individus[k]);
 		}
@@ -123,8 +116,7 @@ void Population::updateProximity(SousPop *pop, Individu *indiv)
 bool Population::fitExist(SousPop *pop, Individu *indiv)
 {
 	double fitness = indiv->coutSol.evaluation;
-	for (int i = 0; i < (int)pop->nbIndiv; i++)
-	{
+	for (int i = 0; i < (int)pop->nbIndiv; i++) {
 		if (indiv != pop->individus[i] && pop->individus[i]->coutSol.evaluation >= (fitness - paramsList[0]->delta) && pop->individus[i]->coutSol.evaluation <= (fitness + paramsList[0]->delta))
 			return true;
 	}
@@ -133,30 +125,25 @@ bool Population::fitExist(SousPop *pop, Individu *indiv)
 // procede de redemarrage avec remplacement d'une partie de la population
 // modele tres simplifie
 // on remplace la moitie individus de fitness situes sous la moyenne par des individus aleatoires
-void Population::diversify()
-{
-	Individu *randomIndiv;
+void Population::diversify() {
 	vector<double> savePenalities(nbScenario, 0.0);
 
-	for (int i = 0; i < nbScenario; i++)
-		savePenalities[i] = paramsList[i]->penalityCapa;
+	for (unsigned int scenario = 0; scenario < (unsigned int) nbScenario; scenario++) {
+		savePenalities[scenario] = paramsList[scenario]->penalityCapa;
+	}
 
-	while (valides->nbIndiv > (int)(paramsList[0]->rho * (double)paramsList[0]->mu))
-	{
+	while (valides->nbIndiv > (int)(paramsList[0]->rho * (double)paramsList[0]->mu)) {
 		delete valides->individus[valides->nbIndiv - 1];
 		valides->individus.pop_back();
 		valides->nbIndiv--;
 	}
-	while (invalides->nbIndiv > (int)(paramsList[0]->rho * (double)paramsList[0]->mu))
-	{
+	while (invalides->nbIndiv > (int)(paramsList[0]->rho * (double)paramsList[0]->mu)) {
 		delete invalides->individus[invalides->nbIndiv - 1];
 		invalides->individus.pop_back();
 		invalides->nbIndiv--;
 	}
-	for (int i = 0; i < paramsList[0]->mu * 2; i++)
-	{
-		if (i == paramsList[0]->mu)
-		{
+	for (int i = 0; i < paramsList[0]->mu * 2; i++) {
+		if (i == paramsList[0]->mu) {
 			for (int j = 0; j < nbScenario; j++) {
 				paramsList[j]->penalityCapa *= 50;
 			}
@@ -165,13 +152,14 @@ void Population::diversify()
 		education_scenario(random);
 		addIndividu(random);
 	}
-	for (int i = 0; i < nbScenario; i++)
-		paramsList[i]->penalityCapa = savePenalities[i];
+	for (unsigned int scenario = 0; scenario < (unsigned int) nbScenario; scenario++) {
+		paramsList[scenario]->penalityCapa = savePenalities[scenario];
+	}
 }
 
-int Population::placeIndividu(SousPop *pop, Individu *indiv)
-{
-
+//Try to place individual indiv in the sub population and return its position 
+//Individuals are increasingly sorted in the subpopulation
+int Population::placeIndividu(SousPop *pop, Individu *indiv) {
 	Individu *monIndiv = new Individu(paramsList);
 	recopieIndividu(monIndiv, indiv);
 
@@ -180,19 +168,15 @@ int Population::placeIndividu(SousPop *pop, Individu *indiv)
 	int i = (int)pop->individus.size() - 1;
 
 	pop->individus.push_back(monIndiv);
-	while (i >= 0 && !placed)
-	{
-		if (pop->individus[i]->coutSol.evaluation >= indiv->coutSol.evaluation + 0.001)
-		{
+	while (i >= 0 && !placed) {
+		if (pop->individus[i]->coutSol.evaluation >= indiv->coutSol.evaluation + 0.001) {
 			pop->individus[i + 1] = pop->individus[i];
 			i--;
-		}
-		else
-		{
+		} else {
 			pop->individus[i + 1] = monIndiv;
 			placed = true;
 			pop->nbIndiv++;
-			updateProximity(pop, pop->individus[i + 1]);
+			updateProximity(pop, monIndiv);
 			return i + 1; // reussite
 		}
 	}
@@ -201,29 +185,28 @@ int Population::placeIndividu(SousPop *pop, Individu *indiv)
 		pop->individus[0] = monIndiv;
 		placed = true;
 		pop->nbIndiv++;
-		updateProximity(pop, pop->individus[0]);
-		if (pop == valides)
-			timeBest = clock();
+		updateProximity(pop, monIndiv);
+		if (pop == valides) timeBest = clock();
 		return 0; // reussite
 	}
-	cout << "erreur placeIndividu" << endl;
+	throw std::string("failed to place individual");
 	return -3;
 }
 
-void Population::removeIndividu(SousPop *pop, int p)
-{
+void Population::removeIndividu(SousPop *pop, int p) {
 	Individu *partant = pop->individus[p];
 
-	// on place notre individu � la fin
-	for (int i = p + 1; i < (int)pop->individus.size(); i++)
+	// on place notre individu a la fin
+	for (unsigned int i = p + 1; i < pop->individus.size(); i++) {
 		pop->individus[i - 1] = pop->individus[i];
+	}
 
 	// on l'enleve de la population
 	pop->individus.pop_back();
 	pop->nbIndiv--;
 
 	// on l'enleve des structures de proximit�
-	for (int i = 0; i < pop->nbIndiv; i++)
+	for (unsigned int i = 0; i < pop->nbIndiv; i++)
 		pop->individus[i]->removeProche(partant);
 
 	// et on supprime le partant
@@ -232,52 +215,48 @@ void Population::removeIndividu(SousPop *pop, int p)
 // recalcule l'evaluation des individus a partir des violation
 // puis effectue un tri a bulles de la population
 // operateur de tri peu efficace mais fonction appelee tres rarement
-void Population::validatePen()
-{
-	Individu *indiv;
+void Population::validatePen() {
 	// on met a jour les evaluations
-	for (int i = 0; i < invalides->nbIndiv; i++)
-		invalides->individus[i]->coutSol.evaluation = invalides->individus[i]->coutSol.fitness + paramsList[0]->penalityCapa * invalides->individus[i]->coutSol.capacityViol;
+	for (Individu* indiv : invalides->individus) {
+		indiv->coutSol.evaluation = 0.0;
+		for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
+			indiv->coutSol_scenario.evaluation[scenario] = indiv->coutSol_scenario.fitness[scenario] + paramsList[scenario]->penalityCapa * indiv->coutSol_scenario.capacityViol[scenario]; 
+			indiv->coutSol.evaluation += indiv->coutSol_scenario.evaluation[scenario];
+		}
+		indiv->coutSol.evaluation /= (double)nbScenario;
+	}
+	for (unsigned int i = 0; i < invalides->nbIndiv; i++) {
 
-	for (int i = 0; i < invalides->nbIndiv; i++)
-		for (int j = 0; j < invalides->nbIndiv - i - 1; j++)
-		{
-			if (invalides->individus[j]->coutSol.evaluation > invalides->individus[j + 1]->coutSol.evaluation)
-			{
-				indiv = invalides->individus[j];
-				invalides->individus[j] = invalides->individus[j + 1];
-				invalides->individus[j + 1] = indiv;
+		for (unsigned int j = 0; j < invalides->nbIndiv - i - 1; j++) {
+			if (invalides->individus[j]->coutSol.evaluation > invalides->individus[j + 1]->coutSol.evaluation) {
+				std::swap(invalides->individus[j], invalides->individus[j + 1]);
 			}
 		}
+	}
 }
 
-Individu *Population::getIndividuBinT(double &rangRelatif)
-{
+Individu *Population::getIndividuBinT(double &rangRelatif) {
 	Individu *individu1;
 	Individu *individu2;
 	int place1, place2;
 	double rangRelatif1, rangRelatif2;
 
 	place1 = paramsList[0]->rng->genrand64_int64() % (valides->nbIndiv + invalides->nbIndiv);
-	if (place1 >= valides->nbIndiv)
-	{
+	if (place1 >= valides->nbIndiv) {
 		place1 -= valides->nbIndiv;
 		individu1 = invalides->individus[place1];
 		rangRelatif1 = (double) place1 / (double)invalides->nbIndiv;
-	} else
-	{
+	} else {
 		individu1 = valides->individus[place1];
 		rangRelatif1 = (double) place1 / (double)valides->nbIndiv;
 	}
 
 	place2 = paramsList[0]->rng->genrand64_int64() % (valides->nbIndiv + invalides->nbIndiv);
-	if (place2 >= valides->nbIndiv)
-	{
+	if (place2 >= valides->nbIndiv) {
 		place2 -= valides->nbIndiv;
 		individu2 = invalides->individus[place2];
 		rangRelatif2 = (double) place2 / (double)invalides->nbIndiv;
-	} else
-	{
+	} else {
 		individu2 = valides->individus[place2];
 		rangRelatif2 = (double) place2 / (double)valides->nbIndiv;
 	}
@@ -285,71 +264,32 @@ Individu *Population::getIndividuBinT(double &rangRelatif)
 	evalExtFit(valides);
 	evalExtFit(invalides);
 
-	if (individu1->fitnessEtendu < individu2->fitnessEtendu)
-	{
+	if (individu1->fitnessEtendu < individu2->fitnessEtendu) {
 		rangRelatif = rangRelatif1;
 		return individu1;
-	}
-	else
-	{
+	} else {
 		rangRelatif = rangRelatif2;
 		return individu2;
 	}
 }
 
-// rank donne le rang de l'individu choisi
-Individu *Population::getIndividuRand(double &rangRelatif)
-{
-	Individu *individu1;
-
-	int place1 = paramsList[0]->rng->genrand64_int64() % (valides->nbIndiv + invalides->nbIndiv);
-	if (place1 >= valides->nbIndiv)
-	{
-		individu1 = invalides->individus[place1 - valides->nbIndiv];
-		rangRelatif = (double)(place1 - valides->nbIndiv) / (double)invalides->nbIndiv;
-	}
-	else
-	{
-		individu1 = valides->individus[place1];
-		rangRelatif = (double)place1 / (double)valides->nbIndiv;
-	}
-	return valides->individus[place1];
-}
-// getter de 1 individu par selection au hasard dans un certain % des meilleurs meilleurs
-// rank donne le rang de l'individu choisi
-Individu *Population::getIndividuPourc(int pourcentage, double &rangRelatif)
-{
-	int place;
-	if ((valides->nbIndiv * pourcentage) / 100 != 0)
-	{
-		place = paramsList[0]->rng->genrand64_int64() % ((valides->nbIndiv * pourcentage) / 100);
-		rangRelatif = (double)place / (double)paramsList[0]->mu;
-		return valides->individus[place];
-	}
-	else
-		return getIndividuBinT(rangRelatif);
-}
-Individu *Population::getIndividuBestValide()
-{
+Individu *Population::getIndividuBestValide() {
 	if (valides->nbIndiv != 0) return valides->individus[0];
-	else return NULL;
+	return NULL;
 }
 
-Individu *Population::getIndividuBestInvalide()
-{
+Individu *Population::getIndividuBestInvalide() {
 	if (invalides->nbIndiv != 0) return invalides->individus[0];
-	else return NULL;
+	return NULL;
 }
 
 // getter simple d'un individu
-Individu *Population::getIndividu(int p)
-{
+Individu *Population::getIndividu(int p) {
 	return valides->individus[p];
 }
 // recopie un Individu dans un autre
 // ATTENTION !!! ne recopie que le chromT et les attributs du fitness
-void Population::recopieIndividu(Individu *destination, Individu *source)
-{
+void Population::recopieIndividu(Individu *destination, Individu *source) {
 	destination->chromT = source->chromT;
 	destination->chromL = source->chromL;
 	destination->coutSol = source->coutSol;
@@ -357,8 +297,7 @@ void Population::recopieIndividu(Individu *destination, Individu *source)
 	destination->estValide = source->estValide;
 }
 
-void Population::ExportPop(string nomFichier,bool add)
-{
+void Population::ExportPop(string nomFichier,bool add) {
 	
 	// exporte les solutions actuelles des individus dans un dossier exports current individual solutions to a folder
 	vector<int> rout;
@@ -516,93 +455,72 @@ void Population::ExportBKS(string nomFichier)
 	}
 }
 // retourne la fraction d'individus valides en terme de charge
-double Population::fractionValidesCharge()
-{
+double Population::fractionValidesCharge() {
 	int count = 0;
-	for (list<bool>::iterator it = listeValiditeCharge.begin(); it != listeValiditeCharge.end(); ++it)
-		if (*it == true)
-			count++;
-
+	for (list<bool>::iterator it = listeValiditeCharge.begin(); it != listeValiditeCharge.end(); ++it) {
+		count += *it;
+	}
 	return double(count) / (double)(100);
 }
 
-double Population::getDiversity(SousPop *pop)
-{
+double Population::getDiversity(SousPop *pop) {
 	double total = 0;
 	int count = 0;
-	for (int i = 0; i < pop->nbIndiv / 2; i++)
-		for (int j = i + 1; j < pop->nbIndiv / 2; j++)
-		{
+	for (unsigned int i = 0; i < pop->nbIndiv / 2; i++) {
+		for (unsigned int j = i + 1; j < pop->nbIndiv; j++){
 			total += pop->individus[i]->distance(pop->individus[j]);
 			count++;
 		}
+	}
 	return total / (double)count;
 }
 
-double Population::getMoyenneValides()
-{
+double Population::getMoyenneValides() {
 	double moyenne = 0;
-	for (int i = 0; i < valides->nbIndiv / 2; i++)
-		moyenne += valides->individus[i]->coutSol.evaluation;
-	return moyenne / (valides->nbIndiv / 2);
+	for (Individu* indiv : valides->individus)
+		moyenne += indiv->coutSol.evaluation;
+	return moyenne / (double)valides->nbIndiv;
 }
-double Population::getMoyenneInvalides()
-{
+double Population::getMoyenneInvalides() {
 	double moyenne = 0;
-	for (int i = 0; i < invalides->nbIndiv / 2; i++)
-		moyenne += invalides->individus[i]->coutSol.evaluation;
-	return moyenne / (invalides->nbIndiv / 2);
+	for (Individu* indiv : invalides->individus) {
+		moyenne += indiv->coutSol.evaluation;
+	}
+	return moyenne / (double)invalides->nbIndiv;
 }
 
-int Population::selectCompromis(SousPop *souspop)
-{
-	double pireFitnessEtendu = 0;
-	int mauvais = -1;
+int Population::selectCompromis(SousPop *souspop) {
 	vector<int> classement;
-	int temp, sortant;
 
 	evalExtFit(souspop);
 
 	// pour chaque individu on modifie le fitness etendu
-	for (int i = 0; i < souspop->nbIndiv; i++)
-	{
+	for (unsigned int i = 0; i < (unsigned int) souspop->nbIndiv; i++) {
 		classement.push_back(i);
-		if (souspop->individus[i]->distPlusProche(1) < paramsList[0]->distMin)
-			souspop->individus[i]->fitnessEtendu += 5;
+		if (souspop->individus[i]->distPlusProche(1) < paramsList[0]->distMin) souspop->individus[i]->fitnessEtendu += 5;
 		// for the CVRP instances, we need to allow duplicates with the same fitness since in the Golden instances
 		// there is a lot of symmetry.
-		if (fitExist(souspop, souspop->individus[i]))
-			souspop->individus[i]->fitnessEtendu += 5;
+		if (fitExist(souspop, souspop->individus[i])) souspop->individus[i]->fitnessEtendu += 5.0;
 	}
 
 	// on classe les elements par fitness etendu et on prend le plus mauvais
-	for (int n = 0; n < souspop->nbIndiv; n++)
-		for (int i = 1; i < souspop->nbIndiv - n - 1; i++)
-			if (souspop->individus[classement[i]]->fitnessEtendu > souspop->individus[classement[i + 1]]->fitnessEtendu)
-			{
-				temp = classement[i + 1];
-				classement[i + 1] = classement[i];
-				classement[i] = temp;
+	for (unsigned int n = 0; n < souspop->nbIndiv; n++) {
+		for (unsigned int i = 1; i < souspop->nbIndiv - n - 1; i++) {
+			if (souspop->individus[classement[i]]->fitnessEtendu > souspop->individus[classement[i + 1]]->fitnessEtendu) {
+				std::swap(classement[i], classement[i+1]);
 			}
-
-	sortant = classement[souspop->nbIndiv - 1];
-
-	if (paramsList[0]->rng->genrand64_real1() < -1)
-		cout << souspop->individus[sortant]->fitRank << " "
-			 << souspop->individus[sortant]->divRank << " "
-			 << souspop->individus[sortant]->fitnessEtendu << endl;
-
-	return sortant;
+		}
+	}
+	return classement[souspop->nbIndiv - 1];
 }
 
-void Population::education_scenario(Individu *indiv)
-{
-	recopieIndividu(trainer, indiv);
-	trainer->generalSplit_scenario();
-	trainer->updateLS_scenario();
-	trainer->localSearchRunSearch_scenario();
-	trainer->updateIndiv_scenario();
-	recopieIndividu(indiv, trainer);
+void Population::education_scenario(Individu *indiv) {
+	recopieIndividu(trainer, indiv); //copie provisoire de indiv dans trainer
+	trainer->generalSplit_scenario(); //split du grand tour en différentes routes + mesure coût
+	trainer->updateLS_scenario(); //on remplit les structures de recherches locales grâce à chromL et chromT
+	trainer->localSearchRunSearch_scenario(); //phase de recherche locale
+	trainer->updateIndiv_scenario();  //on remplit chromT et chromL avec les résultats de LS
+	recopieIndividu(indiv, trainer); //on recopie dans indiv le trainer
 }
 
 
@@ -617,26 +535,35 @@ void Population::afficheEtat(int nbIter)
 {
 	cout.precision(8);
 
-	cout << "It " << nbIter << " | Sol ";
+	cout << "It " << nbIter << " | Sol moy: ";
 
 	if (getIndividuBestValide() != NULL) {
 		cout << getIndividuBestValide()->coutSol.evaluation << " ";
-		for (int scenario = 0; scenario < nbScenario; scenario++) {
+		for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
 			cout << scenario << ": " << getIndividuBestValide()->coutSol_scenario.evaluation[scenario] << " ";
 		}
-	}
-	else
+	} else {
 		cout << "NO-VALID ";
+	}
 
-	if (getIndividuBestInvalide() != NULL)
-		cout << getIndividuBestInvalide()->coutSol.evaluation;
-	else
+	if (getIndividuBestInvalide() != NULL) {
+		cout << getIndividuBestInvalide()->coutSol.evaluation << " ";
+		for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
+			cout << scenario << ": " << getIndividuBestInvalide()->coutSol_scenario.evaluation[scenario] << " ";
+		}
+	} else {
 		cout << "NO-INVALID";
+	}
 
 	cout.precision(8);
+	double avgPenalityCapa = 0.0;
+	for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
+		avgPenalityCapa += paramsList[scenario]->penalityCapa;
+	}
+	avgPenalityCapa /= (double) nbScenario;
 
 	cout << " | Moy " << getMoyenneValides() << " " << getMoyenneInvalides()
 		 << " | Div " << getDiversity(valides) << " " << getDiversity(invalides)
 		 << " | Val " << fractionValidesCharge()
-		 << " | Pen " << paramsList[0]->penalityCapa << " | Pop " << valides->nbIndiv << " " << invalides->nbIndiv << endl;
+		 << " | Pen moy " << avgPenalityCapa << " | Pop " << valides->nbIndiv << " " << invalides->nbIndiv << endl;
 }

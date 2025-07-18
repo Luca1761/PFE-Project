@@ -85,14 +85,8 @@ class Population
    // differents individus invalides presents dans la population
    SousPop * invalides;
 
-   // getter de 1 individu aleatoire
-   Individu * getIndividuRand (double & rangRelatif);
-
    // getter de 1 individu par binary tournament
    Individu * getIndividuBinT (double & rangRelatif);
-
-   // getter de 1 individu par selection au hasard dans les 15% meilleurs
-   Individu * getIndividuPourc (int pourcentage, double & rangRelatif);
 
    // getter du meilleur individu valide
    // retourne NULL si il n'y a pas de valides
