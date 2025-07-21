@@ -1,8 +1,8 @@
 #include "Params.h"
 
 // creating the parameters from the instance file
-Params::Params(string nomInstance, string nomSolution, int nbVeh, int seedRNG, int rou,bool stockout, int var, double randomValue, int idxScenario) : 
-	nbVehiculesPerDep(nbVeh), seed(seedRNG), isstockout(stockout), ancienNbDays(nbDays), pathToInstance(nomInstance), pathToSolution(nomSolution), idxScenario(idxScenario)
+Params::Params(string nomInstance, string nomSolution, int nbVeh, int seedRNG, int rou, int var, double randomValue, int idxScenario) : 
+	nbVehiculesPerDep(nbVeh), seed(seedRNG), ancienNbDays(nbDays), pathToInstance(nomInstance), pathToSolution(nomSolution), idxScenario(idxScenario)
 {
 
 	if (seed == 0)
@@ -14,7 +14,7 @@ Params::Params(string nomInstance, string nomSolution, int nbVeh, int seedRNG, i
 	fichier.open(nomInstance.c_str());
 
 	if (fichier.is_open())
-		preleveDonnees(nomInstance, rou, stockout);	
+		preleveDonnees(nomInstance, 1000000);	
 	else
 	{
 		cout << "Unable to open file : " << nomInstance << endl;
@@ -76,7 +76,7 @@ Params::Params(string nomInstance, string nomSolution, int nbVeh, string nomBKS,
 
 	// parsing des donn�es
 	if (fichier.is_open())
-		preleveDonnees(nomInstance, 0,0);
+		preleveDonnees(nomInstance, 0);
 	else
 	{
 		cout << "Unable to open file : " << nomInstance << endl;
@@ -163,7 +163,7 @@ void Params::setMethodParams()
 Params::~Params(void) {}
 
 // effectue le prelevement des donnees du fichier
-void Params::preleveDonnees(string nomInstance, int rou, bool stockout)
+void Params::preleveDonnees(string nomInstance, int rou)
 {
 	// variables temporaires utilisees dans la fonction
 	vector<Vehicle> tempI;
@@ -171,15 +171,14 @@ void Params::preleveDonnees(string nomInstance, int rou, bool stockout)
 	//C. Archetti, L. Bertazzi, G. Laporte, and M.G. Speranza. A branch-and-cut algorithm for a vendor-managed inventory-routing problem. Transportation Science, 41:382-391, 2007 Instances
 	// IRP format of Archetti http://or-brescia.unibs.it/instances 
 	cout << "path: " << nomInstance << endl;
-	isstockout = stockout;
-	cout << "isstockout "<< isstockout <<endl;
-	if (nbVehiculesPerDep == -1)
-	{
+	if (nbVehiculesPerDep == -1) {
 		cout << "ERROR : Need to specify fleet size" << endl;
 		throw string("ERROR : Need to specify fleet size");
 	}
 	fichier >> nbClients >> nbDays >> capacity;
-	nbClients--; // the given number of nodes also counts the supplier/depot
+	bool isDSIRP = false;
+	if (!isDSIRP)
+		nbClients--; // the given number of nodes also counts the supplier/depot
 	nbDepots = 1;
 	ancienNbDays = nbDays;
 
@@ -193,8 +192,12 @@ void Params::preleveDonnees(string nomInstance, int rou, bool stockout)
 				ordreVehicules[kk].push_back(Vehicle(i, capacity));
 	}
 	// Liste des clients
-	for (int i = 0; i < nbClients + nbDepots; i++)
-		cli.push_back(getClient(i,rou));
+	for (int i = 0; i < nbClients + nbDepots; i++) {
+		if (isDSIRP)
+			cli.push_back(getClientDSIRP(i,rou));
+		else
+			cli.push_back(getClient(i,rou));
+	}
 }
 
 // calcule les autres structures du programme
@@ -273,6 +276,50 @@ Client Params::getClient(int i,int rou)
 		client.dailyDemand = vector<double>(nbDays + 1, myDailyDemand);
 		fichier >> client.inventoryCost;
 		client.stockoutCost = client.inventoryCost * rou;
+	}
+
+	return client;
+}
+
+Client Params::getClientDSIRP(int i,int rou)
+{
+	struct couple coordonnees;
+	Client client;
+
+	// file format of Cordeau et al.
+	fichier >> client.custIdx;
+	fichier >> coordonnees.x >> coordonnees.y;
+	client.coord = coordonnees;
+
+	if (client.custIdx == 0) // information of the supplier
+	{
+		double initInventory;
+		double dailyProduction;
+		fichier >> initInventory;
+		availableSupply = vector<double>(nbDays + 1, 0.); // days are indexed from 1 ... t
+		for (int t = 1; t <= nbDays; t++) {
+			fichier >> dailyProduction;
+			availableSupply[t] = dailyProduction;
+		}
+		availableSupply[1] += initInventory;
+		fichier >> inventoryCostSupplier;
+	} else //information of each customer
+	{
+		fichier >> client.startingInventory;
+		client.minInventory = 0.0;
+		// fichier >> client.minInventory;
+		int a;
+		for (unsigned int i = 0; i < 50; i++) {
+			fichier >> a;
+		}
+		double myDailyDemand;
+		client.dailyDemand = vector<double>(nbDays + 1, 0.0);
+		for (unsigned int t = 1; t <= nbDays; t++) {
+			fichier >> client.dailyDemand[t];
+		}
+		fichier >> client.maxInventory;
+		fichier >> client.inventoryCost;
+		fichier >> client.stockoutCost;
 	}
 
 	return client;

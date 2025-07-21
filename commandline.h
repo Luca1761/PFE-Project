@@ -14,7 +14,6 @@ private:
     // seed
     int seed;
     int rou;
-    bool stockout;
 
     int nb_scenarios;
     int var;
@@ -64,8 +63,6 @@ public:
 
     // renvoie le temps cpu allou
     int get_cpu_time();
-
-    int get_stockout();
     int get_rou();
     int get_nb_scenarios(); 
     int get_var();

@@ -126,9 +126,6 @@ class Params {
   double objectiveConstant_stockout;
   void computeConstant_stockout();
 
-  // pr�sence d'un probl�me IRP ;
-  bool isstockout;
-
   // nombre de sommets clients
   int nbClients;
 
@@ -198,10 +195,12 @@ class Params {
   void setMethodParams();
 
   // effectue le prelevement des donnees du fichier
-  void preleveDonnees(string nomInstance,int rou, bool stockout);
+  void preleveDonnees(string nomInstance,int rou);
 
   // sous routine du prelevement de donnees
   Client getClient(int i,int rou);
+
+  Client getClientDSIRP(int i,int rou);
 
   // computes the distance matrix
   void computeDistancierFromCoords();
@@ -217,7 +216,7 @@ class Params {
   // fichier
   Params(string nomInstance, string nomSolution, int nbVeh,
          string nomBKS, int seedRNG);
-  Params(string nomInstance, string nomSolution, int nbVeh, int seedRNG, int rou,bool stockout, int var,
+  Params(string nomInstance, string nomSolution, int nbVeh, int seedRNG, int rou, int var,
           double randomValue, int idxScenario);
 
   // Transformation de probl�me, le nouveau fichier params cr�� correspond � un

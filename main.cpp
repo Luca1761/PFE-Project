@@ -41,7 +41,6 @@ int mainSIRP(int argc, char *argv[])
       c.get_nbVeh(), 
       c.get_seed(),
       c.get_rou(), 
-      c.get_stockout(),
       c.get_var(),
       randomValue,
       scenario   

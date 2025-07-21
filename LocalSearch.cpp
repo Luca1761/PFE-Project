@@ -238,59 +238,34 @@ void LocalSearch::printInventoryLevels(std::ostream& file,bool add)
   }
 
   // Printing customer inventory and computing customer inventory cost
-  if(params->isstockout){
 
-    double inventoryClient;
-    for (int i = params->nbDepots; i < params->nbDepots + params->nbClients;
-         i++)
+  double inventoryClient;
+  for (int i = params->nbDepots; i < params->nbDepots + params->nbClients;
+        i++)
+  {
+    inventoryClient = params->cli[i].startingInventory;
+    if(!add) file  << "CUSTOMER " << i << " bounds (" << params->cli[i].minInventory
+          << "," << params->cli[i].maxInventory << ") ";
+    for (int k = 1; k <= params->nbDays; k++)
     {
-      inventoryClient = params->cli[i].startingInventory;
-      if(!add) file  << "CUSTOMER " << i << " bounds (" << params->cli[i].minInventory
-           << "," << params->cli[i].maxInventory << ") ";
-      for (int k = 1; k <= params->nbDays; k++)
-      {
-        // print the level in the morning
-        if(!add) file << "[morning: " << inventoryClient;
-        // print the level after receiving inventory
-        inventoryClient += deliveryPerDay[k][i];
-        if(!add) file  << " ,replenishment: " << deliveryPerDay[k][i];
-        // print the level after consumption
-        double stock = std::max<double>(0,params->cli[i].dailyDemand[k]-inventoryClient);
-        inventoryClient = std::max<double>(0,inventoryClient-params->cli[i].dailyDemand[k]);
-        
-        if(!add) file  << ", everning: " << inventoryClient << "] ";
+      // print the level in the morning
+      if(!add) file << "[morning: " << inventoryClient;
+      // print the level after receiving inventory
+      inventoryClient += deliveryPerDay[k][i];
+      if(!add) file  << " ,replenishment: " << deliveryPerDay[k][i];
+      // print the level after consumption
+      double stock = std::max<double>(0,params->cli[i].dailyDemand[k]-inventoryClient);
+      inventoryClient = std::max<double>(0,inventoryClient-params->cli[i].dailyDemand[k]);
+      
+      if(!add) file  << ", everning: " << inventoryClient << "] ";
 
-        inventoryClientCosts += inventoryClient * params->cli[i].inventoryCost ;
-        stockClientCosts += stock*params->cli[i].stockoutCost;
-        stockClientAmount += stock;
-      }
-      if(!add) file  << endl;
+      inventoryClientCosts += inventoryClient * params->cli[i].inventoryCost ;
+      stockClientCosts += stock*params->cli[i].stockoutCost;
+      stockClientAmount += stock;
     }
+    if(!add) file  << endl;
   }
-  else{
-    double inventoryClient;
-    for (int i = params->nbDepots; i < params->nbDepots + params->nbClients; i++)
-    {
-      inventoryClient = params->cli[i].startingInventory;
-      if(!add) file  << "CUSTOMER " << i << " bounds (" << params->cli[i].minInventory
-           << "," << params->cli[i].maxInventory << ") ";
-      for (int k = 1; k <= params->nbDays; k++)
-      {
-        // print the level in the morning
-        if(!add) file  << "[" << inventoryClient;
-        // print the level after receiving inventory
-        inventoryClient += deliveryPerDay[k][i];
-        if(!add) file  << "," << inventoryClient;
-        // print the level after consumption
-        inventoryClient -= params->cli[i].dailyDemand[k];
-        if(!add) file << "," << inventoryClient << "] ";
 
-        inventoryClientCosts += inventoryClient * params->cli[i].inventoryCost;
-      }
-      if(!add) file  << endl;
-    }
-  }
-  
 
   double inventorySupply = 0;
   if(!add) file  << "SUPPLIER    ";

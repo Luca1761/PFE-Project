@@ -50,7 +50,6 @@ commandline::commandline(int argc, char *argv[])
     seed = 0;
     nbVeh = -1; // unknown
     rou = -1;
-    stockout = false;
 
     // parameters
     for (int i = 2; i < argc; i += 2)
@@ -63,10 +62,7 @@ commandline::commandline(int argc, char *argv[])
         seed = atoi(argv[i + 1]);
       else if (string(argv[i]) == "-veh")
         nbVeh = atoi(argv[i + 1]);
-      else if (string(argv[i]) == "-stock"){
-          rou = atoi(argv[i + 1]);
-          stockout = true;
-      } else if (string(argv[i]) == "-scenarios"){
+      else if (string(argv[i]) == "-scenarios"){
           nb_scenarios = atoi(argv[i + 1]);
       } else if (string(argv[i]) == "-var") {
           var = atoi(argv[i + 1]);
@@ -99,8 +95,6 @@ string commandline::get_path_to_instance() { return instance_name; }
 string commandline::get_path_to_solution() { return sortie_name; }
 
 string commandline::get_path_to_BKS() { return BKS_name; }
-
-int commandline::get_stockout() { return stockout; }
 
 int commandline::get_nb_scenarios() {return nb_scenarios; }
 
