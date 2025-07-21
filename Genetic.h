@@ -24,7 +24,6 @@ using namespace std ;
 class Genetic
 {
 private:
-
 	//on stocke le temps restant
     clock_t ticks ;
 
@@ -34,6 +33,7 @@ private:
 	// Number of iterations before stopping
 	int nbIter ;
 	
+	// Number of scenarios
 	int nbScenario;
 
 	// Pointer towards the parameters of the problem
@@ -43,13 +43,13 @@ private:
 	bool traces ;
 
 	// Population
-	Population * population ;
+	Population* population ;
 
 	// First individual to be used as input for the crossover
-	Individu * rejeton ; 
+	Individu* rejeton ; 
 
 	// Second individual to be used as input for the crossover
-	Individu * rejeton2 ;
+	Individu* rejeton2 ;
 
 	// effectue la mutation
 	void muter_scenario();
@@ -61,16 +61,7 @@ private:
 	// retourne -1 si l'individu ainsi cree n'est pas valide
 	void crossPOX2();
 	int crossPOX_scenario();
-
-	// tableau utilise lors des crossovers
-	vector<int> freqClient ;
-
-	// positions pour le crossover
-	int debut,fin,debutDay1,finDay1,debutPos1,finPos1,debutDay2,finDay2,debutPos2,finPos2 ;
-
-	// procede de redemarrage avec remplacement d'une partie de la population
-	void diversify();
-
+	
 	// gestion des penalites
 	void gererPenalites_scenario();
 
@@ -79,7 +70,7 @@ public:
     // lancement de l'algorithme sur les parametres "params" et la population "population"
 	// la boucle s'arrete lorsque l'on a effectue maxIterProd iterations productives
 	// ou maxIterNonProd iterations non productives 
-    void evolve(int maxIter , int maxIterNonProd, int nbRec) ;
+    void evolve(int maxIter , int maxIterNonProd) ;
 
 	// constructeur du solveur genetique
 	Genetic(vector<Params *> paramsList,Population * population, clock_t ticks, bool traces);
