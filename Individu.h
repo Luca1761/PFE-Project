@@ -99,13 +99,13 @@ class Individu
   // distance measure
   double distance(Individu * indiv2);
 
-  // individus class�s par proximit� dans la population, pour les politiques de remplacement
+  // individus classes par proximite dans la population, pour les politiques de remplacement
   list<proxData> plusProches;
 
-  // ajoute un element proche dans les structures de proximit�
+  // ajoute un element proche dans les structures de proximite
   void addProche(Individu * indiv) ;
 
-  // enleve un element dans les structures de proximit� 
+  // enleve un element dans les structures de proximite 
   void removeProche(Individu * indiv) ;
 
   // distance moyenne avec les n individus les plus proches
@@ -144,13 +144,25 @@ class Individu
   void localSearchRunSearch_scenario();
   void muterDifferentScenarioDP();
   int mutationDP(int client, bool &rechercheTerminee);
+  void runSearchDay1();
+  int mutationSameDay1();
 
   // Inverse procedure, after local search to return to a giant tour solution representation and thus fill the chromT table.
   void updateIndiv_scenario() ;
 
   // Computes the maximum amount of load that can be delivered to client on a day k without exceeding the 
   // customer maximum inventory
-  double maxFeasibleDeliveryQuantity(int day, int client); 
+  double maxFeasibleDeliveryQuantity(int day, int client, int scenario = 0);
+  int mutation1_indiv();
+  int mutation2_indiv();
+  int mutation3_indiv();
+  int mutation4_indiv();
+  int mutation5_indiv();
+  int mutation6_indiv();
+  int mutation7_indiv();
+  int mutation8_indiv();
+  int mutation9_indiv();
+
 
   Individu(vector<Params*> pl);
 

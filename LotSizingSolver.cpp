@@ -547,10 +547,6 @@ bool LotSizingSolver::solveStockoutBackward() {
 		t.join();
 	}
   
-  // for (int scenario = 0; scenario < nbScenario; scenario++) {
-  //   solveOneScenario(scenario);
-  //   day1(scenario);
-  // }
   int idxInsert = 0;
   double valInsertMin = 1000000000;
   for (int k = 0; k < Ck[0].size(); k++) {
@@ -676,9 +672,8 @@ void LotSizingSolver::solveOneScenario(int scenario) {
 void LotSizingSolver::day1(int scenario) {
   Params* paramsTemp = paramsList[scenario];
   double maxInventory = paramsTemp->cli[client].startingInventory;
-  // std::cout << "inSolve " << scenario << std::endl;
-  for (int k = 0; k < insertions[scenario][0].size(); k++)
-    {
+
+  for (int k = 0; k < insertions[scenario][0].size(); k++) {
       //picewise linear functions
       std::shared_ptr<PLFunction> f3;
       std::shared_ptr<PLFunction> f4;
