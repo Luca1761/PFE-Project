@@ -24,7 +24,6 @@ LotSizingSolver::LotSizingSolver(vector<Params*> paramsList, vector<vector<vecto
   int size1 = (int) insertions[0][0].size();
   for (int scenario = 0; scenario < nbScenario; scenario++) {
     if (size1 != (int) insertions[scenario][0].size()) throw std::string("WTF");
-    // std::cout << "TEST" << std::endl;
     for (int i = 0; i < (int) insertions[scenario][0].size(); i++) {
       std::shared_ptr<PLFunction> reverseGk = std::make_shared<PLFunction>(paramsList[scenario], insertions[scenario][0][i], client);
       Gk[scenario].push_back(std::make_shared<PLFunction>(paramsList[scenario]));
@@ -33,16 +32,21 @@ LotSizingSolver::LotSizingSolver(vector<Params*> paramsList, vector<vector<vecto
         tmp->updateLinearPiece(-tmp->p2->x, tmp->p2->y, -tmp->p1->x, tmp->p1->y);
         Gk[scenario][i]->append(tmp);
       }
-      // reverseGk->print();
-      // Gk[scenario][i]->print();
+      for (unsigned int j = 0; j <  Gk[scenario][i]->nbPieces; j++) {
+          Gk[scenario][i]->pieces[j]->fromF =  Gk[scenario][i]->pieces[j]->clone();
+          Gk[scenario][i]->pieces[j]->replenishment_loss = 0;
+          Gk[scenario][i]->pieces[j]->fromC = nullptr;
+          Gk[scenario][i]->pieces[j]->fromC_pre = nullptr;
+          Gk[scenario][i]->pieces[j]->fromInst = make_shared<Insertion>(
+              Gk[scenario][i]->pieces[j]->fromInst->detour, 
+              Gk[scenario][i]->pieces[j]->fromInst->load,
+              Gk[scenario][i]->pieces[j]->fromInst->place);
+        }
     }
-    // std::cout << "endTest" << std::endl;
   }
 
   for (int scenario = 0; scenario < nbScenario; scenario++) {
-
-    for (int t = 0; t < horizon; t++)
-    {
+    for (int t = 0; t < horizon; t++) {
       vector<Insertion> tmp = insertions[scenario][t]; // all possible place in day t
     
       std::shared_ptr<PLFunction> reverseF = std::make_shared<PLFunction>(paramsList[scenario], tmp, t, client); 
@@ -52,17 +56,6 @@ LotSizingSolver::LotSizingSolver(vector<Params*> paramsList, vector<vector<vecto
         std::shared_ptr<LinearPiece> tmp = reverseF->pieces[i]->clone();
         tmp->updateLinearPiece(-tmp->p2->x, tmp->p2->y, -tmp->p1->x, tmp->p1->y);
         F[scenario][t]->append(tmp);
-      }
-
-      for (int i = 0; i <  Gk[scenario][t]->nbPieces; i++){
-          Gk[scenario][t]->pieces[i]->fromF =  Gk[scenario][t]->pieces[i]->clone();
-          Gk[scenario][t]->pieces[i]->replenishment_loss = 0;
-          Gk[scenario][t]->pieces[i]->fromC = nullptr;
-          Gk[scenario][t]->pieces[i]->fromC_pre = nullptr;
-          Gk[scenario][t]->pieces[i]->fromInst = make_shared<Insertion>(
-              Gk[scenario][t]->pieces[i]->fromInst->detour, 
-              Gk[scenario][t]->pieces[i]->fromInst->load,
-              Gk[scenario][t]->pieces[i]->fromInst->place);
       }
 
       for (int i = 0; i <  F[scenario][t]->nbPieces; i++){
@@ -76,7 +69,7 @@ LotSizingSolver::LotSizingSolver(vector<Params*> paramsList, vector<vector<vecto
               F[scenario][t]->pieces[i]->fromInst->place);
       }
     }
-}
+  }
 }
 
 std::shared_ptr<PLFunction> LotSizingSolver::copyPLFunction(
