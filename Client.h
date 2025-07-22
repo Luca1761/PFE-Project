@@ -39,6 +39,8 @@ public:
 	// daily demand of the customer.
 	vector<double> dailyDemand ;
 
+	vector<double> testDemand ;
+
 	// daily inventory cost of the customer
 	double inventoryCost ;
 	double stockoutCost;
