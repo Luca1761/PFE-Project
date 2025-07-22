@@ -45,11 +45,12 @@ void Genetic::evolve(int maxIter, int maxIterNonProd) {
 
 		muter_scenario();
 		
-		place = population->addIndividu(rejeton);
-		bool old = rejeton->estValide;
 		// REPAIR IF NEEDED
-		if (!old) reparer_scenario();
-		if (old != rejeton->estValide) {
+		if (!rejeton->estValide) {
+			place = population->addIndividu(rejeton);
+			reparer_scenario();
+		}
+		if (rejeton->estValide) {
 			place = population->addIndividu(rejeton);
 		}
 		
@@ -126,9 +127,9 @@ void Genetic::reparer_scenario() {
 }
 
 // gestion des penalites
+//TO CHECK
 void Genetic::gererPenalites_scenario() {
 	double fractionCharge = population->fractionValidesCharge();
-
 	for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
 		if (fractionCharge < paramsList[scenario]->minValides && paramsList[scenario]->penalityCapa < 1000)
 			paramsList[scenario]->penalityCapa *= 1.25;
