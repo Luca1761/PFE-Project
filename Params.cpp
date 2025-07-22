@@ -1,5 +1,34 @@
 #include "Params.h"
 
+double calculateMean(const std::vector<double>& data) {
+    if (data.empty()) {
+        return 0.0; // Or handle error for empty data
+    }
+    double sum = std::accumulate(data.begin(), data.end(), 0.0);
+    return sum / data.size();
+}
+
+double calculateStandardDeviation(const std::vector<double>& data, bool isSample = true) {
+    if (data.empty()) {
+        return 0.0; // Or handle error for empty data
+    }
+
+    double mean = calculateMean(data); // Reusing the mean function
+
+    double sumSquaredDifferences = 0.0;
+    for (double value : data) {
+        sumSquaredDifferences += std::pow(value - mean, 2);
+    }
+
+    if (isSample && data.size() > 1) {
+        return std::sqrt(sumSquaredDifferences / (data.size() - 1)); // Sample standard deviation
+    } else if (!isSample) {
+        return std::sqrt(sumSquaredDifferences / data.size()); // Population standard deviation
+    } else {
+        return 0.0; // Handle case of single element for sample std dev
+    }
+}
+
 // creating the parameters from the instance file
 Params::Params(string nomInstance, string nomSolution, int nbVeh, int seedRNG, int rou, int var, double randomValue, int idxScenario) : 
 	nbVehiculesPerDep(nbVeh), seed(seedRNG), ancienNbDays(nbDays), pathToInstance(nomInstance), pathToSolution(nomSolution), idxScenario(idxScenario)
@@ -21,7 +50,8 @@ Params::Params(string nomInstance, string nomSolution, int nbVeh, int seedRNG, i
 		throw string(" Unable to open file ");
 	}	
 
-	adjustDemands(randomValue, var);
+	// adjustDemands(randomValue, var);
+	adjustDemands();
 
 	setMethodParams();
 
@@ -37,7 +67,7 @@ Params::Params(string nomInstance, string nomSolution, int nbVeh, int seedRNG, i
 
 void Params::adjustDemands(double rv, int var) {
     mt19937 gen(seed + static_cast<int>(rv * 10000)); 
-	
+
     for (int i = 0; i < nbClients + nbDepots; i++) {
 		if (cli[i].custIdx == 0) continue; 
 		std::cout << "Client " << i << ": ";
@@ -54,50 +84,28 @@ void Params::adjustDemands(double rv, int var) {
     }
 }
 
-
-Params::Params(string nomInstance, string nomSolution, int nbVeh, string nomBKS, int seedRNG) : 
-	nbVehiculesPerDep(nbVeh)
-{
-	seed = seedRNG;
-	if (seed == 0)
-		rng = new Rng((unsigned long long)time(NULL));
-	else
-		rng = new Rng((unsigned long long)(seed));
-
-	pathToInstance = nomInstance;
-	pathToSolution = nomSolution;
-	pathToBKS = nomBKS;
-
-	debut = clock();
-	nbVehiculesPerDep = nbVeh;
-
-	// ouverture du fichier en lecture
-	fichier.open(nomInstance.c_str());
-
-	// parsing des donn�es
-	if (fichier.is_open())
-		preleveDonnees(nomInstance, 0);
-	else
-	{
-		cout << "Unable to open file : " << nomInstance << endl;
-		throw string(" Unable to open file ");
-	}
-	cout << "read file done" << endl;
-
-	// Setting the parameters
-	setMethodParams();
-
-	// Simply compute the distances from the coordinates
-	computeDistancierFromCoords();
-
-	// calcul des structures
-	calculeStructures();
-
-	// for instances 27-32 of the PVRP, there is a small patch to avoid errors because the objective function
-	// is of a very different magnitude, need to give a more adapted starting value for the penalties
+void Params::adjustDemands() {
+	mt19937 gen(seed + static_cast<int>(idxScenario * 10000)); 
+	std::cout << "Scenario " << idxScenario << ": " << std::endl;
 	
+	int l = 0;
+    for (int i = 0; i < nbClients + nbDepots; i++) {
+		if (cli[i].custIdx == 0) continue; 
+		std::cout << "Client " << i << ": ";
+		std::cout << "mean " << (int) meanDemands[l] << " // std " << (int) stdDemands[l] << " // max " << cli[i].maxInventory << " // ";
+        for (int k = 1; k <= nbDays; k++) {
+			normal_distribution<double> normDist((int) meanDemands[l], (int) stdDemands[l]);    
+            double x = normDist(gen);        // x ~ N(0,1)
+            x = max<double>(0.0, x);   
+			x = min<double>(x, cli[i].maxInventory);
+            cli[i].dailyDemand[k] = round(x);
+			std::cout << cli[i].dailyDemand[k] << " ";
+        }
+		std::cout << std::endl;
+		l++;
+    }
+	std::cout << std::endl;
 }
-
 
 void Params::computeDistancierFromCoords()
 {
@@ -176,7 +184,7 @@ void Params::preleveDonnees(string nomInstance, int rou)
 		throw string("ERROR : Need to specify fleet size");
 	}
 	fichier >> nbClients >> nbDays >> capacity;
-	bool isDSIRP = false;
+	bool isDSIRP = true;
 	if (!isDSIRP)
 		nbClients--; // the given number of nodes also counts the supplier/depot
 	nbDepots = 1;
@@ -193,10 +201,11 @@ void Params::preleveDonnees(string nomInstance, int rou)
 	}
 	// Liste des clients
 	for (int i = 0; i < nbClients + nbDepots; i++) {
-		if (isDSIRP)
-			cli.push_back(getClientDSIRP(i,rou));
-		else
+		if (isDSIRP) {
+			cli.push_back(getClientDSIRP(i,200));
+		} else {
 			cli.push_back(getClient(i,rou));
+		}
 	}
 }
 
@@ -305,21 +314,26 @@ Client Params::getClientDSIRP(int i,int rou)
 		fichier >> inventoryCostSupplier;
 	} else //information of each customer
 	{
+		std::vector<double> oldDemands = vector<double>(50, 0.);
+		client.testDemand = vector<double>(nbDays + 1, 0.0);
 		fichier >> client.startingInventory;
 		client.minInventory = 0.0;
 		// fichier >> client.minInventory;
 		int a;
 		for (unsigned int i = 0; i < 50; i++) {
-			fichier >> a;
+			fichier >> oldDemands[i];
 		}
 		double myDailyDemand;
 		client.dailyDemand = vector<double>(nbDays + 1, 0.0);
 		for (unsigned int t = 1; t <= nbDays; t++) {
-			fichier >> client.dailyDemand[t];
+			fichier >> client.testDemand[t];
 		}
 		fichier >> client.maxInventory;
 		fichier >> client.inventoryCost;
 		fichier >> client.stockoutCost;
+		meanDemands.push_back(calculateMean(oldDemands));
+		stdDemands.push_back(calculateStandardDeviation(oldDemands));
+		
 	}
 
 	return client;

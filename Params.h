@@ -116,6 +116,10 @@ class Params {
   // fraction de la population conserv�e lors de la diversification
   double rho;
 
+  std::vector<double> meanDemands;
+
+  std::vector<double> stdDemands;
+
   // PARAMETRES DE L'INSTANCE //
 
   // rounding convention
@@ -212,10 +216,9 @@ class Params {
   void shuffleProches();
 
   void adjustDemands(double randomValue, int var);
+  void adjustDemands();
   // constructeur de Params qui remplit les structures en les pr�levant dans le
   // fichier
-  Params(string nomInstance, string nomSolution, int nbVeh,
-         string nomBKS, int seedRNG);
   Params(string nomInstance, string nomSolution, int nbVeh, int seedRNG, int rou, int var,
           double randomValue, int idxScenario);
 
