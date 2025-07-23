@@ -134,6 +134,8 @@ class Individu
   // et de remplir tous les champs d'evaluation de solution
   void measureSol_scenario();
 
+  void measureSol();
+
   // initialisation du vecteur potentiels
   void initPot_scenario(int k, int scenario) ;
 
@@ -152,7 +154,6 @@ class Individu
 
   // Computes the maximum amount of load that can be delivered to client on a day k without exceeding the 
   // customer maximum inventory
-  double maxFeasibleDeliveryQuantity(int day, int client, int scenario = 0);
   int mutation1_indiv();
   int mutation2_indiv();
   int mutation3_indiv();
