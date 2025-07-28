@@ -37,7 +37,7 @@ public:
 	double maxInventory ;
 
 	// daily demand of the customer.
-	vector<double> dailyDemand ;
+	vector<vector<double>> dailyDemand ;
 
 	vector<double> testDemand ;
 

@@ -298,7 +298,6 @@ void Population::recopieIndividu(Individu *destination, Individu *source) {
 }
 
 void Population::ExportPop(string nomFichier,bool add) {
-	
 	// exporte les solutions actuelles des individus dans un dossier exports current individual solutions to a folder
 	vector<int> rout;
 	vector<double> routTime;
@@ -311,8 +310,7 @@ void Population::ExportPop(string nomFichier,bool add) {
 	char *myBuff;
 	Individu *bestValide = getIndividuBestValide();
 
-	if (bestValide != NULL)
-	{
+	if (bestValide != NULL) {
 
 		// We will update the local search structure for paths.
 		// We are obliged to set very strong parameters so that the splitting does not produce a from the best valid solution
@@ -329,7 +327,6 @@ void Population::ExportPop(string nomFichier,bool add) {
 		ofstream myfile;
 		if (add) myfile.open(nomFichier.data(), std::ios::app);//add on previous
 		else myfile.open(nomFichier.data()); 
-		
 		myfile<<endl<<endl;
 		loc->printInventoryLevels(myfile,add);
 		// export cost
@@ -356,7 +353,6 @@ void Population::ExportPop(string nomFichier,bool add) {
 		myBuff = new char[100];
 		myfile <<"Best Solution Time: ";sprintf(myBuff, "%d", (int)(timeBest / 1000000));
 		myfile << myBuff << endl;
-
 		for (int k = 1; k <= paramsList[0]->nbDays; k++)
 		{
 			for (int i = 0; i < (int)loc->routes[k].size(); i++)
@@ -400,6 +396,7 @@ void Population::ExportPop(string nomFichier,bool add) {
 		}
 
 		myfile.close();
+		std::cout << "Successful export" << std::endl;
 	}
 	else
 	{

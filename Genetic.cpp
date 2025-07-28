@@ -36,7 +36,6 @@ void Genetic::evolve(int maxIter, int maxIterNonProd) {
 		// on demande deux individus a la population
 		population->recopieIndividu(rejeton, population->getIndividuBinT(rangRelatif));
 		population->recopieIndividu(rejeton2, population->getIndividuBinT(rangRelatif));
-		
 		// on choisit le crossover en fonction du probleme
 		if (nbScenario == 1)
 			crossPOX2();
@@ -71,7 +70,7 @@ void Genetic::evolve(int maxIter, int maxIterNonProd) {
 		}
 	
 		// MANAGEMENT OF PARAMETERS
-		if (nbIter % 200 == 0) gererPenalites_scenario();
+		if (nbIter % 100 == 0) gererPenalites_scenario();
 	
 		// TRACES
 		if (nbIter % 50 == 0) population->afficheEtat(nbIter);
@@ -205,80 +204,81 @@ int Genetic::crossPOX_scenario() {
 			}
 		}
 	}
+	if (paramsList[0]->nbDays > 1) {
+		for (int scenario = 0; scenario < nbScenario; scenario++) {
+			vector<int> garder;
+			vector<int> tableauFin;
+			vector<vector<bool>> hasBeenInserted = vector<vector<bool>>(paramsList[0]->nbDays + 1, vector<bool>(paramsList[0]->nbClients + paramsList[0]->nbDepots, false));
+			int scenarioBegin = scenario * (paramsList[0]->nbDays - 1) + 2;
+			vector<int> randomDays = vector<int>(paramsList[0]->nbDays - 1, 0);
+			for (int i = 0; i < randomDays.size(); i++) {
+				randomDays[i] = scenarioBegin + i;
+			}
 
-	for (int scenario = 0; scenario < nbScenario; scenario++) {
-		vector<int> garder;
-		vector<int> tableauFin;
-		vector<vector<bool>> hasBeenInserted = vector<vector<bool>>(paramsList[0]->nbDays + 1, vector<bool>(paramsList[0]->nbClients + paramsList[0]->nbDepots, false));
-		int scenarioBegin = scenario * (paramsList[0]->nbDays - 1) + 2;
-		vector<int> randomDays = vector<int>(paramsList[0]->nbDays - 1, 0);
-		for (int i = 0; i < randomDays.size(); i++) {
-			randomDays[i] = scenarioBegin + i;
-		}
+			std::mt19937 g(paramsList[0]->seed);
+			std::shuffle(randomDays.begin(), randomDays.end(), g);
 
-		std::mt19937 g(paramsList[0]->seed);
-		std::shuffle(randomDays.begin(), randomDays.end(), g);
-
-		j1 = paramsList[scenario]->rng->genrand64_int64() % randomDays.size();
-		j2 = paramsList[scenario]->rng->genrand64_int64() % randomDays.size();
-		if (j1 > j2) std::swap(j1, j2);
-		for (unsigned int k = 0; k < randomDays.size(); k++) {
-			int day = randomDays[k];
-			int dayL = scenario + day;
-			int realDay = day - scenario * (paramsList[0]->nbDays - 1);
-			// on recopie un segment
-			if (k < j1 && !rejeton->chromT[day].empty()) {
-				debut = (int)(paramsList[scenario]->rng->genrand64_int64() % rejeton->chromT[day].size());
-				fin = (int)(paramsList[scenario]->rng->genrand64_int64() % rejeton->chromT[day].size());
-				tableauFin.push_back(fin);
-				int j = debut;
-				garder.clear();
-				while (j != fin) {
-					int ii = rejeton->chromT[day][j]; // getting the index to be inherited
-					double quantity = chromLParent1[dayL][ii];
-					if (quantity > 0.0001) {
+			j1 = paramsList[scenario]->rng->genrand64_int64() % randomDays.size();
+			j2 = paramsList[scenario]->rng->genrand64_int64() % randomDays.size();
+			if (j1 > j2) std::swap(j1, j2);
+			for (unsigned int k = 0; k < randomDays.size(); k++) {
+				int day = randomDays[k];
+				int dayL = scenario + day;
+				int realDay = day - scenario * (paramsList[0]->nbDays - 1);
+				// on recopie un segment
+				if (k < j1 && !rejeton->chromT[day].empty()) {
+					debut = (int)(paramsList[scenario]->rng->genrand64_int64() % rejeton->chromT[day].size());
+					fin = (int)(paramsList[scenario]->rng->genrand64_int64() % rejeton->chromT[day].size());
+					tableauFin.push_back(fin);
+					int j = debut;
+					garder.clear();
+					while (j != fin) {
+						int ii = rejeton->chromT[day][j]; // getting the index to be inherited
+						double quantity = chromLParent1[dayL][ii];
+						if (quantity > 0.0001) {
+							garder.push_back(ii);
+							rejeton->chromL[dayL][ii] = quantity;
+							hasBeenInserted[realDay][ii] = true;
+						}
+						j = (j + 1) % rejeton->chromT[day].size();
+					}
+					rejeton->chromT[day].clear();
+					for (int g : garder) {
+						rejeton->chromT[day].push_back(g);
+					}
+				}
+				else if (k < j2) // on recopie rien
+				{
+					rejeton->chromT[day].clear();
+					tableauFin.push_back(-1);
+				}
+				else // on recopie tout
+				{
+					tableauFin.push_back(0);
+					for (int ii : rejeton->chromT[day]) {
 						garder.push_back(ii);
-						rejeton->chromL[dayL][ii] = quantity;
+						rejeton->chromL[dayL][ii] = chromLParent1[dayL][ii];
 						hasBeenInserted[realDay][ii] = true;
 					}
-					j = (j + 1) % rejeton->chromT[day].size();
-				}
-				rejeton->chromT[day].clear();
-				for (int g : garder) {
-					rejeton->chromT[day].push_back(g);
 				}
 			}
-			else if (k < j2) // on recopie rien
-			{
-				rejeton->chromT[day].clear();
-				tableauFin.push_back(-1);
-			}
-			else // on recopie tout
-			{
-				tableauFin.push_back(0);
-				for (int ii : rejeton->chromT[day]) {
-					garder.push_back(ii);
-					rejeton->chromL[dayL][ii] = chromLParent1[dayL][ii];
-					hasBeenInserted[realDay][ii] = true;
-				}
-			}
-		}
-	
-		// completing with rejeton 2
-		for (unsigned int k = 0; k < j2; k++) {
-			int day = randomDays[k];
-			int dayL = day + scenario;
-			int realDay = day - scenario * (paramsList[0]->nbDays - 1);
-			fin = tableauFin[k];
-			for (unsigned int i = 0; i < (int)rejeton2->chromT[day].size(); i++) {
-				int ii = rejeton2->chromT[day][(i + fin + 1) % (int)rejeton2->chromT[day].size()];
-				if (!hasBeenInserted[realDay][ii]) {
-					// computing maximum possible delivery quantity
-					double quantity = chromLParent2[dayL][ii];
-					if (quantity > 0.0001) {
-						rejeton->chromT[day].push_back(ii);
-						rejeton->chromL[dayL][ii] = quantity;
-						hasBeenInserted[realDay][ii] = true;
+		
+			// completing with rejeton 2
+			for (unsigned int k = 0; k < j2; k++) {
+				int day = randomDays[k];
+				int dayL = day + scenario;
+				int realDay = day - scenario * (paramsList[0]->nbDays - 1);
+				fin = tableauFin[k];
+				for (unsigned int i = 0; i < (int)rejeton2->chromT[day].size(); i++) {
+					int ii = rejeton2->chromT[day][(i + fin + 1) % (int)rejeton2->chromT[day].size()];
+					if (!hasBeenInserted[realDay][ii]) {
+						// computing maximum possible delivery quantity
+						double quantity = chromLParent2[dayL][ii];
+						if (quantity > 0.0001) {
+							rejeton->chromT[day].push_back(ii);
+							rejeton->chromL[dayL][ii] = quantity;
+							hasBeenInserted[realDay][ii] = true;
+						}
 					}
 				}
 			}

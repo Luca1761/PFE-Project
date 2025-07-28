@@ -18,6 +18,8 @@ private:
     int nb_scenarios;
     int var;
 
+    int type;
+
     // nbVehicles, if given
     int nbVeh;
 
@@ -66,6 +68,7 @@ public:
     int get_rou();
     int get_nb_scenarios(); 
     int get_var();
+    int get_type();
 
     // renvoie le nombre de v�hicules optimal connu
     int get_nbVeh();

@@ -20,7 +20,7 @@ void commandline::set_default_sorties_name(string to_parse)
 
   if (position != -1)
   {
-    string directory = to_parse.substr(0, position + 1) + "diff/";
+    string directory = "dsirp_results/";
     string filename = to_parse.substr(position + 1, to_parse.length() - position - 1-4);
 
     sortie_name = directory + "STsol-" + filename+ "_veh-" + std::to_string(nbVeh) + "_rou-" + std::to_string(rou);
@@ -66,6 +66,8 @@ commandline::commandline(int argc, char *argv[])
           nb_scenarios = atoi(argv[i + 1]);
       } else if (string(argv[i]) == "-var") {
           var = atoi(argv[i + 1]);
+      } else if (string(argv[i]) == "-type") {
+          type = atoi(argv[i + 1]);
       } else {
         cout << "Commande non reconnue : " << string(argv[i]) << endl;
         throw std::string("Commande non reconnue");
@@ -99,6 +101,8 @@ string commandline::get_path_to_BKS() { return BKS_name; }
 int commandline::get_nb_scenarios() {return nb_scenarios; }
 
 int commandline::get_var() {return var; }
+
+int commandline::get_type() {return type; }
 
 int commandline::get_rou() { return rou; }
 
