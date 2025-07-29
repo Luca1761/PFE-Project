@@ -16,7 +16,6 @@
 #include "Client.h"
 #include "Rng.h"
 #include "Vehicle.h"
-// #include "Noeud.h"
 using namespace std;
 
 const double MAXCOST = 1.e30;
@@ -39,8 +38,8 @@ struct Insertion
               load = -1.e30;
               place = NULL;
        }
-       Insertion(double detour, double load, Noeud *place)
-           : detour(detour), load(load), place(place) {}
+       Insertion(double _detour, double _load, Noeud *_place)
+           : detour(_detour), load(_load), place(_place) {}
        void print()
        {
               cout << "(detour: " << detour << " possible_load:" << load << ") ";
@@ -50,22 +49,17 @@ struct Insertion
 
 class Params {
  public:
-  // g�n�rateur pseudo-aleatoire
+  // generateur pseudo-aleatoire
   Rng* rng;
 
-  // graine du g�n�rateur
+  // graine du generateur
   int seed;
 
+  unsigned int jVal;
+
+  unsigned int pHorizon;
+
   normal_distribution<double> dist;
-
-  // adresse de l'instance
-  string pathToInstance;
-
-  // adresse de la solution
-  string pathToSolution;
-
-  // adresse de la BKS
-  string pathToBKS;
 
   // debut de l'algo
   clock_t debut;
@@ -76,7 +70,7 @@ class Params {
   double delta;
 
   // limite du split
-  double borneSplit;
+  vector<double> borneSplit;
 
   // crit�re de proximit� des individus (RI)
   int prox;
@@ -99,13 +93,13 @@ class Params {
   // nombre d'offspring dans une generation
   int lambda;
 
-  int nbScenarios;
+  unsigned int nbScenarios;
 
   // probabilite de recherche locale totale pour la reparation (PVRP)
   double pRep;
 
   // coefficient de penalite associe a une violation de capacite
-  double penalityCapa;
+  vector<double> penalityCapa;
 
   // limite basse sur les indiv valides
   double minValides;
@@ -131,22 +125,20 @@ class Params {
   void computeConstant_stockout();
 
   // nombre de sommets clients
-  int nbClients;
+  unsigned int nbClients;
 
   // nombre de jours
-  int nbDays;
+  unsigned int nbDays;
 
   // ancien nombre de jours
-  int ancienNbDays;
-
-  int idxScenario;
+  unsigned int ancienNbDays;
 
   // nombre de vehicules par d�pot
-  int nbVehiculesPerDep;
+  unsigned int nbVehiculesPerDep;
 
   // nombre de depots (MDVRP)
   // correspond � l'indice du premier client dans le tableau C
-  int nbDepots;
+  unsigned int nbDepots;
 
   // sequence des vehicules utilisables chaque jour avec les contraintes et
   // depots associes
@@ -170,25 +162,10 @@ class Params {
   // availableSupply[t] gives the new additional supply at day t.
   // availableSupply[1] gives the initial supply + production for day 1
   vector<double> availableSupply;
+  vector<double> allSupply;
 
   // inventory cost per day at the supplier
   double inventoryCostSupplier;
-
-  // TRANSFORMATIONS D'INSTANCES //
-
-  // table de correspondance : le client i dans le nouveau pb correspond �
-  // correspondanceTable[i] dans l'ancien
-  vector<int> correspondanceTable;
-
-  // table de correspondance : le client i dans le nouveau pb correspond aux
-  // elements de correspondanceTable[i] (dans l'ordre) dans l'ancien
-  // utile lorsque des d�compositions de probl�me avec shrinking sont
-  // envisag�es.
-  vector<vector<int> > correspondanceTableExtended;
-
-  // table de correspondance : le client i dans l'ancien pb correspond �
-  // correspondanceTable2[i] dans le nouveau
-  vector<int> correspondanceTable2;
 
   // ROUTINES DE PARSING //
 
@@ -199,12 +176,17 @@ class Params {
   void setMethodParams();
 
   // effectue le prelevement des donnees du fichier
-  void preleveDonnees(string nomInstance,int rou);
+  void preleveDonnees(string nomInstance);
 
-  // sous routine du prelevement de donnees
-  Client getClient(int i,int rou);
+  Client getClientDSIRP();
 
-  Client getClientDSIRP(int i,int rou);
+  void setJval(unsigned int _jVal) {
+       jVal = _jVal;
+       nbDays = pHorizon - jVal + 1;
+       ancienNbDays = nbDays;
+  }
+
+  void updateToDay(unsigned int j, std::vector<double> deliveries);
 
   // computes the distance matrix
   void computeDistancierFromCoords();
@@ -215,30 +197,10 @@ class Params {
   // modifie al�atoirement les tableaux de proximit� des clients
   void shuffleProches();
 
-  void adjustDemands(double randomValue, int var);
   void adjustDemands();
   // constructeur de Params qui remplit les structures en les pr�levant dans le
   // fichier
-  Params(string nomInstance, string nomSolution, int nbVeh, int seedRNG, int rou, int var,
-          double randomValue, int idxScenario);
-
-  // Transformation de probl�me, le nouveau fichier params cr�� correspond � un
-  // sous-probl�me:
-  // et est pr�t � �tre r�solu ind�pendamment
-  // si decom = 2 -> depots fix�s, extraction du PVRP associ� au d�pot (MDPVRP
-  // -> PVRP et MDVRP -> VRP).
-  // si decom = 1 -> patterns fix�s, extraction du VRP associ� au jour "jour",
-  // (PVRP->VRP), (SDVRP->VRP)
-  // si decom = 0 -> on extrait un probl�me de VRP, qui contient l'ensemble de
-  // clients debutSeq ... finSeq (debut et finseq sont des valeurs et non des
-  // indices). (VRP->VRP)
-  Params(Params* params, int decom, int* serieVisites, Vehicle** serieVehicles,
-         int* affectDepots, int* affectPatterns, int depot, int jour,
-         int nbVisites, int nbVeh);
-  
-
-  void decomposeRoutes(Params* params, int* serieVisites,
-                       Vehicle** serieVehicles, int nbVisites, int nbVeh);
+  Params(string nomInstance, int seedRNG, unsigned int nbScenario, unsigned int nbVeh);
 
 
   // destructeur de Params

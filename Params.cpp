@@ -5,7 +5,7 @@ double calculateMean(const std::vector<double>& data) {
         return 0.0; // Or handle error for empty data
     }
     double sum = std::accumulate(data.begin(), data.end(), 0.0);
-    return sum / data.size();
+    return sum / (double) data.size();
 }
 
 double calculateStandardDeviation(const std::vector<double>& data, bool isSample = true) {
@@ -29,93 +29,76 @@ double calculateStandardDeviation(const std::vector<double>& data, bool isSample
     }
 }
 
+
+
 // creating the parameters from the instance file
-Params::Params(string nomInstance, string nomSolution, int nbVeh, int seedRNG, int rou, int var, double randomValue, int idxScenario) : 
-	nbVehiculesPerDep(nbVeh), seed(seedRNG), ancienNbDays(nbDays), pathToInstance(nomInstance), pathToSolution(nomSolution), idxScenario(idxScenario)
+Params::Params(string nomInstance, int seedRNG, unsigned int nbScenario, unsigned int nbVeh) : 
+	seed(seedRNG), nbScenarios(nbScenario), nbVehiculesPerDep(nbVeh)
 {
 
 	if (seed == 0)
 		rng = new Rng((unsigned long long)time(NULL));
 	else
-		rng = new Rng((unsigned long long)(seed + idxScenario));	
+		rng = new Rng((unsigned long long)(seed));	
 
-	debut = clock();
 	fichier.open(nomInstance.c_str());
 
 	if (fichier.is_open())
-		preleveDonnees(nomInstance, 1000000);	
+		preleveDonnees(nomInstance);	
 	else
 	{
 		cout << "Unable to open file : " << nomInstance << endl;
 		throw string(" Unable to open file ");
-	}	
-
-	// adjustDemands(randomValue, var);
-	adjustDemands();
-
+	}
 	setMethodParams();
-
 	computeDistancierFromCoords();
-
-	calculeStructures();	
-
-	// Compute the constant value in the objective function
-	computeConstant_stockout();
-
-	
-}
-
-void Params::adjustDemands(double rv, int var) {
-    mt19937 gen(seed + static_cast<int>(rv * 10000)); 
-
-    for (int i = 0; i < nbClients + nbDepots; i++) {
-		if (cli[i].custIdx == 0) continue; 
-		std::cout << "Client " << i << ": ";
-		std::cout << "original " << cli[i].dailyDemand[1] << " // " << cli[i].maxInventory << " // ";
-        for (int k = 1; k <= nbDays; k++) {
-			normal_distribution<double> normDist(cli[i].dailyDemand[k], (double) var);    
-            double x = normDist(gen);        // x ~ N(0,1)
-            x = max<double>(0.0, x);   
-			x = min<double>(x, cli[i].maxInventory);
-            cli[i].dailyDemand[k] = round(x);
-			std::cout << cli[i].dailyDemand[k] << " ";
-        }
-		std::cout << std::endl;
-    }
 }
 
 void Params::adjustDemands() {
-	mt19937 gen(seed + static_cast<int>(idxScenario * 10000)); 
-	std::cout << "Scenario " << idxScenario << ": " << std::endl;
-	
-	int l = 0;
-    for (int i = 0; i < nbClients + nbDepots; i++) {
-		if (cli[i].custIdx == 0) continue; 
-		std::cout << "Client " << i << ": ";
-		std::cout << "mean " << (int) meanDemands[l] << " // std " << (int) stdDemands[l] << " // max " << cli[i].maxInventory << " // ";
-        for (int k = 1; k <= nbDays; k++) {
-			normal_distribution<double> normDist((int) meanDemands[l], (int) stdDemands[l]);    
-            double x = normDist(gen);        // x ~ N(0,1)
-            x = max<double>(0.0, x);   
-			x = min<double>(x, cli[i].maxInventory);
-            cli[i].dailyDemand[k] = round(x);
-			std::cout << cli[i].dailyDemand[k] << " ";
-        }
-		std::cout << std::endl;
-		l++;
-    }
-	std::cout << std::endl;
+	for (unsigned int i = nbDepots; i < nbClients + nbDepots; i++) {
+		cli[i].dailyDemand = vector<vector<double>>(nbScenarios, vector<double>(nbDays + 1, 0.0));
+	}
+	bool traces = true;
+	availableSupply = vector<double>(nbDays + 1 + 1, 0.);
+	for (unsigned int t = jVal; t <= pHorizon; t++) {
+		availableSupply[t - jVal + 1] = allSupply[t];
+	}
+	availableSupply[1] += cli[0].startingInventory;
+
+	for (unsigned int d = 0; d < nbDepots; d++) {
+		if (traces) std::cout << "Depot " << d << ": " << std::endl;
+		for (unsigned int k = 1; k <= nbDays; k++) {
+			if (traces) std::cout << availableSupply[k] << " ";
+		}
+		if (traces) std::cout << std::endl;
+	}
+	mt19937 gen(seed + jVal); 
+	for (unsigned int scenario = 0; scenario < nbScenarios; scenario++) {
+		if (traces) std::cout << "Scenario " << scenario + 1 << " :" << std::endl;
+		for (unsigned int i = nbDepots; i < nbClients + nbDepots; i++) {	
+			if (traces) std::cout << "Client " << i << ": ";
+			for (int k = 1; k <= nbDays; k++) {
+				normal_distribution<double> normDist((int) meanDemands[i - nbDepots], (int) stdDemands[i - nbDepots]);    
+				double x = normDist(gen);        // x ~ N(0,1)
+				x = max<double>(0.0, x);   
+				x = min<double>(x, cli[i].maxInventory);
+				cli[i].dailyDemand[scenario][k] = (double) round(x);
+				if (traces) std::cout << cli[i].dailyDemand[scenario][k] << " ";
+        	}
+			if (traces) std::cout << std::endl;
+		}
+	}
+	if (traces) std::cout << std::endl;
 }
 
 void Params::computeDistancierFromCoords()
 {
 	double d;
-	vector<double> dist;
+	vector<double> distances;
 
 	// on remplit les distances dans timeCost
-	for (int i = 0; i < nbClients + nbDepots; i++)
-	{
-		dist.clear();
+	for (int i = 0; i < nbClients + nbDepots; i++) {
+		distances.clear();
 		for (int j = 0; j < nbClients + nbDepots; j++)
 		{
 			d = sqrt((cli[i].coord.x - cli[j].coord.x) * (cli[i].coord.x - cli[j].coord.x) +
@@ -135,9 +118,9 @@ void Params::computeDistancierFromCoords()
 				d = d * 0.01;
 			}
 
-			dist.push_back((double)d);
+			distances.push_back((double)d);
 		}
-		timeCost.push_back(dist);
+		timeCost.push_back(distances);
 	}
 }
 
@@ -161,88 +144,73 @@ void Params::setMethodParams()
 	pRep = 0.5;			 // probability of repair // o
 
 	// parametres lies aux pEnalites adaptatives
-	penalityCapa = 50;
+	penalityCapa = std::vector<double> (nbScenarios, 50.0);
 	minValides = 0.2;	// Target range for the number of feasible solutions // **
 	maxValides = 0.25;	// Target range for the number of feasible solutions // **
 	distMin = 0.01;		// Distance in terms of objective function under which the solutions are considered to be the same // o
-	borneSplit = 2.0;	// Split parameter (how far to search beyond the capacity limit) // o
+	borneSplit = std::vector<double> (nbScenarios, 1.0);	// Split parameter (how far to search beyond the capacity limit) // o
 }
 
 Params::~Params(void) {}
 
 // effectue le prelevement des donnees du fichier
-void Params::preleveDonnees(string nomInstance, int rou)
-{
+void Params::preleveDonnees(string nomInstance)
+{	
+	jVal = 1;
 	// variables temporaires utilisees dans la fonction
 	vector<Vehicle> tempI;
 	double capacity;
 	//C. Archetti, L. Bertazzi, G. Laporte, and M.G. Speranza. A branch-and-cut algorithm for a vendor-managed inventory-routing problem. Transportation Science, 41:382-391, 2007 Instances
 	// IRP format of Archetti http://or-brescia.unibs.it/instances 
-	cout << "path: " << nomInstance << endl;
 	if (nbVehiculesPerDep == -1) {
 		cout << "ERROR : Need to specify fleet size" << endl;
 		throw string("ERROR : Need to specify fleet size");
 	}
-	fichier >> nbClients >> nbDays >> capacity;
-	bool isDSIRP = true;
-	if (!isDSIRP)
-		nbClients--; // the given number of nodes also counts the supplier/depot
+	fichier >> nbClients >> pHorizon >> capacity;
+
 	nbDepots = 1;
-	ancienNbDays = nbDays;
 
 	ordreVehicules.push_back(tempI);
 	nombreVehicules.push_back(0);
-	for (int kk = 1; kk <= nbDays; kk++) {
+	for (unsigned int kk = 1; kk <= pHorizon; kk++) {
 		ordreVehicules.push_back(tempI);
 		nombreVehicules.push_back(nbDepots * nbVehiculesPerDep);
-		for (int i = 0; i < nbDepots; i++)
-			for (int j = 0; j < nbVehiculesPerDep; j++)
+		for (unsigned int i = 0; i < nbDepots; i++)
+			for (unsigned int j = 0; j < nbVehiculesPerDep; j++)
 				ordreVehicules[kk].push_back(Vehicle(i, capacity));
 	}
 	// Liste des clients
-	for (int i = 0; i < nbClients + nbDepots; i++) {
-		if (isDSIRP) {
-			cli.push_back(getClientDSIRP(i,200));
-		} else {
-			cli.push_back(getClient(i,rou));
-		}
+	for (unsigned int i = 0; i < nbClients + nbDepots; i++) {
+		cli.push_back(getClientDSIRP());
 	}
 }
 
 // calcule les autres structures du programme
-void Params::calculeStructures()
-{
-	int temp;
-
+void Params::calculeStructures() {
 	// initializing the correlation matrix
 	isCorrelated1 = vector<vector<bool>>(nbClients + nbDepots, vector<bool>(nbClients + nbDepots, false));
 
-	for (int i = 0; i < nbClients + nbDepots; i++)
+	for (unsigned int i = 0; i < nbClients + nbDepots; i++)
 	{
 		cli[i].ordreProximite.clear();
 		cli[i].sommetsVoisins.clear();
 	}
 
 	// on remplit la liste des plus proches pour chaque client
-	for (int i = nbDepots; i < nbClients + nbDepots; i++)
-	{
-		for (int j = 0; j < nbClients + nbDepots; j++)
+	for (unsigned int i = nbDepots; i < nbClients + nbDepots; i++) {
+		for (unsigned int j = 0; j < nbClients + nbDepots; j++)
 			if (i != j)
 				cli[i].ordreProximite.push_back(j); 
 
 		// et on la classe
-		for (int a1 = 0; a1 < nbClients + nbDepots - 1; a1++)
-			for (int a2 = 0; a2 < nbClients + nbDepots - a1 - 2; a2++)
-				if (timeCost[i][cli[i].ordreProximite[a2]] > timeCost[i][cli[i].ordreProximite[a2 + 1]])
-				{
-					temp = cli[i].ordreProximite[a2 + 1];
-					cli[i].ordreProximite[a2 + 1] = cli[i].ordreProximite[a2];
-					cli[i].ordreProximite[a2] = temp;
+		for (unsigned int a1 = 0; a1 < nbClients + nbDepots - 1; a1++)
+			for (unsigned int a2 = 0; a2 < nbClients + nbDepots - a1 - 2; a2++)
+				if (timeCost[i][cli[i].ordreProximite[a2]] > timeCost[i][cli[i].ordreProximite[a2 + 1]]) {
+					std::swap(cli[i].ordreProximite[a2 + 1], cli[i].ordreProximite[a2]);
 				}
 
 		// on remplit les x% plus proches
-		for (int j = 0; j < (prox * (int)cli[i].ordreProximite.size()) / 100 && j < proxCst; j++)
-		{
+		for (unsigned int j = 0; j < (prox * (int)cli[i].ordreProximite.size()) / 100 && j < proxCst; j++) {
 			cli[i].sommetsVoisins.push_back(cli[i].ordreProximite[j]);
 			isCorrelated1[i][cli[i].ordreProximite[j]] = true;
 		}
@@ -252,81 +220,42 @@ void Params::calculeStructures()
 	shuffleProches();
 }
 
-// sous routine du prelevement de donnees
-Client Params::getClient(int i,int rou)
+Client Params::getClientDSIRP()
 {
 	struct couple coordonnees;
 	Client client;
 
 	// file format of Cordeau et al.
 	fichier >> client.custIdx;
-	client.custIdx--;
 	fichier >> coordonnees.x >> coordonnees.y;
 	client.coord = coordonnees;
 
 	if (client.custIdx == 0) // information of the supplier
-	{
-		double initInventory;
-		double dailyProduction;
-		fichier >> initInventory;
-		fichier >> dailyProduction;
-		availableSupply = vector<double>(nbDays + 1, 0.); // days are indexed from 1 ... t
-		for (int t = 1; t <= nbDays; t++)
-			availableSupply[t] = dailyProduction;
-		availableSupply[1] += initInventory;
-		fichier >> inventoryCostSupplier;
-	} else //information of each customer
 	{
 		fichier >> client.startingInventory;
-		fichier >> client.maxInventory;
-		fichier >> client.minInventory;
-		double myDailyDemand;
-		fichier >> myDailyDemand;
-		client.dailyDemand = vector<double>(nbDays + 1, myDailyDemand);
-		fichier >> client.inventoryCost;
-		client.stockoutCost = client.inventoryCost * rou;
-	}
-
-	return client;
-}
-
-Client Params::getClientDSIRP(int i,int rou)
-{
-	struct couple coordonnees;
-	Client client;
-
-	// file format of Cordeau et al.
-	fichier >> client.custIdx;
-	fichier >> coordonnees.x >> coordonnees.y;
-	client.coord = coordonnees;
-
-	if (client.custIdx == 0) // information of the supplier
-	{
-		double initInventory;
-		double dailyProduction;
-		fichier >> initInventory;
-		availableSupply = vector<double>(nbDays + 1, 0.); // days are indexed from 1 ... t
-		for (int t = 1; t <= nbDays; t++) {
-			fichier >> dailyProduction;
-			availableSupply[t] = dailyProduction;
+		allSupply = vector<double>(pHorizon + 1 + 1, 0.);
+		// availableSupply = vector<double>(nbDays + 1 + 1, 0.);
+		for (int t = 1; t <= pHorizon; t++) {
+			fichier >> allSupply[t];
+			// if (t >= jVal)
+			// 	availableSupply[t-jVal+ 1] = dailyProduction;
 		}
-		availableSupply[1] += initInventory;
 		fichier >> inventoryCostSupplier;
 	} else //information of each customer
 	{
 		std::vector<double> oldDemands = vector<double>(50, 0.);
-		client.testDemand = vector<double>(nbDays + 1, 0.0);
+		client.testDemand = vector<double>(pHorizon + 1, 0.0);
 		fichier >> client.startingInventory;
 		client.minInventory = 0.0;
-		// fichier >> client.minInventory;
-		int a;
 		for (unsigned int i = 0; i < 50; i++) {
 			fichier >> oldDemands[i];
 		}
-		double myDailyDemand;
-		client.dailyDemand = vector<double>(nbDays + 1, 0.0);
-		for (unsigned int t = 1; t <= nbDays; t++) {
+		// client.dailyDemand = vector<vector<double>>(nbScenarios, vector<double>(nbDays + 1, 0.0));
+		for (unsigned int t = 1; t <= pHorizon; t++) {
 			fichier >> client.testDemand[t];
+		}
+		for (int j = 1; j < jVal; j++) {
+			oldDemands.push_back(client.testDemand[j]);
 		}
 		fichier >> client.maxInventory;
 		fichier >> client.inventoryCost;
@@ -339,95 +268,15 @@ Client Params::getClientDSIRP(int i,int rou)
 	return client;
 }
 
-void Params::shuffleProches()
-{
-	int temp, temp2;
-
+void Params::shuffleProches() {
 	// on introduit du desordre dans la liste des plus proches pour chaque client
-	for (int i = nbDepots; i < nbClients + nbDepots; i++) {
+	for (unsigned int i = nbDepots; i < nbClients + nbDepots; i++) {
 		// on introduit du desordre
 		for (int a1 = 0; a1 < (int)cli[i].sommetsVoisins.size() - 1; a1++) {
-			temp2 = a1 + rng->genrand64_int64() % ((int)cli[i].sommetsVoisins.size() - a1);
-			temp = cli[i].sommetsVoisins[a1];
-			cli[i].sommetsVoisins[a1] = cli[i].sommetsVoisins[temp2];
-			cli[i].sommetsVoisins[temp2] = temp;
+			int temp = a1 + rng->genrand64_int64() % ((int)cli[i].sommetsVoisins.size() - a1);
+			std::swap(cli[i].sommetsVoisins[a1], cli[i].sommetsVoisins[temp]);
 		}
 	}
-}
-
-Params::Params(Params *params, int decom, int *serieVisites, Vehicle **serieVehicles, int *affectDepots, int *affectPatterns, int depot, int jour, int nbVisites, int nbVeh)
-{
-	debut = clock();
-	rng = params->rng;
-	seed = params->seed;
-
-	/* For now I just kept the CVRP decomposition */
-	if (decom == 0)
-		decomposeRoutes(params, serieVisites, serieVehicles, nbVisites, nbVeh);
-	else
-		cout << "Error : Transformation not available actually" << endl;
-
-	// affectation des autres parametres
-	setMethodParams();
-	penalityCapa = params->penalityCapa;
-
-	mu = params->mu;
-	lambda = params->lambda;
-	el = params->el;
-	nbCountDistMeasure = params->nbCountDistMeasure;
-
-	// calcul des distances
-	// on remplit les distances dans timeCost
-	for (int i = 0; i < nbClients + nbDepots; i++)
-	{
-		timeCost.push_back(vector<double>());
-		for (int j = 0; j < nbClients + nbDepots; j++)
-			timeCost[i].push_back(params->timeCost[correspondanceTable[i]][correspondanceTable[j]]);
-	}
-
-	// calcul des structures
-	calculeStructures();
-}
-
-void Params::decomposeRoutes(Params *params, int *serieVisites, Vehicle **serieVehicles, int nbVisites, int nbVeh)
-{
-	vector<Vehicle> temp;
-
-	correspondanceTable2.clear();
-	for (int i = 0; i < params->nbClients + params->nbDepots; i++)
-		correspondanceTable2.push_back(-1);
-
-	correspondanceTable.push_back(0);
-
-	for (int i = 0; i < nbVisites; i++)
-	{
-		correspondanceTable.push_back(serieVisites[i]);
-		correspondanceTable2[serieVisites[i]] = (int)correspondanceTable.size() - 1;
-	}
-
-	nbVehiculesPerDep = nbVeh;
-	nbClients = correspondanceTable.size() - 1;
-	nbDepots = 1;
-	nbDays = 1;
-	ancienNbDays = 1;
-	borneSplit = 1.5;
-
-	// on place les donn�es sur les v�hicules
-	ordreVehicules.clear();
-	nombreVehicules.clear();
-	ordreVehicules.push_back(temp);
-	nombreVehicules.push_back(0);
-	ordreVehicules.push_back(temp);
-	nombreVehicules.push_back(nbVeh);
-	for (int v = 0; v < nbVeh; v++)
-	{
-		ordreVehicules[1].push_back(*serieVehicles[v]);
-	}
-
-	// on met les bons clients
-	// ils ont toujours les anciens num�ros
-	for (int i = 0; i < nbDepots + nbClients; i++)
-		cli.push_back(params->cli[correspondanceTable[i]]);
 }
 
 void Params::computeConstant_stockout() {
@@ -436,4 +285,21 @@ void Params::computeConstant_stockout() {
 	for (unsigned int k = 1; k <= ancienNbDays; k++) {
 		objectiveConstant_stockout += availableSupply[k] * (ancienNbDays + 1 - k) * inventoryCostSupplier;
 	}
+}
+
+void Params::updateToDay(unsigned int j, std::vector<double> deliveries) {
+    setJval(j);
+	if (j!=1) cli[0].startingInventory = availableSupply[1] - std::accumulate(deliveries.begin(), deliveries.end(), 0.0);
+	std::cout << "Init | MAX | Previous delivery | True demand" << std::endl;
+    for (unsigned int c = nbDepots; c < nbDepots + nbClients; c++) {  
+      double deliver = (j == 1) ? -1 : deliveries[c - nbDepots];
+      if (j!=1) cli[c].startingInventory = std::max(0.0, cli[c].startingInventory + (deliveries[c - nbDepots] - cli[c].testDemand[j - 1]));
+      std::cout << "Client " << c << ": " <<  cli[c].startingInventory << " " << cli[c].maxInventory << " " << deliver << " "  << cli[c].testDemand[j] << std::endl;
+    }
+	std::cout << std::endl;
+    
+    adjustDemands();
+    setMethodParams();
+    calculeStructures();	
+    computeConstant_stockout();
 }

@@ -6,74 +6,57 @@
 #include <string>
 using namespace std;
 
-// Cette classe parse la ligne de commande entre par le user
+// This class parses user's command line
 class commandline
 {
 private:
 
     // seed
     int seed;
-    int rou;
 
-    int nb_scenarios;
-    int var;
+    // number of scenarios
+    unsigned int nb_scenarios;
 
-    int type;
+    // nbVehicles, if given (1 in our setup)
+    unsigned int nbVeh;
 
-    // nbVehicles, if given
-    int nbVeh;
-
-    // nom de l'instance
+    // instance name
     string instance_name;
 
     // nom de la sortie
     string sortie_name;
 
-    // nom de la BKS
-    string BKS_name;
-
-    // remplit l'attribut instance_name
+    // fill instance_name variable
     void set_instance_name(string to_parse);
 
-    // remplit l'attribut sortie_name
+    // fill sortie_name variable
     void set_sortie_name(string to_parse);
 
-    // remplit l'attribut BKS_name
-    void set_BKS_name(string to_parse);
-
-    // donne une valeur par defaut a la solution
-    // en fonction du nom de l'instance
+    // gives a default value to solution file name (using instance name)
     void set_default_sorties_name(string to_parse);
 
 public:
-    // constructeur
+    // constructor
     commandline(int argc, char *argv[]);
 
-    // destructeur
+    // destructor
     ~commandline();
 
     void set_debug_params(string instance);
 
-    // renvoie le chemin de l'instance
+    // instance path
     string get_path_to_instance();
 
-    // renvoie le chemin vers la solution
+    // solution path
     string get_path_to_solution();
 
-    // renvoie le chemin vers la meilleure solution connue
-    string get_path_to_BKS();
+    // number of scenarios
+    unsigned int get_nb_scenarios(); 
 
-    // renvoie le temps cpu allou
-    int get_cpu_time();
-    int get_rou();
-    int get_nb_scenarios(); 
-    int get_var();
-    int get_type();
+    // number of vehicles
+    unsigned int get_nbVeh();
 
-    // renvoie le nombre de v�hicules optimal connu
-    int get_nbVeh();
-
-    // renvoie la seed
+    // seed
     int get_seed();
 
 };

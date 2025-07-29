@@ -28,8 +28,8 @@ public:
     PLFunction(Params *params);
 
     // initialize a PL function from arc profile
-    PLFunction(Params *params, vector<Insertion> insertions, int day, int client);
-    PLFunction(Params *params, Insertion insertion, int client);
+    PLFunction(Params *params, vector<Insertion> insertions, int day, int client, int idxScenario); //constructor for basic F
+    PLFunction(Params *params, Insertion insertion, int client, int idxScenario); //constructor for reverseGk
 
     // initialize a PLFunction from list of pieces
     PLFunction(Params *params, vector<shared_ptr<LinearPiece>> pieces);
@@ -56,7 +56,7 @@ public:
 
     std::shared_ptr<PLFunction> getInBound(double lb, double ub, bool updateValueAt0 = false);
 
-    double calculateGFunction(int day, int client, double detour, double replenishment, double freeload);
+    double calculateGFunction(int day, int client, double detour, double replenishment, double freeload, int idxScenario);
 
     void print();
 

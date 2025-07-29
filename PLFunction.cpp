@@ -34,7 +34,7 @@ void PLFunction::clear()
     maxValue = -MAXCOST;
 }
 
-PLFunction::PLFunction(Params *params, Insertion insertion, int client){
+PLFunction::PLFunction(Params *params, Insertion insertion, int client, int idxScenario){
     nbPieces = 0;
     pieces = vector<shared_ptr<LinearPiece>>();
     minimalPiece = nullptr;
@@ -46,7 +46,7 @@ PLFunction::PLFunction(Params *params, Insertion insertion, int client){
     tmp->fromInst = make_shared<Insertion>(insertion.detour, insertion.load, insertion.place);
     append(tmp);
     if (insertion.load < params->cli[client].maxInventory) {
-        double cost = insertion.detour + params->penalityCapa * std::max(0.0, params->cli[client].maxInventory - insertion.load) - params->inventoryCostSupplier * (double)(params->nbDays) * params->cli[client].maxInventory;
+        double cost = insertion.detour + params->penalityCapa[idxScenario] * std::max(0.0, params->cli[client].maxInventory - insertion.load) - params->inventoryCostSupplier * (double)(params->nbDays) * params->cli[client].maxInventory;
         shared_ptr<LinearPiece> tmp2(make_shared<LinearPiece>(insertion.load, cost1, params->cli[client].maxInventory, cost));
         tmp2->fromInst = make_shared<Insertion>(insertion.detour, insertion.load, insertion.place);
         append(tmp2);
@@ -54,7 +54,7 @@ PLFunction::PLFunction(Params *params, Insertion insertion, int client){
 }
 
 
-PLFunction::PLFunction(Params *params, vector<Insertion> insertions, int day, int client) : params(params)
+PLFunction::PLFunction(Params *params, vector<Insertion> insertions, int day, int client, int idxScenario) : params(params)
 {
     if (insertions.size() == 0)
     {
@@ -84,24 +84,24 @@ PLFunction::PLFunction(Params *params, vector<Insertion> insertions, int day, in
         if (index == insertions.begin())
         {
             pre_x = 0;
-            pre_y = calculateGFunction(day, client, index->detour, pre_x,  pre_x);
+            pre_y = calculateGFunction(day, client, index->detour, pre_x,  pre_x, idxScenario);
             x = index->load;
-            y = calculateGFunction(day, client, index->detour, x, index->load); //x,load: demand loadfree
+            y = calculateGFunction(day, client, index->detour, x, index->load, idxScenario); //x,load: demand loadfree
         }
         else
         {
-            double current_cost = calculateGFunction(day, client, index->detour, index->load, index->load);
+            double current_cost = calculateGFunction(day, client, index->detour, index->load, index->load, idxScenario);
             std::vector<Insertion>::iterator pre_index = index - 1;
-            double pre_insertion_cost_with_current_demand = calculateGFunction(day, client, pre_index->detour, index->load, pre_index->load);
+            double pre_insertion_cost_with_current_demand = calculateGFunction(day, client, pre_index->detour, index->load, pre_index->load, idxScenario);
 
             bool is_dominated_vehicle = (index->load <= pre_load) || (pre_insertion_cost_with_current_demand <= current_cost);
 
             if (!is_dominated_vehicle)
             {    // make piecey
                 //index->detour = pre_detour +  x *PenalityCapacity - preload*PenalityCapacity 
-                x = pre_load + (index->detour - pre_detour) / params->penalityCapa;
+                x = pre_load + (index->detour - pre_detour) / params->penalityCapa[idxScenario];
 
-                y = calculateGFunction(day, client, pre_detour, x, pre_load);
+                y = calculateGFunction(day, client, pre_detour, x, pre_load, idxScenario);
 
                 shared_ptr<LinearPiece> tmp(make_shared<LinearPiece>(pre_x, pre_y, x, y));
                 tmp->fromInst = make_shared<Insertion>(pre_index->detour, pre_index->load, pre_index->place);
@@ -116,7 +116,7 @@ PLFunction::PLFunction(Params *params, vector<Insertion> insertions, int day, in
         }
 
         // make piecey
-        pre_y = calculateGFunction(day, client, index->detour, pre_x, index->load);
+        pre_y = calculateGFunction(day, client, index->detour, pre_x, index->load, idxScenario);
         shared_ptr<LinearPiece> tmp(make_shared<LinearPiece>(pre_x, pre_y, x, y));
         tmp->fromInst = make_shared<Insertion>(index->detour, index->load, index->place);
 
@@ -137,7 +137,7 @@ PLFunction::PLFunction(Params *params, vector<Insertion> insertions, int day, in
         return;
     }
 
-    y = calculateGFunction(day, client, pre_detour, x, pre_load);
+    y = calculateGFunction(day, client, pre_detour, x, pre_load, idxScenario);
     // make piecey
     shared_ptr<LinearPiece> tmp(make_shared<LinearPiece>(pre_x, pre_y, x, y));
     tmp->fromInst = make_shared<Insertion>(pre_detour, pre_load, pre_place);
@@ -432,7 +432,7 @@ void PLFunction::print()
 }
 
 //only calculate the &stockout cost &detour & more capacity cost
-double PLFunction::calculateGFunction(int day, int client, double detour, double replenishment, double freeload)
+double PLFunction::calculateGFunction(int day, int client, double detour, double replenishment, double freeload, int idxScenario)
 {
     // detour
     double cost = detour;
@@ -441,7 +441,7 @@ double PLFunction::calculateGFunction(int day, int client, double detour, double
     cost -= params->inventoryCostSupplier * replenishment * (double)(params->ancienNbDays - day); 
     
     // possible excess capacity
-    cost += params->penalityCapa * std::max(0.0, replenishment - freeload);
+    cost += params->penalityCapa[idxScenario] * std::max(0.0, replenishment - freeload);
     return cost;
 }
 

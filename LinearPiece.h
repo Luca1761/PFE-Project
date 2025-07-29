@@ -40,7 +40,7 @@ struct Point
 
     Point() {}
 
-    Point(double x, double y) : x(x), y(y) { isFeasible = true; }
+    Point(double _x, double _y) : x(_x), y(_y) { isFeasible = true; }
 
     virtual ~Point()
     {
@@ -51,10 +51,10 @@ struct Point
     }
     inline Point convolve(shared_ptr<Point> p)
     {
-        double x = this->x + p->x;
-        double y = this->y + p->y;
+        double _x = this->x + p->x;
+        double _y = this->y + p->y;
 
-        Point pc = Point(x, y);
+        Point pc = Point(_x, _y);
 
         return pc;
     }

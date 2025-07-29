@@ -24,8 +24,14 @@ using namespace std ;
 class Genetic
 {
 private:
+    //global parameters
+	Params* params;
+
 	//on stocke le temps restant
     clock_t ticks ;
+
+	//population of solutions
+	Population* population ;	
 
 	// Number of non-improving iterations before stopping
 	int nbIterNonProd ;
@@ -34,16 +40,12 @@ private:
 	int nbIter ;
 	
 	// Number of scenarios
-	int nbScenario;
+	unsigned int nbScenario;
 
 	// Pointer towards the parameters of the problem
-	vector<Params*> paramsList;
 
 	// traces d'execution ou non
 	bool traces ;
-
-	// Population
-	Population* population ;
 
 	// First individual to be used as input for the crossover
 	Individu* rejeton ; 
@@ -73,7 +75,7 @@ public:
     void evolve(int maxIter , int maxIterNonProd) ;
 
 	// constructeur du solveur genetique
-	Genetic(vector<Params *> paramsList,Population * population, clock_t ticks, bool traces);
+	Genetic(Params* _params, clock_t _ticks, Population * _population, bool _traces);
 
 	// destructeur
 	~Genetic(void);

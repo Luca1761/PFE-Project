@@ -37,6 +37,9 @@ Individu *individu;
 
 public:
   Params *params;
+
+  int idxScenario;
+
   bool rechercheTerminee;
   // vecteur donnant l'ordre de parcours des sommets pour chaque jour, ne
   // contenant pas les sommets
@@ -182,7 +185,7 @@ public:
 
   // constructeur, cree les structures de noeuds
   // n'initialise pas pas la pile ni les routes
-  LocalSearch(Params *params, Individu *individu);
+  LocalSearch(Individu* _individu, Params* _params, int _idxScenario);
 
   ~LocalSearch(void);
 };

@@ -36,14 +36,18 @@ public:
 	// bounds for the inventory
 	double maxInventory ;
 
-	// daily demand of the customer.
+	// daily demand of the customer (scenario based)
 	vector<vector<double>> dailyDemand ;
 
+	// real demand of the customer (only for test)
 	vector<double> testDemand ;
 
 	// daily inventory cost of the customer
 	double inventoryCost ;
+
+	// daily stockout cost of the customer
 	double stockoutCost;
+
 	// ordre des sommets et depots, par proximit�
 	vector<int> ordreProximite ;
 

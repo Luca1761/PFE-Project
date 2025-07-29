@@ -16,12 +16,12 @@ Params * params ;
 public:
 
 // identification of the related depot
-int depotNumber ;     
+unsigned int depotNumber ;     
 
 // capacity limit
 double capacity ;
 
-Vehicle(int depotNumber, double capacity);
+Vehicle(unsigned int _depotNumber, double _capacity);
 ~Vehicle(void);
 };
 

@@ -2,29 +2,29 @@
 #include <algorithm> 
 #include <unistd.h>
 
-inline double GetMemoryUsage(int pid, int flag=true) {
-	std::ifstream status("/proc/" + std::to_string(pid) + "/status");
-	std::string line;
-	long long vm_size_kb = 0, vm_rss_kb = 0;
+// inline double GetMemoryUsage(int pid, int flag=true) {
+// 	std::ifstream status("/proc/" + std::to_string(pid) + "/status");
+// 	std::string line;
+// 	long long vm_size_kb = 0, vm_rss_kb = 0;
 
-	while (std::getline(status, line)) {
-		if (line.find("VmSize:") != std::string::npos) {
-			vm_size_kb = std::stoll(line.substr(line.find(":") + 1));
-		} else if (line.find("VmRSS:") != std::string::npos) {
-			vm_rss_kb = std::stoll(line.substr(line.find(":") + 1));
-		}
-	}
+// 	while (std::getline(status, line)) {
+// 		if (line.find("VmSize:") != std::string::npos) {
+// 			vm_size_kb = std::stoll(line.substr(line.find(":") + 1));
+// 		} else if (line.find("VmRSS:") != std::string::npos) {
+// 			vm_rss_kb = std::stoll(line.substr(line.find(":") + 1));
+// 		}
+// 	}
 
-	double vm_size_mb = vm_size_kb / 1024.0;
-	double vm_rss_mb = vm_rss_kb / 1024.0;
+// 	double vm_size_mb = (double) vm_size_kb / 1024.0;
+// 	double vm_rss_mb = vm_rss_kb / 1024.0;
 
-	if (flag) {
-		std::cout << "Virtual Memory Size: " << vm_size_mb << " MB\n";
-		std::cout << "Resident Set Size (RSS): " << vm_rss_mb << " MB\n";
-	}
+// 	if (flag) {
+// 		std::cout << "Virtual Memory Size: " << vm_size_mb << " MB\n";
+// 		std::cout << "Resident Set Size (RSS): " << vm_rss_mb << " MB\n";
+// 	}
 
-	return vm_size_mb;
-}
+// 	return vm_size_mb;
+// }
 
 void Genetic::evolve(int maxIter, int maxIterNonProd) {
 	int place;
@@ -56,15 +56,15 @@ void Genetic::evolve(int maxIter, int maxIterNonProd) {
 		nbIterNonProd++;
 		if (place == 0 && rejeton->estValide) {
 			nbIterNonProd = 1;
-			cout << "NEW BEST FEASIBLE ";
-			cout << rejeton->coutSol.evaluation;	
-			cout << " Cost : " << rejeton->coutSol.fitness
+			std::cout << "NEW BEST FEASIBLE ";
+			std::cout << rejeton->coutSol.evaluation;	
+			std::cout << " Cost : " << rejeton->coutSol.fitness
 				 << " capacity Violation : " << rejeton->coutSol.capacityViol;
-			cout << endl;
-			cout << endl;
+			std::cout << endl;
+			std::cout << endl;
 		}
 		if (nbIterNonProd / 750 == oldValue) {
-			cout << "Diversification" << endl;
+			std::cout << "Diversification" << endl;
 			population->diversify();
 			oldValue = (nbIterNonProd / 750) + 1;
 		}
@@ -79,8 +79,8 @@ void Genetic::evolve(int maxIter, int maxIterNonProd) {
 	}
 	
 	// fin de l'algorithme , diverses informations affich�es
-	cout << "time passes : " << clock() << endl;
-	cout << "number of iterations : " << nbIter << endl;
+	std::cout << "time passes : " << clock() << endl;
+	std::cout << "number of iterations : " << nbIter << endl;
 }
 
 void Genetic::muter_scenario() {
@@ -96,14 +96,14 @@ void Genetic::reparer_scenario() {
 	vector<double> savePenalities(nbScenario, 0.0);
 
 	for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
-		savePenalities[scenario] = paramsList[scenario]->penalityCapa;
+		savePenalities[scenario] = params->penalityCapa[scenario];
 	}
 
 	for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
 		if (rejeton->coutSol_scenario.capacityViol[scenario] > 0.0001)
-			paramsList[scenario]->penalityCapa *= 10;
+			params->penalityCapa[scenario] *= 10;
 	}
-	if (paramsList[0]->rng->genrand64_real1() < paramsList[0]->pRep) {
+	if (params->rng->genrand64_real1() < params->pRep) {
 		rejeton->generalSplit_scenario();
 		rejeton->updateLS_scenario();
 		rejeton->localSearchRunSearch_scenario();
@@ -111,7 +111,7 @@ void Genetic::reparer_scenario() {
 		if (!rejeton->estValide) {
 			for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
 				if (rejeton->coutSol_scenario.capacityViol[scenario] > 0.0001)
-					paramsList[scenario]->penalityCapa *= 500;
+					params->penalityCapa[scenario] *= 500;
 			}
 			rejeton->generalSplit_scenario();
 			rejeton->updateLS_scenario();
@@ -121,7 +121,7 @@ void Genetic::reparer_scenario() {
 	}
 
 	for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
-		paramsList[scenario]->penalityCapa = savePenalities[scenario];
+		params->penalityCapa[scenario] = savePenalities[scenario];
 	}
 }
 
@@ -130,19 +130,19 @@ void Genetic::reparer_scenario() {
 void Genetic::gererPenalites_scenario() {
 	double fractionCharge = population->fractionValidesCharge();
 	for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
-		if (fractionCharge < paramsList[scenario]->minValides && paramsList[scenario]->penalityCapa < 1000)
-			paramsList[scenario]->penalityCapa *= 1.25;
-		else if (fractionCharge > paramsList[scenario]->maxValides && paramsList[scenario]->penalityCapa > 0.01)
-			paramsList[scenario]->penalityCapa *= 0.8;
+		if (fractionCharge < params->minValides && params->penalityCapa[scenario] < 1000)
+			params->penalityCapa[scenario] *= 1.25;
+		else if (fractionCharge > params->maxValides && params->penalityCapa[scenario] > 0.01)
+			params->penalityCapa[scenario] *= 0.8;
 	}
 	population->validatePen();
 }
 
-Genetic::Genetic(vector<Params*> pl, Population *population, clock_t ticks, bool traces) : paramsList(pl), population(population), ticks(ticks), traces(traces)
+Genetic::Genetic(Params* _params, clock_t _ticks, Population* _population, bool _traces) : params(_params), ticks(_ticks), population(_population), traces(_traces)
 {
-	nbScenario = pl.size();
-	rejeton = new Individu(paramsList);
-	rejeton2 = new Individu(paramsList);
+	nbScenario = params->nbScenarios;
+	rejeton = new Individu(params);
+	rejeton2 = new Individu(params);
 }
 
 int Genetic::crossPOX_scenario() {
@@ -162,32 +162,32 @@ int Genetic::crossPOX_scenario() {
 		}
 	}
 
-	int firstDayInheritance = paramsList[0]->rng->genrand64_int64() % 4;
+	int firstDayInheritance = params->rng->genrand64_int64() % 4;
 	rejeton->chromT[1].clear();
 	if (firstDayInheritance == 0) {
 		for (int ii : chromTParent1[1]) {
 			rejeton->chromT[1].push_back(ii);
-			for (int scenario = 0; scenario < nbScenario; scenario++) {
-				rejeton->chromL[1 + scenario * paramsList[0]->nbDays][ii] = chromLParent1[1 + scenario * paramsList[0]->nbDays][ii];
+			for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
+				rejeton->chromL[1 + scenario * params->nbDays][ii] = chromLParent1[1 + scenario * params->nbDays][ii];
 			}
 		}
 	} else if (firstDayInheritance == 1) {
 		for (int ii : chromTParent2[1]) {
 			rejeton->chromT[1].push_back(ii);
-			for (int scenario = 0; scenario < nbScenario; scenario++) {
-				rejeton->chromL[1 + scenario * paramsList[0]->nbDays][ii] = chromLParent2[1 + scenario * paramsList[0]->nbDays][ii];
+			for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
+				rejeton->chromL[1 + scenario * params->nbDays][ii] = chromLParent2[1 + scenario * params->nbDays][ii];
 			}
 		}
 	} else {
 		if (!chromTParent1[1].empty()) {
-			int begin = paramsList[0]->rng->genrand64_int64() % chromTParent1[1].size();
-			int end = paramsList[0]->rng->genrand64_int64() % chromTParent1[1].size();
-			int i = begin;
+			unsigned int begin = params->rng->genrand64_int64() % chromTParent1[1].size();
+			unsigned int end = params->rng->genrand64_int64() % chromTParent1[1].size();
+			unsigned int i = begin;
 			while (i != end) {
 				int ii = chromTParent1[1][i];
 				rejeton->chromT[1].push_back(ii);
-				for (int scenario = 0; scenario < nbScenario; scenario++) {
-					rejeton->chromL[1 + scenario * paramsList[0]->nbDays][ii] = chromLParent1[1 + scenario * paramsList[0]->nbDays][ii];
+				for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
+					rejeton->chromL[1 + scenario * params->nbDays][ii] = chromLParent1[1 + scenario * params->nbDays][ii];
 				}
 				i = (i + 1) % chromTParent1[1].size();
 			}
@@ -197,38 +197,38 @@ int Genetic::crossPOX_scenario() {
 			for (int ii : chromTParent2[1]) {
 				if (std::find(rejeton->chromT[1].begin(), rejeton->chromT[1].end(), ii) == rejeton->chromT[1].end()) {
 					rejeton->chromT[1].push_back(ii);
-					for (int scenario = 0; scenario < nbScenario; scenario++) {
-						rejeton->chromL[1 + scenario * paramsList[0]->nbDays][ii] = chromLParent2[1 + scenario * paramsList[0]->nbDays][ii];
+					for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
+						rejeton->chromL[1 + scenario * params->nbDays][ii] = chromLParent2[1 + scenario * params->nbDays][ii];
 					}
 				}
 			}
 		}
 	}
-	if (paramsList[0]->nbDays > 1) {
+	if (params->nbDays > 1) {
 		for (int scenario = 0; scenario < nbScenario; scenario++) {
 			vector<int> garder;
 			vector<int> tableauFin;
-			vector<vector<bool>> hasBeenInserted = vector<vector<bool>>(paramsList[0]->nbDays + 1, vector<bool>(paramsList[0]->nbClients + paramsList[0]->nbDepots, false));
-			int scenarioBegin = scenario * (paramsList[0]->nbDays - 1) + 2;
-			vector<int> randomDays = vector<int>(paramsList[0]->nbDays - 1, 0);
-			for (int i = 0; i < randomDays.size(); i++) {
+			vector<vector<bool>> hasBeenInserted = vector<vector<bool>>(params->nbDays + 1, vector<bool>(params->nbClients + params->nbDepots, false));
+			int scenarioBegin = scenario * (params->nbDays - 1) + 2;
+			vector<int> randomDays = vector<int>(params->nbDays - 1, 0);
+			for (unsigned int i = 0; i < randomDays.size(); i++) {
 				randomDays[i] = scenarioBegin + i;
 			}
 
-			std::mt19937 g(paramsList[0]->seed);
+			std::mt19937 g(params->seed);
 			std::shuffle(randomDays.begin(), randomDays.end(), g);
 
-			j1 = paramsList[scenario]->rng->genrand64_int64() % randomDays.size();
-			j2 = paramsList[scenario]->rng->genrand64_int64() % randomDays.size();
+			j1 = params->rng->genrand64_int64() % randomDays.size();
+			j2 = params->rng->genrand64_int64() % randomDays.size();
 			if (j1 > j2) std::swap(j1, j2);
 			for (unsigned int k = 0; k < randomDays.size(); k++) {
 				int day = randomDays[k];
 				int dayL = scenario + day;
-				int realDay = day - scenario * (paramsList[0]->nbDays - 1);
+				int realDay = day - scenario * (params->nbDays - 1);
 				// on recopie un segment
 				if (k < j1 && !rejeton->chromT[day].empty()) {
-					debut = (int)(paramsList[scenario]->rng->genrand64_int64() % rejeton->chromT[day].size());
-					fin = (int)(paramsList[scenario]->rng->genrand64_int64() % rejeton->chromT[day].size());
+					debut = (int)(params->rng->genrand64_int64() % rejeton->chromT[day].size());
+					fin = (int)(params->rng->genrand64_int64() % rejeton->chromT[day].size());
 					tableauFin.push_back(fin);
 					int j = debut;
 					garder.clear();
@@ -267,7 +267,7 @@ int Genetic::crossPOX_scenario() {
 			for (unsigned int k = 0; k < j2; k++) {
 				int day = randomDays[k];
 				int dayL = day + scenario;
-				int realDay = day - scenario * (paramsList[0]->nbDays - 1);
+				int realDay = day - scenario * (params->nbDays - 1);
 				fin = tableauFin[k];
 				for (unsigned int i = 0; i < (int)rejeton2->chromT[day].size(); i++) {
 					int ii = rejeton2->chromT[day][(i + fin + 1) % (int)rejeton2->chromT[day].size()];
@@ -301,34 +301,34 @@ void Genetic::crossPOX2() {
 	// Reinitializing the chromL of the rejeton (will become the child)
 	// Keeping for each day and each customer the total sum of delivered load and initial inventory
 	// (when inserting a customer, need to make sure that we are not exceeding this)
-	for (unsigned int k = 1; k <= paramsList[0]->nbDays; k++)
-		for (unsigned int i = paramsList[0]->nbDepots; i < paramsList[0]->nbDepots + paramsList[0]->nbClients; i++)
+	for (unsigned int k = 1; k <= params->nbDays; k++)
+		for (unsigned int i = params->nbDepots; i < params->nbDepots + params->nbClients; i++)
 			rejeton->chromL[k][i] = 0.;
 
 	// Keeping a vector to remember if a delivery has already been inserted for on day k for customer i
-	vector<vector<bool>> hasBeenInserted = vector<vector<bool>>(paramsList[0]->nbDays + 1, vector<bool>(paramsList[0]->nbClients + paramsList[0]->nbDepots, false));
+	vector<vector<bool>> hasBeenInserted = vector<vector<bool>>(params->nbDays + 1, vector<bool>(params->nbClients + params->nbDepots, false));
 
 	// choosing the type of inheritance for each day (nothing, all, or mixed)
-	for (int k = 1; k <= paramsList[0]->nbDays; k++)
+	for (int k = 1; k <= params->nbDays; k++)
 		joursPerturb.push_back(k);
 
 	std::random_device rd;
-	std::mt19937 g(paramsList[0]->seed);
+	std::mt19937 g(params->seed);
 	std::shuffle(joursPerturb.begin(), joursPerturb.end(), g);
 
 	// Picking j1 et j2
-	j1 = paramsList[0]->rng->genrand64_int64() % paramsList[0]->nbDays;
-	j2 = paramsList[0]->rng->genrand64_int64() % paramsList[0]->nbDays;
+	j1 = params->rng->genrand64_int64() % params->nbDays;
+	j2 = params->rng->genrand64_int64() % params->nbDays;
 	if (j1 > j2) std::swap(j1, j2);
 
 	// Inheriting the data from rejeton1.
 	// For each day, we will keep a sequence going from debut to fin
-	for (unsigned int k = 0; k < paramsList[0]->nbDays; k++) {
+	for (unsigned int k = 0; k < params->nbDays; k++) {
 		day = joursPerturb[k];
 		// on recopie un segment
 		if (k < j1 && !rejeton->chromT[day].empty()) {
-			debut = (int)(paramsList[0]->rng->genrand64_int64() % rejeton->chromT[day].size());
-			fin = (int)(paramsList[0]->rng->genrand64_int64() % rejeton->chromT[day].size());
+			debut = (int)(params->rng->genrand64_int64() % rejeton->chromT[day].size());
+			fin = (int)(params->rng->genrand64_int64() % rejeton->chromT[day].size());
 			if (debut > fin) std::swap(debut, fin);
 			tableauFin.push_back(fin);
 			int j = debut;

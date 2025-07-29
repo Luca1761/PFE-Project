@@ -14,7 +14,7 @@ using namespace std;
 
 class LotSizingSolver {
 private:
-    vector<Params*> paramsList;
+    Params* params;
      
 public:
     vector<vector<vector<Insertion>>> insertions;
@@ -32,7 +32,7 @@ public:
     vector<double> objective;
     int nbScenario;
 
-    LotSizingSolver(vector<Params*> params, vector<vector<vector<Insertion>>> insertions, int client);
+    LotSizingSolver(Params* params, vector<vector<vector<Insertion>>> insertions, int client);
 
     std::shared_ptr<PLFunction> copyPLFunction(std::shared_ptr<PLFunction> source, Params* paramsTemp);
     void extractBreakpoints(const std::shared_ptr<PLFunction>& f, vector<double>& breakpoints);

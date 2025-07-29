@@ -77,7 +77,7 @@ void reinitSingleDayMoves();
 
 Route(void);
 
-Route(int idx, int day, Noeud * depot, double temps, double charge, double capacity, Params * params, LocalSearch * myLS);
+Route(Params* _params, LocalSearch* _myLS, int _idx, int _day, Noeud * _depot, double _temps, double _charge, double _capacity);
 
 ~Route(void);
 };

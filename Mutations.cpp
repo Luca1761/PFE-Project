@@ -55,11 +55,11 @@ int LocalSearch::mutation1 ()
 	// tout ce qu'on sait c'est que si il est negatif c'est qu'il est bien reellement negatif
 	// pas d'incidence pour l'instant mais attention
 	if (routeU != routeV) {
-		costSuppU += routeU->excedentCharge(routeU->charge - deliveryPerDay[dayCour][noeudUCour])*params->penalityCapa
-		- routeU->excedentCharge(routeU->charge)*params->penalityCapa ;
+		costSuppU += routeU->excedentCharge(routeU->charge - deliveryPerDay[dayCour][noeudUCour])*params->penalityCapa[idxScenario]
+		- routeU->excedentCharge(routeU->charge)*params->penalityCapa[idxScenario] ;
 
-		costSuppV += routeV->excedentCharge(routeV->charge + deliveryPerDay[dayCour][noeudUCour])*params->penalityCapa
-		- routeV->excedentCharge(routeV->charge)*params->penalityCapa ;
+		costSuppV += routeV->excedentCharge(routeV->charge + deliveryPerDay[dayCour][noeudUCour])*params->penalityCapa[idxScenario]
+		- routeV->excedentCharge(routeV->charge)*params->penalityCapa[idxScenario] ;
 	}
 
 	if (costSuppU + costSuppV > -0.0001) return 0 ;
@@ -88,11 +88,11 @@ int LocalSearch::mutation2 ()
 
 	if (routeU != routeV)
 	{
-	costSuppU += routeU->excedentCharge(routeU->charge - deliveryPerDay[dayCour][noeudUCour] - deliveryPerDay[dayCour][xCour])*params->penalityCapa
-	- routeU->excedentCharge(routeU->charge)*params->penalityCapa ;
+	costSuppU += routeU->excedentCharge(routeU->charge - deliveryPerDay[dayCour][noeudUCour] - deliveryPerDay[dayCour][xCour])*params->penalityCapa[idxScenario]
+	- routeU->excedentCharge(routeU->charge)*params->penalityCapa[idxScenario] ;
 	
-	costSuppV += routeV->excedentCharge(routeV->charge + deliveryPerDay[dayCour][noeudUCour] + deliveryPerDay[dayCour][xCour])*params->penalityCapa
-	- routeV->excedentCharge(routeV->charge)*params->penalityCapa ;
+	costSuppV += routeV->excedentCharge(routeV->charge + deliveryPerDay[dayCour][noeudUCour] + deliveryPerDay[dayCour][xCour])*params->penalityCapa[idxScenario]
+	- routeV->excedentCharge(routeV->charge)*params->penalityCapa[idxScenario] ;
 	}
 
 	if ( costSuppU + costSuppV > -0.0001 ) { return 0 ;}
@@ -122,11 +122,11 @@ int LocalSearch::mutation3 ()
 
 	if (routeU != routeV)
 	{
-	costSuppU += routeU->excedentCharge(routeU->charge - deliveryPerDay[dayCour][noeudUCour] - deliveryPerDay[dayCour][xCour])*params->penalityCapa
-	- routeU->excedentCharge(routeU->charge)*params->penalityCapa ;
+	costSuppU += routeU->excedentCharge(routeU->charge - deliveryPerDay[dayCour][noeudUCour] - deliveryPerDay[dayCour][xCour])*params->penalityCapa[idxScenario]
+	- routeU->excedentCharge(routeU->charge)*params->penalityCapa[idxScenario] ;
 	
-	costSuppV += routeV->excedentCharge(routeV->charge + deliveryPerDay[dayCour][noeudUCour] + deliveryPerDay[dayCour][xCour])*params->penalityCapa
-	- routeV->excedentCharge(routeV->charge)*params->penalityCapa ;
+	costSuppV += routeV->excedentCharge(routeV->charge + deliveryPerDay[dayCour][noeudUCour] + deliveryPerDay[dayCour][xCour])*params->penalityCapa[idxScenario]
+	- routeV->excedentCharge(routeV->charge)*params->penalityCapa[idxScenario] ;
 	}
 
 	if ( costSuppU + costSuppV > -0.0001 ) return 0;
@@ -156,11 +156,11 @@ int LocalSearch::mutation4 ()
 
 	if (routeU != routeV)
 	{
-	costSuppU += routeU->excedentCharge(routeU->charge + deliveryPerDay[dayCour][noeudVCour] - deliveryPerDay[dayCour][noeudUCour])*params->penalityCapa
-	- routeU->excedentCharge(routeU->charge)*params->penalityCapa ;
+	costSuppU += routeU->excedentCharge(routeU->charge + deliveryPerDay[dayCour][noeudVCour] - deliveryPerDay[dayCour][noeudUCour])*params->penalityCapa[idxScenario]
+	- routeU->excedentCharge(routeU->charge)*params->penalityCapa[idxScenario] ;
 	
-	costSuppV += routeV->excedentCharge(routeV->charge + deliveryPerDay[dayCour][noeudUCour] - deliveryPerDay[dayCour][noeudVCour])*params->penalityCapa
-	- routeV->excedentCharge(routeV->charge)*params->penalityCapa ;
+	costSuppV += routeV->excedentCharge(routeV->charge + deliveryPerDay[dayCour][noeudUCour] - deliveryPerDay[dayCour][noeudVCour])*params->penalityCapa[idxScenario]
+	- routeV->excedentCharge(routeV->charge)*params->penalityCapa[idxScenario] ;
 	}
 
 	if ( costSuppU + costSuppV > -0.0001 ) { return 0 ;}
@@ -194,11 +194,11 @@ int LocalSearch::mutation5 ()
 	
 	if (routeU != routeV)
 	{
-	costSuppU += routeU->excedentCharge(routeU->charge + deliveryPerDay[dayCour][noeudVCour] - deliveryPerDay[dayCour][noeudUCour] - deliveryPerDay[dayCour][xCour])*params->penalityCapa
-	- routeU->excedentCharge(routeU->charge)*params->penalityCapa ;
+	costSuppU += routeU->excedentCharge(routeU->charge + deliveryPerDay[dayCour][noeudVCour] - deliveryPerDay[dayCour][noeudUCour] - deliveryPerDay[dayCour][xCour])*params->penalityCapa[idxScenario]
+	- routeU->excedentCharge(routeU->charge)*params->penalityCapa[idxScenario] ;
 
-	costSuppV += routeV->excedentCharge(routeV->charge + deliveryPerDay[dayCour][noeudUCour] + deliveryPerDay[dayCour][xCour] - deliveryPerDay[dayCour][noeudVCour])*params->penalityCapa
-	- routeV->excedentCharge(routeV->charge)*params->penalityCapa ;
+	costSuppV += routeV->excedentCharge(routeV->charge + deliveryPerDay[dayCour][noeudUCour] + deliveryPerDay[dayCour][xCour] - deliveryPerDay[dayCour][noeudVCour])*params->penalityCapa[idxScenario]
+	- routeV->excedentCharge(routeV->charge)*params->penalityCapa[idxScenario] ;
 	}
 
 	if ( costSuppU + costSuppV > -0.0001 ) { return 0 ;}
@@ -230,11 +230,11 @@ int LocalSearch::mutation6 ()
 	
 	if (routeU != routeV)
 	{
-	costSuppU += routeU->excedentCharge(routeU->charge + deliveryPerDay[dayCour][noeudVCour] + deliveryPerDay[dayCour][yCour] - deliveryPerDay[dayCour][noeudUCour] - deliveryPerDay[dayCour][xCour])*params->penalityCapa
-	- routeU->excedentCharge(routeU->charge)*params->penalityCapa ;
+	costSuppU += routeU->excedentCharge(routeU->charge + deliveryPerDay[dayCour][noeudVCour] + deliveryPerDay[dayCour][yCour] - deliveryPerDay[dayCour][noeudUCour] - deliveryPerDay[dayCour][xCour])*params->penalityCapa[idxScenario]
+	- routeU->excedentCharge(routeU->charge)*params->penalityCapa[idxScenario] ;
 	
-	costSuppV += routeV->excedentCharge(routeV->charge + deliveryPerDay[dayCour][noeudUCour] + deliveryPerDay[dayCour][xCour] - deliveryPerDay[dayCour][noeudVCour] - deliveryPerDay[dayCour][yCour])*params->penalityCapa
-	- routeV->excedentCharge(routeV->charge)*params->penalityCapa ;
+	costSuppV += routeV->excedentCharge(routeV->charge + deliveryPerDay[dayCour][noeudUCour] + deliveryPerDay[dayCour][xCour] - deliveryPerDay[dayCour][noeudVCour] - deliveryPerDay[dayCour][yCour])*params->penalityCapa[idxScenario]
+	- routeV->excedentCharge(routeV->charge)*params->penalityCapa[idxScenario] ;
 	}
 
 	if ( costSuppU + costSuppV > -0.0001 ) { return 0 ;}
@@ -306,10 +306,10 @@ int LocalSearch::mutation8 ()
 	+ params->timeCost[xCour][yCour]
 	- params->timeCost[noeudUCour][xCour] 
 	- params->timeCost[noeudVCour][yCour]
-    + routeU->excedentCharge(noeudU->chargeAvant + noeudV->chargeAvant)*params->penalityCapa
-	+ routeV->excedentCharge(chargeResteV + chargeResteU)*params->penalityCapa
-	- routeU->excedentCharge(routeU->charge)*params->penalityCapa
-	- routeV->excedentCharge(routeV->charge)*params->penalityCapa ;
+    + routeU->excedentCharge(noeudU->chargeAvant + noeudV->chargeAvant)*params->penalityCapa[idxScenario]
+	+ routeV->excedentCharge(chargeResteV + chargeResteU)*params->penalityCapa[idxScenario]
+	- routeU->excedentCharge(routeU->charge)*params->penalityCapa[idxScenario]
+	- routeV->excedentCharge(routeV->charge)*params->penalityCapa[idxScenario] ;
 
 	if ( cost > -0.0001 ) { return 0 ; } 
 
@@ -407,7 +407,7 @@ int LocalSearch::mutation9 ()
 	+ (routeU->excedentCharge(noeudU->chargeAvant + chargeResteV)
 	+ routeV->excedentCharge(noeudV->chargeAvant + chargeResteU)
 	- routeU->excedentCharge(routeU->charge)
-	- routeV->excedentCharge(routeV->charge))*params->penalityCapa ;
+	- routeV->excedentCharge(routeV->charge))*params->penalityCapa[idxScenario] ;
 
 	if ( cost > -0.0001 ) { return 0 ; } 
 

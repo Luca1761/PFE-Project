@@ -51,11 +51,11 @@ class Individu
  private:
 
  // Acces aux parametres de l'instance et du genetique
- vector<Params*> paramsList;
+ Params* params;
 
  public:
 
-  int nbScenario;
+  unsigned int nbScenario;
 
   // fitness etendu
   double fitnessEtendu ;
@@ -124,17 +124,18 @@ class Individu
 
   // fonction split ne respectant pas forcement le nombre de vehicules
   // retourne 1 si succes, 0 sinon
-  int splitSimple_scenario(int k, Params *paramsTemp, int scenario) ;
+  int splitSimple_scenario(int k, int scenario) ;
   bool splitSimpleDay1();
 
   // fonction split pour problemes a flotte limitee
-  void splitLF_scenario(int k, Params *paramsTemp, int scenario);
+  void splitLF_scenario(int k, int scenario);
+  void splitLF_scenario_day1();
 
   // fonction qui se charge d'evaluer exactement les violations
   // et de remplir tous les champs d'evaluation de solution
   void measureSol_scenario();
 
-  void measureSol();
+  double measureSol(std::vector<double> &delivers, int idxDay);
 
   // initialisation du vecteur potentiels
   void initPot_scenario(int k, int scenario) ;
@@ -165,7 +166,7 @@ class Individu
   int mutation9_indiv();
 
 
-  Individu(vector<Params*> pl);
+  Individu(Params* params);
 
   //destructeur
   ~Individu();

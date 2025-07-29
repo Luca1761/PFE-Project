@@ -2,9 +2,8 @@
 #include "LocalSearch.h"
 
 Route::Route(void){}
-
-Route::Route(int idx, int day, Noeud * depot, double temps, double charge, double capacity, Params * params, LocalSearch * myLS) : 
-idx(idx), day(day), depot(depot), temps(temps) , charge(charge), capacity(capacity), params(params), myLS(myLS)
+Route::Route(Params* _params, LocalSearch* _myLS, int _idx, int _day, Noeud * _depot, double _temps, double _charge, double _capacity) : 
+params(_params), myLS(_myLS), idx(_idx), day(_day), depot(_depot), temps(_temps) , charge(_charge), capacity(_capacity)
 {
 	bestInsertion = vector<Insertion>(params->nbClients + params->nbDepots);
 	nodeAndRouteTested = vector<bool>(params->nbClients + params->nbDepots, false);
@@ -220,6 +219,6 @@ void Route::initiateInsertions() {
 // moves having nodes in this route need to be examined again
 void Route::reinitSingleDayMoves()
 {
-	for (int i=0 ; i < params->nbClients + params->nbDepots ; i ++ )
+	for (unsigned int i=0 ; i < params->nbClients + params->nbDepots ; i ++ )
 		nodeAndRouteTested[i] = false ;
 }

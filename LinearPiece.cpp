@@ -66,7 +66,7 @@ double LinearPiece::cost(double x)
             return min(p1->y, p2->y);
         }
         else{
-            cout <<"x = "<<x<<" p1->x "<<p1->x<<" p2->x " <<p2->x<<"error linear piece cost function(line65) "<<endl;
+            std::cout <<"x = "<<x<<" p1->x "<<p1->x<<" p2->x " <<p2->x<<"error linear piece cost function(line65) "<<endl;
             int a;cin>>a;
         }
     }

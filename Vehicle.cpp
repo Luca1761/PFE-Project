@@ -1,6 +1,6 @@
 #include "Vehicle.h"
 
-Vehicle::Vehicle(int depotNumber, double capacity):
-depotNumber(depotNumber), capacity(capacity)
+Vehicle::Vehicle(unsigned int _depotNumber, double _capacity):
+depotNumber(_depotNumber), capacity(_capacity)
 {}
 Vehicle::~Vehicle(void){}

@@ -22,7 +22,7 @@ struct SousPop
 	vector<Individu*> individus ;
 
 	// nombre de ces individus
-	int nbIndiv ;
+	unsigned int nbIndiv ;
 };
 
 class Population
@@ -30,9 +30,9 @@ class Population
    private:
 
    // Acces aux parametres de l'instance et du genetique
-   vector<Params*> paramsList;
+   Params* params;
 
-   int nbScenario;
+   unsigned int nbScenario;
 
    // clock time when the best individual was found
    clock_t timeBest ;
@@ -131,8 +131,10 @@ class Population
    // met a jour le compte des valides
    void updateNbValides (Individu * indiv);
 
+   void measureAndUpdateQuantities(std::vector<double> &deliveries, double &totalCost, unsigned int j);
+
    //constructeur
-   Population(vector<Params*> paramsList);
+   Population(Params* params);
 
    //destructeur
    ~Population();
