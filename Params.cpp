@@ -21,9 +21,9 @@ double calculateStandardDeviation(const std::vector<double>& data, bool isSample
     }
 
     if (isSample && data.size() > 1) {
-        return std::sqrt(sumSquaredDifferences / (data.size() - 1)); // Sample standard deviation
+        return std::sqrt(sumSquaredDifferences / ((double)data.size() - 1.0)); // Sample standard deviation
     } else if (!isSample) {
-        return std::sqrt(sumSquaredDifferences / data.size()); // Population standard deviation
+        return std::sqrt(sumSquaredDifferences / (double) data.size()); // Population standard deviation
     } else {
         return 0.0; // Handle case of single element for sample std dev
     }
@@ -72,18 +72,18 @@ void Params::adjustDemands() {
 		}
 		if (traces) std::cout << std::endl;
 	}
-	mt19937 gen(seed + jVal); 
+	mt19937 gen((unsigned int) seed + jVal); 
 	for (unsigned int scenario = 0; scenario < nbScenarios; scenario++) {
 		if (traces) std::cout << "Scenario " << scenario + 1 << " :" << std::endl;
 		for (unsigned int i = nbDepots; i < nbClients + nbDepots; i++) {	
 			if (traces) std::cout << "Client " << i << ": ";
-			for (int k = 1; k <= nbDays; k++) {
+			for (unsigned int day = 1; day <= nbDays; day++) {
 				normal_distribution<double> normDist((int) meanDemands[i - nbDepots], (int) stdDemands[i - nbDepots]);    
 				double x = normDist(gen);        // x ~ N(0,1)
 				x = max<double>(0.0, x);   
 				x = min<double>(x, cli[i].maxInventory);
-				cli[i].dailyDemand[scenario][k] = (double) round(x);
-				if (traces) std::cout << cli[i].dailyDemand[scenario][k] << " ";
+				cli[i].dailyDemand[scenario][day] = (double) round(x);
+				if (traces) std::cout << cli[i].dailyDemand[scenario][day] << " ";
         	}
 			if (traces) std::cout << std::endl;
 		}
@@ -97,10 +97,9 @@ void Params::computeDistancierFromCoords()
 	vector<double> distances;
 
 	// on remplit les distances dans timeCost
-	for (int i = 0; i < nbClients + nbDepots; i++) {
+	for (unsigned int i = 0; i < nbClients + nbDepots; i++) {
 		distances.clear();
-		for (int j = 0; j < nbClients + nbDepots; j++)
-		{
+		for (unsigned int j = 0; j < nbClients + nbDepots; j++) {
 			d = sqrt((cli[i].coord.x - cli[j].coord.x) * (cli[i].coord.x - cli[j].coord.x) +
 					 (cli[i].coord.y - cli[j].coord.y) * (cli[i].coord.y - cli[j].coord.y));
 
@@ -162,7 +161,7 @@ void Params::preleveDonnees(string nomInstance)
 	double capacity;
 	//C. Archetti, L. Bertazzi, G. Laporte, and M.G. Speranza. A branch-and-cut algorithm for a vendor-managed inventory-routing problem. Transportation Science, 41:382-391, 2007 Instances
 	// IRP format of Archetti http://or-brescia.unibs.it/instances 
-	if (nbVehiculesPerDep == -1) {
+	if (nbVehiculesPerDep == 0) {
 		cout << "ERROR : Need to specify fleet size" << endl;
 		throw string("ERROR : Need to specify fleet size");
 	}
@@ -210,7 +209,7 @@ void Params::calculeStructures() {
 				}
 
 		// on remplit les x% plus proches
-		for (unsigned int j = 0; j < (prox * (int)cli[i].ordreProximite.size()) / 100 && j < proxCst; j++) {
+		for (unsigned int j = 0; j < (prox * cli[i].ordreProximite.size()) / 100 && j < proxCst; j++) {
 			cli[i].sommetsVoisins.push_back(cli[i].ordreProximite[j]);
 			isCorrelated1[i][cli[i].ordreProximite[j]] = true;
 		}
@@ -234,11 +233,8 @@ Client Params::getClientDSIRP()
 	{
 		fichier >> client.startingInventory;
 		allSupply = vector<double>(pHorizon + 1 + 1, 0.);
-		// availableSupply = vector<double>(nbDays + 1 + 1, 0.);
-		for (int t = 1; t <= pHorizon; t++) {
+		for (unsigned int t = 1; t <= pHorizon; t++) {
 			fichier >> allSupply[t];
-			// if (t >= jVal)
-			// 	availableSupply[t-jVal+ 1] = dailyProduction;
 		}
 		fichier >> inventoryCostSupplier;
 	} else //information of each customer
@@ -250,16 +246,16 @@ Client Params::getClientDSIRP()
 		for (unsigned int i = 0; i < 50; i++) {
 			fichier >> oldDemands[i];
 		}
-		// client.dailyDemand = vector<vector<double>>(nbScenarios, vector<double>(nbDays + 1, 0.0));
 		for (unsigned int t = 1; t <= pHorizon; t++) {
 			fichier >> client.testDemand[t];
 		}
-		for (int j = 1; j < jVal; j++) {
+		for (unsigned int j = 1; j < jVal; j++) {
 			oldDemands.push_back(client.testDemand[j]);
 		}
 		fichier >> client.maxInventory;
 		fichier >> client.inventoryCost;
 		fichier >> client.stockoutCost;
+		// TO CHECK
 		meanDemands.push_back(calculateMean(oldDemands));
 		stdDemands.push_back(calculateStandardDeviation(oldDemands));
 		
