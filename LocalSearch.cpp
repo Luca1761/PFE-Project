@@ -209,7 +209,7 @@ void LocalSearch::addOP(int day, int client)
 }
 
 // Evaluates the current objective function of the whole solution
-void LocalSearch::printInventoryLevels(std::ostream& file,bool add)
+void LocalSearch::printInventoryLevels(std::ostream& file,bool add, std::vector<double> deliveries, double &totalCost)
 {
   double inventoryClientCosts = 0.;
   double inventorySupplyCosts = 0.;
@@ -219,20 +219,15 @@ void LocalSearch::printInventoryLevels(std::ostream& file,bool add)
   double loadCosts = 0.;
 
   // Summing distance and load penalty
-  for (int k = 1; k <= params->ancienNbDays; k++)
+
+  for (int r = 0; r < params->nombreVehicules[1]; r++)
   {
-    for (int r = 0; r < params->nombreVehicules[k]; r++)
-    {
-      routeCosts += routes[k][r]->temps; // temps: total travel time
-      
-      if(!add)  file <<"day["<<k<<"] route["<<r<<"]: travel time = "<<routes[k][r]->temps<<endl;
-      routes[k][r]->printRouteData(file);
-      loadCosts +=
-          params->penalityCapa[idxScenario] *
-          std::max<double>(routes[k][r]->charge - routes[k][r]->capacity,
-                           0.);
-    }
+    routeCosts += routes[1][r]->temps; // temps: total travel time
+    
+    if(!add)  file << "route["<<r<<"]: travel time = " << routes[1][r]->temps << "; capacity = " << routes[1][r]->capacity  << "; charge = " << routes[1][r]->charge << "; depot = " << routes[1][r]->depot->idx << endl;
+    routes[1][r]->printRouteData(file);
   }
+  
 
   // Printing customer inventory and computing customer inventory cost
 
@@ -243,51 +238,50 @@ void LocalSearch::printInventoryLevels(std::ostream& file,bool add)
     inventoryClient = params->cli[i].startingInventory;
     if(!add) file  << "CUSTOMER " << i << " bounds (" << params->cli[i].minInventory
           << "," << params->cli[i].maxInventory << ") ";
-    for (int k = 1; k <= params->nbDays; k++)
-    {
-      // print the level in the morning
-      if(!add) file << "[morning: " << inventoryClient;
-      // print the level after receiving inventory
-      inventoryClient += deliveryPerDay[k][i];
-      if(!add) file  << " ,replenishment: " << deliveryPerDay[k][i];
-      // print the level after consumption
-      double stock = std::max<double>(0,params->cli[i].dailyDemand[0][k]-inventoryClient);
-      inventoryClient = std::max<double>(0,inventoryClient-params->cli[i].dailyDemand[0][k]);
-      
-      if(!add) file  << ", everning: " << inventoryClient << "] ";
 
-      inventoryClientCosts += inventoryClient * params->cli[i].inventoryCost ;
-      stockClientCosts += stock*params->cli[i].stockoutCost;
-      stockClientAmount += stock;
-    }
+    // print the level in the morning
+    if(!add) file << "[morning: " << inventoryClient;
+    // print the level after receiving inventory
+    inventoryClient += deliveries[i - params->nbDepots];
+    if(!add) file  << ", replenishment: " << deliveries[i - params->nbDepots];
+    // print the level after consumption
+    double stock = std::max<double>(0,params->cli[i].testDemand[params->jVal]-inventoryClient);
+    inventoryClient = std::max<double>(0,inventoryClient-params->cli[i].testDemand[params->jVal]);
+    
+    if(!add) file  << ", evening: " << inventoryClient << "] ";
+
+    inventoryClientCosts += inventoryClient * params->cli[i].inventoryCost ;
+    stockClientCosts += stock*params->cli[i].stockoutCost;
+    stockClientAmount += stock;
+
     if(!add) file  << endl;
   }
 
-
+  file  << endl;
   double inventorySupply = 0;
-  if(!add) file  << "SUPPLIER    ";
-  for (int k = 1; k <= params->nbDays; k++)
-  {
-    inventorySupply += params->availableSupply[k];
-    // print the level in the morning
-    if(!add) file  << "[" << inventorySupply << ",";
-    for (int i = params->nbDepots; i < params->nbDepots + params->nbClients;
-         i++)
-      inventorySupply -= deliveryPerDay[k][i];
-    // print the level after delivery
-    if(!add) file  << inventorySupply << "] ";
-    inventorySupplyCosts += inventorySupply * params->inventoryCostSupplier;
-  }
+  if(!add) file  << "SUPPLIER INVENTORY ";
+
+  inventorySupply += params->availableSupply[1];
+  // print the level in the morning
+  if(!add) file << "[" << inventorySupply << ",";
+  for (int i = params->nbDepots; i < params->nbDepots + params->nbClients;
+        i++)
+    inventorySupply -= deliveries[i - params->nbDepots];
+  // print the level after delivery
+  if(!add) file  << inventorySupply << "] ";
+  inventorySupplyCosts += inventorySupply * params->inventoryCostSupplier;
+  
   if(!add) file  << endl;
 
-  file  << "ROUTE: " << routeCosts << endl;
-  file << "LOAD: " << loadCosts << "SUPPLY: " << inventorySupplyCosts << endl;
-  file << "CLIENT INVENTORY: " << inventoryClientCosts << endl;
-  file << "CLIENT STOCKOUT: " << stockClientCosts<<endl;
+  file  << "ROUTE COST: " << routeCosts << endl;
+  file << "SUPPLY INVENTORY COST: " << inventorySupplyCosts << endl;
+  file << "CLIENT INVENTORY COST: " << inventoryClientCosts << endl;
+  file << "CLIENT STOCKOUT COST: " << stockClientCosts<<endl;
   file << "CLIENT STOCKOUT Amount: " << stockClientAmount<<endl;
   file  << "COST SUMMARY : OVERALL "
-       << routeCosts + loadCosts + inventorySupplyCosts + inventoryClientCosts+stockClientCosts
+       << routeCosts + loadCosts + inventorySupplyCosts + inventoryClientCosts + stockClientCosts
        << endl;
+  totalCost += routeCosts + loadCosts + inventorySupplyCosts + inventoryClientCosts + stockClientCosts;
 }
 
 // supprime le noeud
@@ -356,8 +350,7 @@ void LocalSearch::computeCoutInsertion(Noeud *client)
   client->removeDominatedInsertions(params->penalityCapa[idxScenario]);
 }
 
-double LocalSearch::evaluateCurrentCost_stockout(int client)
-{
+double LocalSearch::evaluateCurrentCost_stockout(int client) {
   Noeud *noeudClient;
   double myCost = 0.;
   double I = params->cli[client].startingInventory;
