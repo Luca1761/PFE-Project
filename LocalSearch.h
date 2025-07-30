@@ -161,7 +161,7 @@ public:
   double evaluateCurrentCost_stockout(int client);
 
   // Prints some useful information on the current solution
-  void printInventoryLevels(std::ostream& file,bool add);
+  void printInventoryLevels(std::ostream& file,bool add, std::vector<double> deliveries, double &totalCost);
 
   /* Routines to update the solution */
 

@@ -34,9 +34,6 @@ class Population
 
    unsigned int nbScenario;
 
-   // clock time when the best individual was found
-   clock_t timeBest ;
-
    // liste qui repertorie si les XXX derniers individus produits etaient valides en terme de charge ou non
    list<bool> listeValiditeCharge ;
 
@@ -53,6 +50,11 @@ class Population
    int placeIndividu (SousPop * pop, Individu * indiv);
 
    public:
+
+   // clock time when the best individual was found
+   clock_t timeBest ;
+
+   clock_t totalTime ;
 
    // calcule le fitness etendu des elements de la sous-population
    void evalExtFit(SousPop * pop);
@@ -108,10 +110,7 @@ class Population
    Individu * getIndividu (int p);
 
    // exporte la meilleure solution
-   void ExportPop (string nomFichier,bool add) ;
-
-   // teste et exporte la BKS si elle est meilleure que la solution situee ea sa place
-   void ExportBKS (string nomFichier) ;
+   void ExportPop (string nomFichier, bool add, std::vector<double> deliveries, double &totalCost) ;
 
    // retourne la fraction d'individus valides en terme de charge
    double fractionValidesCharge () ;

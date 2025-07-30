@@ -19,6 +19,8 @@ Population::Population(Params* _params) : params(_params)
 	bool compter = true;
 	
 	vector<double> saveCapa(nbScenario);
+
+	totalTime = clock();
 	
 	for (unsigned int scenario = 0; scenario < nbScenario; scenario++)
 		saveCapa[scenario] = params->penalityCapa[scenario];
@@ -297,107 +299,65 @@ void Population::recopieIndividu(Individu *destination, Individu *source) {
 	destination->estValide = source->estValide;
 }
 
-void Population::ExportPop(string nomFichier,bool add) {
+void Population::ExportPop(string nomFichier,bool add, std::vector<double> deliveries, double &totalCost) {
 	// exporte les solutions actuelles des individus dans un dossier exports current individual solutions to a folder
 	vector<int> rout;
-	vector<double> routTime;
 	int compteur;
 	Noeud *noeudActuel;
 	LocalSearch *loc;
 	ofstream myfile;
 	double cost;
-	double temp, temp2;
 	char *myBuff;
 	Individu *bestValide = getIndividuBestValide();
-
+	
 	if (bestValide != NULL) {
 		// TO CHECK
-
+		clock_t s = totalTime;
+		clock_t v = timeBest;
+		
 		// We will update the local search structure for paths.
 		// We are obliged to set very strong parameters so that the splitting does not produce a from the best valid solution
 		// so that the splitting does not produce a from the best valid solution
-		// temp = paramsList[0]->penalityCapa;
-		// paramsList[0]->penalityCapa = 10000;
-		// education_scenario(bestValide);
-		// // le trainer a gard� les infos des routes de bestValide
-		// loc = trainer->localSearchList[0];
-		// paramsList[0]->penalityCapa = temp;
-
+		std::vector<double> temp = params->penalityCapa;
+		params->penalityCapa = std::vector<double> (params->nbScenarios, 10000.0);
+		education_scenario(bestValide);
+		// le trainer a garde les infos des routes de bestValide
+		loc = trainer->localSearchList[0];
+		params->penalityCapa = temp;
+		
 		myfile.precision(10);
 		cout.precision(10);
 		ofstream myfile;
-		if (add) myfile.open(nomFichier.data(), std::ios::app);//add on previous
+		bool ADD = add && (params->jVal != 1);
+		if (ADD) myfile.open(nomFichier.data(), std::ios::app);//add on previous
 		else myfile.open(nomFichier.data()); 
-		myfile<<endl<<endl;
-		loc->printInventoryLevels(myfile,add);
+		if (params->nbDays == params->pHorizon) myfile << "---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------" << endl;
+		myfile << "Day "<< params->jVal << endl;
+		myfile << endl;
+		loc->printInventoryLevels(myfile,false, deliveries, totalCost);
 		// export cost
-		myfile << trainer->coutSol.evaluation << endl;
+		myfile << "Total cost: " << totalCost << endl;
 
 		// exporting the number of routes
 		compteur = 0;
-		for (int k = 1; k <= params->nbDays; k++)
+		for (int k = 1; k <= 1; k++)
 			for (int i = 0; i < (int)loc->routes[k].size(); i++)
 				if (!loc->depots[k][i]->suiv->estUnDepot)
 					compteur++;
-		myfile << compteur << endl;
+		myfile << "Route number: " << compteur << endl;
+		myfile << endl;
 
 		// exporting the total CPU time (ms)
 		myBuff = new char[100];
-		myfile <<"Total Time: ";sprintf(myBuff, "%d", (int)(clock() / 1000000));
-		myfile << myBuff << endl;
-
-		myBuff = new char[100];
-		myfile <<"PITime: ";sprintf(myBuff, "%d", (int)(params->debut / 1000000));
-		myfile << myBuff << endl;
+		myfile <<"Total Time: " << (float) s / (float)CLOCKS_PER_SEC <<endl; 
 
 		// exporting the time to best solution
 		myBuff = new char[100];
-		myfile <<"Best Solution Time: ";sprintf(myBuff, "%d", (int)(timeBest / 1000000));
-		myfile << myBuff << endl;
-		for (int k = 1; k <= params->nbDays; k++)
-		{
-			for (int i = 0; i < (int)loc->routes[k].size(); i++)
-			{
-				compteur = 1;
-				if (!loc->depots[k][i]->suiv->estUnDepot)
-				{
+		myfile <<"Best Solution Time: " << (float) v / (float)CLOCKS_PER_SEC <<endl; 
 
-					myfile << " " << loc->routes[k][i]->depot->idx << " " << (k - 1) % params->ancienNbDays + 1 << " " << compteur << " " << loc->routes[k][i]->temps << " "
-						   << loc->routes[k][i]->charge << " ";
-
-					// on place la route dans un vecteur de noeuds clients
-					noeudActuel = loc->routes[k][i]->depot->suiv;
-					cost = params->timeCost[loc->routes[k][i]->depot->idx][noeudActuel->idx];
-
-					rout.clear();
-					routTime.clear();
-					rout.push_back(loc->routes[k][i]->depot->idx);
-					routTime.push_back(0);
-					rout.push_back(noeudActuel->idx);
-					routTime.push_back(cost);
-
-					while (!noeudActuel->estUnDepot)
-					{
-						cost += params->timeCost[noeudActuel->idx][noeudActuel->suiv->idx];
-						noeudActuel = noeudActuel->suiv;
-						rout.push_back(noeudActuel->idx);
-						routTime.push_back(cost);
-					}
-
-					myfile << " " << (int)rout.size();
-
-					for (int j = 0; j < (int)rout.size(); j++)
-					{
-						myfile << " " << rout[j];
-					}
-					myfile << endl;
-					compteur++;
-				}
-			}
-		}
-
+		myfile << "---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------" << endl;
 		myfile.close();
-		std::cout << "Successful export" << std::endl;
+		if (params->traces) std::cout << "Successful export" << std::endl;
 	}
 	else
 	{
@@ -405,53 +365,6 @@ void Population::ExportPop(string nomFichier,bool add) {
 	}
 }
 
-void Population::ExportBKS(string nomFichier)
-{
-	double fit,tim,pri;
-	ifstream fichier;
-    std::string line;
-	fichier.open(nomFichier.c_str());
-	if (fichier.is_open())
-	{
-		while (getline(fichier, line)) {
-            std::size_t found = line.find("COST SUMMARY : OVERALL");
-            if (found != std::string::npos) {
-                std::stringstream ss(line.substr(found));
-                std::string temp;
-			
-                ss >> temp >> temp>> temp >> temp>>fit;
-               
-            }
-			found = line.find("Total Time:");
-            if (found != std::string::npos) {
-                std::stringstream ss(line.substr(found));
-                std::string temp;
-			
-                ss >> temp >> temp>>tim;
-                break; 
-            }
-        }
-		fichier.close();
-		timeBest = clock();
-		if (getIndividuBestValide() != NULL && getIndividuBestValide()->coutSol.evaluation < fit - 0.01)
-		{
-			cout << "!!! new BKS !!! : " << getIndividuBestValide()->coutSol.evaluation << endl;
-			ExportPop(nomFichier,false);
-		}
-		else if (getIndividuBestValide() != NULL && std::fabs(getIndividuBestValide()->coutSol.evaluation - fit) < 0.01 &&  tim > (int)(timeBest / 1000000))
-		{
-			cout << "!!! new time !!! : " << getIndividuBestValide()->coutSol.evaluation << endl;
-			
-			ExportPop(nomFichier,false);
-		}
-		
-	}
-	else
-	{
-		cout << " BKS file not found " << endl;
-		ExportPop(nomFichier,false);
-	}
-}
 // retourne la fraction d'individus valides en terme de charge
 double Population::fractionValidesCharge() {
 	int count = 0;
@@ -534,14 +447,14 @@ void Population::measureAndUpdateQuantities(std::vector<double> &deliveries, dou
       Individu * bestIndividual = getIndividuBestValide();
       bestIndividual->generalSplit_scenario();
       double val = bestIndividual->measureSol(deliveries, j);
-      std::cout << "Cost of the day " << j << ": " << val << std::endl;
+      if (params->traces) std::cout << "Cost of the day " << j << ": " << val << std::endl;
       totalCost += val;
-      std::cout << "Total cost yet: " << totalCost << std::endl; 
+      if (params->traces) std::cout << "Total cost yet: " << totalCost << std::endl;
     } else {
       std::cout << "NO SOLUTION" << std::endl;
 	  throw std::string("NO SOLUTION");
     }
-    std::cout << "--------------------------------------------------------------" << std::endl;
+    if (params->traces) std::cout << "--------------------------------------------------------------" << std::endl;
 
 }
 

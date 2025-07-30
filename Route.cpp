@@ -26,7 +26,8 @@ void Route::printRouteData(std::ostream& file)
 	while ( !noeud->estUnDepot || firstIt )
 	{
 		firstIt = false ;
-		file <<" node[ "<<noeud->idx <<" ] ->";
+		if (noeud->estUnDepot) file << " " << noeud->idx << " ->";
+		else file <<" "<< noeud->idx <<" ->";
 		noeud = noeud->suiv ;
 		place ++ ;
 		noeud->place = place ;
@@ -34,7 +35,7 @@ void Route::printRouteData(std::ostream& file)
 		earlT += params->timeCost[noeud->pred->idx][noeud->idx] ;
 		noeud->chargeAvant = charge ;
 	}
-	file <<"depot"<<endl;
+	file <<" " << noeud->idx <<endl;
 	noeud->route->temps = earlT ;
 	noeud->route->charge = charge ;
 

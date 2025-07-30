@@ -377,16 +377,16 @@ double Individu::measureSol(std::vector<double> &delivers, int idxDay) {
 	double routeCost = 0.0;
 	double capaViol = 0.0;
 	double fitness = 0.0;
-	std::cout << std::endl;
+	if (params->traces) std::cout << std::endl;
 	std::vector<bool> isDelivered(params->nbDepots + params->nbClients, false);
-	std::cout << "Choosen tour for this day: " << std::endl;
+	if (params->traces) std::cout << "Choosen tour for this day: " << std::endl;
 	for (unsigned int a : chromT[1]) {
-		std::cout << a << " ";
+		if (params->traces) std::cout << a << " ";
 		isDelivered[a] = true;
 	}
-	std::cout << std::endl;
+	if (params->traces) std::cout << std::endl;
 	if (chromT[1].empty()) {
-		std::cout << "NO DELIVERY" << std::endl;
+		if (params->traces) std::cout << "NO DELIVERY" << std::endl;
 	}
 	vector<double> I_end(params->nbDepots + params->nbClients);
 	for (unsigned int l = params->nbDepots; l < params->nbDepots + params->nbClients; l++){
@@ -454,15 +454,15 @@ double Individu::measureSol(std::vector<double> &delivers, int idxDay) {
 	}
 
 	fitness = routeCost + inventoryCost + stockoutCost + supplyCost;
-	std::cout << "Choosen deliveries for this day: " << std::endl;
-	for (double a : delivers) std::cout << a << " ";
-	std::cout << std::endl;
-	std::cout << std::endl;
-	std::cout << "Supply inventory cost: " << supplyCost << std::endl;
-	std::cout << "Routing cost: " << routeCost << std::endl;
-	std::cout << "Client inventory cost: " << inventoryCost << std::endl;
-	std::cout << "Client stockout cost: " << stockoutCost << std::endl;
-	std::cout << std::endl;
+	if (params->traces) std::cout << "Choosen deliveries for this day: " << std::endl;
+	if (params->traces) for (double a : delivers) std::cout << a << " ";
+	if (params->traces) std::cout << std::endl;
+	if (params->traces) std::cout << std::endl;
+	if (params->traces) std::cout << "Supply inventory cost: " << supplyCost << std::endl;
+	if (params->traces) std::cout << "Routing cost: " << routeCost << std::endl;
+	if (params->traces) std::cout << "Client inventory cost: " << inventoryCost << std::endl;
+	if (params->traces) std::cout << "Client stockout cost: " << stockoutCost << std::endl;
+	if (params->traces) std::cout << std::endl;
 	return fitness;
 }
 

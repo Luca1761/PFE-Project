@@ -43,6 +43,10 @@ commandline::commandline(int argc, char *argv[])
 
     seed = 0;
     nbVeh = 1; // unknown
+    maxTime = 10;
+    maxIter = 100;
+    maxIterNonProd = 100;
+    traces = true;
     bool hasSolName = false;
 
     // parameters
@@ -53,6 +57,14 @@ commandline::commandline(int argc, char *argv[])
         hasSolName = true;
       } else if (string(argv[i]) == "-seed")
         seed = atoi(argv[i + 1]);
+      else if (string(argv[i]) == "-traces")
+        traces = (atoi(argv[i + 1]) == 1);
+      else if (string(argv[i]) == "-time")
+        maxTime = (unsigned int) atoi(argv[i + 1]);
+      else if (string(argv[i]) == "-iter")
+        maxIter = (unsigned int) atoi(argv[i + 1]);
+      else if (string(argv[i]) == "-iterNonProd")
+        maxIterNonProd = (unsigned int) atoi(argv[i + 1]);
       else if (string(argv[i]) == "-veh") {
         int nbV = atoi(argv[i + 1]);
         if (nbV < 1) {
@@ -103,3 +115,15 @@ unsigned int commandline::get_nbVeh() { return nbVeh; }
 
 // renvoie la seed
 int commandline::get_seed() { return seed; }
+
+// max iterations
+unsigned int commandline::get_maxIter(){ return  maxIter;}
+
+// max non productive iterations
+unsigned int commandline::get_maxIterNonProd() {return maxIterNonProd;}
+
+// max time
+unsigned int commandline::get_maxTime() {return maxTime;}
+
+// traces
+bool commandline::get_trace() {return traces;}

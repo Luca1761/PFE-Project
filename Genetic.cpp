@@ -26,13 +26,13 @@
 // 	return vm_size_mb;
 // }
 
-void Genetic::evolve(int maxIter, int maxIterNonProd) {
+void Genetic::evolve(unsigned int maxIter, unsigned int maxIterNonProd, unsigned int maxTime) {
 	int place;
 	double rangRelatif;
 	nbIterNonProd = 1;
 	nbIter = 0;
 	int oldValue = 1;
-	while (nbIter < maxIter && nbIterNonProd < maxIterNonProd && clock() <=  3600 * CLOCKS_PER_SEC) {
+	while (nbIter < maxIter && nbIterNonProd < maxIterNonProd && (float) (clock() - population->totalTime) / CLOCKS_PER_SEC <=  (float)maxTime ) {
 		// on demande deux individus a la population
 		population->recopieIndividu(rejeton, population->getIndividuBinT(rangRelatif));
 		population->recopieIndividu(rejeton2, population->getIndividuBinT(rangRelatif));
@@ -56,15 +56,15 @@ void Genetic::evolve(int maxIter, int maxIterNonProd) {
 		nbIterNonProd++;
 		if (place == 0 && rejeton->estValide) {
 			nbIterNonProd = 1;
-			std::cout << "NEW BEST FEASIBLE ";
-			std::cout << rejeton->coutSol.evaluation;	
-			std::cout << " Cost : " << rejeton->coutSol.fitness
+			if (params->traces) std::cout << "NEW BEST FEASIBLE ";
+			if (params->traces) std::cout << rejeton->coutSol.evaluation;	
+			if (params->traces) std::cout << " Cost : " << rejeton->coutSol.fitness
 				 << " capacity Violation : " << rejeton->coutSol.capacityViol;
-			std::cout << endl;
-			std::cout << endl;
+			if (params->traces) std::cout << endl;
+			if (params->traces) std::cout << endl;
 		}
 		if (nbIterNonProd / 750 == oldValue) {
-			std::cout << "Diversification" << endl;
+			if (params->traces) std::cout << "Diversification" << endl;
 			population->diversify();
 			oldValue = (nbIterNonProd / 750) + 1;
 		}
@@ -73,14 +73,17 @@ void Genetic::evolve(int maxIter, int maxIterNonProd) {
 		if (nbIter % 100 == 0) gererPenalites_scenario();
 	
 		// TRACES
-		if (nbIter % 50 == 0) population->afficheEtat(nbIter);
+		if (nbIter % 50 == 0 && params->traces) population->afficheEtat(nbIter);
 		
 		nbIter++;
 	}
 	
 	// fin de l'algorithme , diverses informations affich�es
-	std::cout << "time passes : " << clock() << endl;
-	std::cout << "number of iterations : " << nbIter << endl;
+	population->timeBest = population->timeBest - population->totalTime;
+	population->totalTime = clock() - population->totalTime;
+	if (params->traces) std::cout << "time passes : " << (float) (population->totalTime)/ CLOCKS_PER_SEC << endl;
+	if (params->traces) std::cout << "time to find best solution : " << (float) (population->timeBest)/ CLOCKS_PER_SEC << endl;
+	if (params->traces) std::cout << "number of iterations : " << nbIter << endl;
 }
 
 void Genetic::muter_scenario() {
@@ -138,7 +141,7 @@ void Genetic::gererPenalites_scenario() {
 	population->validatePen();
 }
 
-Genetic::Genetic(Params* _params, clock_t _ticks, Population* _population, bool _traces) : params(_params), ticks(_ticks), population(_population), traces(_traces)
+Genetic::Genetic(Params* _params, clock_t _ticks, Population* _population) : params(_params), ticks(_ticks), population(_population)
 {
 	nbScenario = params->nbScenarios;
 	rejeton = new Individu(params);

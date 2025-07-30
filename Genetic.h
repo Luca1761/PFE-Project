@@ -34,18 +34,13 @@ private:
 	Population* population ;	
 
 	// Number of non-improving iterations before stopping
-	int nbIterNonProd ;
+	unsigned int nbIterNonProd ;
 
 	// Number of iterations before stopping
-	int nbIter ;
+	unsigned int nbIter ;
 	
 	// Number of scenarios
 	unsigned int nbScenario;
-
-	// Pointer towards the parameters of the problem
-
-	// traces d'execution ou non
-	bool traces ;
 
 	// First individual to be used as input for the crossover
 	Individu* rejeton ; 
@@ -72,10 +67,10 @@ public:
     // lancement de l'algorithme sur les parametres "params" et la population "population"
 	// la boucle s'arrete lorsque l'on a effectue maxIterProd iterations productives
 	// ou maxIterNonProd iterations non productives 
-    void evolve(int maxIter , int maxIterNonProd) ;
+    void evolve(unsigned int maxIter, unsigned int maxIterNonProd, unsigned int maxTime) ;
 
 	// constructeur du solveur genetique
-	Genetic(Params* _params, clock_t _ticks, Population * _population, bool _traces);
+	Genetic(Params* _params, clock_t _ticks, Population * _population);
 
 	// destructeur
 	~Genetic(void);

@@ -32,10 +32,9 @@ double calculateStandardDeviation(const std::vector<double>& data, bool isSample
 
 
 // creating the parameters from the instance file
-Params::Params(string nomInstance, int seedRNG, unsigned int nbScenario, unsigned int nbVeh) : 
-	seed(seedRNG), nbScenarios(nbScenario), nbVehiculesPerDep(nbVeh)
+Params::Params(string nomInstance, int seedRNG, unsigned int nbScenario, unsigned int nbVeh, bool trace) : 
+	seed(seedRNG), nbScenarios(nbScenario), nbVehiculesPerDep(nbVeh), traces(trace)
 {
-
 	if (seed == 0)
 		rng = new Rng((unsigned long long)time(NULL));
 	else
@@ -58,10 +57,9 @@ void Params::adjustDemands() {
 	for (unsigned int i = nbDepots; i < nbClients + nbDepots; i++) {
 		cli[i].dailyDemand = vector<vector<double>>(nbScenarios, vector<double>(nbDays + 1, 0.0));
 	}
-	bool traces = true;
 	availableSupply = vector<double>(nbDays + 1 + 1, 0.);
-	for (unsigned int t = jVal; t <= pHorizon; t++) {
-		availableSupply[t - jVal + 1] = allSupply[t];
+	for (unsigned int t = 1; t <= nbDays; t++) {
+		availableSupply[t] = allSupply[jVal + t - 1];
 	}
 	availableSupply[1] += cli[0].startingInventory;
 
@@ -239,25 +237,23 @@ Client Params::getClientDSIRP()
 		fichier >> inventoryCostSupplier;
 	} else //information of each customer
 	{
-		std::vector<double> oldDemands = vector<double>(50, 0.);
+		std::vector<double> oldDemand = vector<double>(50, 0.);
 		client.testDemand = vector<double>(pHorizon + 1, 0.0);
 		fichier >> client.startingInventory;
 		client.minInventory = 0.0;
 		for (unsigned int i = 0; i < 50; i++) {
-			fichier >> oldDemands[i];
+			fichier >> oldDemand[i];
 		}
 		for (unsigned int t = 1; t <= pHorizon; t++) {
 			fichier >> client.testDemand[t];
-		}
-		for (unsigned int j = 1; j < jVal; j++) {
-			oldDemands.push_back(client.testDemand[j]);
 		}
 		fichier >> client.maxInventory;
 		fichier >> client.inventoryCost;
 		fichier >> client.stockoutCost;
 		// TO CHECK
-		meanDemands.push_back(calculateMean(oldDemands));
-		stdDemands.push_back(calculateStandardDeviation(oldDemands));
+		meanDemands.push_back(calculateMean(oldDemand));
+		stdDemands.push_back(calculateStandardDeviation(oldDemand));
+		oldDemands.push_back(oldDemand);
 		
 	}
 
@@ -286,13 +282,20 @@ void Params::computeConstant_stockout() {
 void Params::updateToDay(unsigned int j, std::vector<double> deliveries) {
     setJval(j);
 	if (j!=1) cli[0].startingInventory = availableSupply[1] - std::accumulate(deliveries.begin(), deliveries.end(), 0.0);
-	std::cout << "Init | MAX | Previous delivery | True demand" << std::endl;
+	if (traces) std::cout << "Init | MAX | Previous delivery | True demand" << std::endl;
     for (unsigned int c = nbDepots; c < nbDepots + nbClients; c++) {  
       double deliver = (j == 1) ? -1 : deliveries[c - nbDepots];
       if (j!=1) cli[c].startingInventory = std::max(0.0, cli[c].startingInventory + (deliveries[c - nbDepots] - cli[c].testDemand[j - 1]));
-      std::cout << "Client " << c << ": " <<  cli[c].startingInventory << " " << cli[c].maxInventory << " " << deliver << " "  << cli[c].testDemand[j] << std::endl;
+      if (traces) std::cout << "Client " << c << ": " <<  cli[c].startingInventory << " " << cli[c].maxInventory << " " << deliver << " "  << cli[c].testDemand[j] << std::endl;
     }
-	std::cout << std::endl;
+	if (traces) std::cout << std::endl;
+	if (j != 1) {
+		for (unsigned int i = nbDepots; i < nbClients + nbDepots; i++) {
+			oldDemands[i - nbDepots].push_back(cli[i].testDemand[j - 1]);
+			meanDemands[i - nbDepots] = calculateMean(oldDemands[i - nbDepots]);
+			stdDemands[i - nbDepots] = calculateStandardDeviation(oldDemands[i - nbDepots]);
+		}
+	}
     
     adjustDemands();
     setMethodParams();

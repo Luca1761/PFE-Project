@@ -110,6 +110,8 @@ class Params {
   // fraction de la population conserv�e lors de la diversification
   double rho;
 
+   std::vector<std::vector<double>> oldDemands;
+
   std::vector<double> meanDemands;
 
   std::vector<double> stdDemands;
@@ -135,6 +137,8 @@ class Params {
 
   // nombre de vehicules par d�pot
   unsigned int nbVehiculesPerDep;
+
+  bool traces;
 
   // nombre de depots (MDVRP)
   // correspond � l'indice du premier client dans le tableau C
@@ -182,7 +186,7 @@ class Params {
 
   void setJval(unsigned int _jVal) {
        jVal = _jVal;
-       nbDays = pHorizon - jVal + 1;
+       nbDays = std::min(3, (int) (pHorizon - jVal + 1));
        ancienNbDays = nbDays;
   }
 
@@ -200,7 +204,7 @@ class Params {
   void adjustDemands();
   // constructeur de Params qui remplit les structures en les pr�levant dans le
   // fichier
-  Params(string nomInstance, int seedRNG, unsigned int nbScenario, unsigned int nbVeh);
+  Params(string nomInstance, int seedRNG, unsigned int nbScenario, unsigned int nbVeh, bool trace);
 
 
   // destructeur de Params
