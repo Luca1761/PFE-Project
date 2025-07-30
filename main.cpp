@@ -13,7 +13,6 @@
 
 using namespace std;
 
-#define TRACES
 
 int main(int argc, char *argv[]) {
   commandline command(argc, argv);
@@ -29,12 +28,14 @@ int main(int argc, char *argv[]) {
     command.get_path_to_instance(), 
     command.get_seed(),
     command.get_nb_scenarios(),
-    command.get_nbVeh()
+    command.get_nbVeh(),
+    command.get_trace()
   );
-  std::cout << "Read instance: " << command.get_path_to_instance() << std::endl;
-  std::cout << "Solution stored in: "<< command.get_path_to_solution() << std::endl;
+  if (params->traces)std::cout << "Read instance: " << command.get_path_to_instance() << std::endl;
+  if (params->traces)std::cout << "Solution stored in: "<< command.get_path_to_solution() << std::endl;
   
   double totalCost = 0;
+  double totalCostBis = 0;
   for (unsigned int j = 1; j <= params->pHorizon; j++) { // Solve on rolling horizon
     //update initial inventories/available supply/structures according to what happened previously
     params->updateToDay(j, deliveries);
@@ -43,17 +44,17 @@ int main(int argc, char *argv[]) {
     Population *population = new Population(params);
     
     // we create the solver
-    Genetic solver(params, nb_ticks_allowed, population, true);
+    Genetic solver(params, nb_ticks_allowed, population);
     
     //launch evolution
-    std::cout << "Solve day " << j << "..." << std::endl;
-    solver.evolve(max_iter, maxIterNonProd);
-
-    // population->ExportPop(c.get_path_to_solution(),true);
+    if (params->traces) std::cout << "Solve day " << j << "..." << std::endl;
+    solver.evolve(command.get_maxIter(), command.get_maxIterNonProd(), command.get_maxTime());
 
     population->measureAndUpdateQuantities(deliveries, totalCost, j);
+    population->ExportPop(command.get_path_to_solution(),true, deliveries, totalCostBis);
   }
-  std::cout << "FINAL COST: " << totalCost << std::endl;
+  if (params->traces) std::cout << "FINAL COST: " << totalCost << std::endl;
+  else std::cout << totalCost << std::endl;
   
   // desallocating of params memory
   delete params;
