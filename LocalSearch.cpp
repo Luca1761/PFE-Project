@@ -7,7 +7,7 @@ void LocalSearch::runSearchSameDay() {
   while (nbMoves > 0 && nbPhases < 10000) {
     nbMoves = 0;
     updateMoves();
-    for (int day = 2; day <= params->nbDays; day++) {
+    for (unsigned int day = 2; day <= params->nbDays; day++) {
       nbMoves += mutationSameDay(day);
     }
     nbPhases++;
@@ -16,7 +16,7 @@ void LocalSearch::runSearchSameDay() {
 
 void LocalSearch::melangeParcours()
 {
-  int j, temp;
+  int j;
   for (unsigned int k = 0; k <= params->nbDays; k++) {
     for (int i = 0; i < (int)ordreParcours[k].size() - 1; i++) {
       j = i + params->rng->genrand64_int64() % ((int)ordreParcours[k].size() - i);
@@ -28,7 +28,7 @@ void LocalSearch::melangeParcours()
 
 // updates the moves for each node which will be tried in mutationSameDay
 void LocalSearch::updateMoves() {
-  int client, client2;
+  unsigned int client, client2;
   int size;
 
   for (unsigned int k = 1; k <= params->nbDays; k++) {
@@ -50,9 +50,9 @@ void LocalSearch::updateMoves() {
   melangeParcours();
 }
 
-int LocalSearch::mutationSameDay(int day) {
+int LocalSearch::mutationSameDay(unsigned int day) {
   dayCour = day;
-  int size = (int)ordreParcours[day].size();
+  int size = ordreParcours[day].size();
   int size2;
   rechercheTerminee = false;
   bool moveEffectue = false;
@@ -62,7 +62,7 @@ int LocalSearch::mutationSameDay(int day) {
   while (!rechercheTerminee) {
     rechercheTerminee = true;
     moveEffectue = false;
-    for (int posU = 0; posU < size; posU++) {
+    for (unsigned int posU = 0; posU < size; posU++) {
       posU -= moveEffectue; // on retourne sur le dernier noeud si on a modifie
       nbMoves += moveEffectue;
       moveEffectue = false;
@@ -77,8 +77,8 @@ int LocalSearch::mutationSameDay(int day) {
       noeudUPredCour = noeudUPred->idx;
       xCour = x->idx;
 
-      size2 = (int)noeudU->moves.size();
-      for (int posV = 0; posV < size2 && moveEffectue == 0; posV++) {
+      size2 = noeudU->moves.size();
+      for (unsigned int posV = 0; posV < size2 && moveEffectue == 0; posV++) {
         noeudV = clients[day][noeudU->moves[posV]];
         if (!noeudV->route->nodeAndRouteTested[noeudU->idx] ||
             !noeudU->route->nodeAndRouteTested[noeudU->idx] || firstLoop)
@@ -434,13 +434,13 @@ LocalSearch::LocalSearch(Individu *_individu, Params *_params, int _idxScenario)
       clients[day].push_back(NULL);
     }
     for (unsigned int client = params->nbDepots; client < params->nbClients + params->nbDepots; client++) {
-      clients[day].push_back(new Noeud(false, client, day, false, NULL, NULL, NULL, 0));
+      clients[day].push_back(new Noeud(false, client, day, false, NULL, NULL, NULL));
     }
         
     // dimensionnement du champ depots et routes a la bonne taille       
     for (unsigned int i = 0; i < params->nombreVehicules[day]; i++) {
-      myDepot = new Noeud(true, params->ordreVehicules[day][i].depotNumber, day, false, NULL, NULL, NULL, 0);
-      myDepotFin = new Noeud(true, params->ordreVehicules[day][i].depotNumber, day, false, NULL, NULL, NULL, 0);
+      myDepot = new Noeud(true, params->ordreVehicules[day][i].depotNumber, day, false, NULL, NULL, NULL);
+      myDepotFin = new Noeud(true, params->ordreVehicules[day][i].depotNumber, day, false, NULL, NULL, NULL);
       myRoute = new Route(params, this, i, day, myDepot, 0, 0, params->ordreVehicules[day][i].capacity);
       myDepot->route = myRoute;
       myDepotFin->route = myRoute;
@@ -459,23 +459,22 @@ LocalSearch::LocalSearch(Individu *_individu, Params *_params, int _idxScenario)
 
 
 // destructeur
-LocalSearch::~LocalSearch(void)
-{
+LocalSearch::~LocalSearch(void) {
   if (!clients.empty())
-    for (int i = 0; i < (int)clients.size(); i++)
+    for (unsigned int i = 0; i < clients.size(); i++)
       if (!clients[i].empty())
-        for (int j = 0; j < (int)clients[i].size(); j++)
+        for (unsigned int j = 0; j < clients[i].size(); j++)
           delete clients[i][j];
 
   if (!routes.empty())
-    for (int i = 0; i < (int)routes.size(); i++)
+    for (unsigned int i = 0; i < routes.size(); i++)
       if (!routes[i].empty())
-        for (int j = 0; j < (int)routes[i].size(); j++)
+        for (unsigned int j = 0; j < routes[i].size(); j++)
           delete routes[i][j];
 
   if (!depots.empty())
-    for (int i = 0; i < (int)depots.size(); i++)
+    for (unsigned int i = 0; i < depots.size(); i++)
       if (!depots[i].empty())
-        for (int j = 0; j < (int)depots[i].size(); j++)
+        for (unsigned int j = 0; j < depots[i].size(); j++)
           delete depots[i][j];
 }

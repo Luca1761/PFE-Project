@@ -105,7 +105,7 @@ public:
 
   // effectue une parcours complet de toutes les mutations possibles
   // retourne le nombre de mouvements effectues
-  int mutationSameDay(int day);
+  int mutationSameDay(unsigned int day);
 
   // pour un client, marque que tous les mouvements impliquant ce noeud ont �t�
   // test�s pour chaque route du jour day

@@ -56,9 +56,6 @@ Route * route ;
 double chargeAvant ;
 // charge de la portion de route situee avant lui (lui compris)
 
-double est ;
-// start time of service
-
 //  List of possible insertions in different routes
 vector <Insertion> allInsertions ;
 
@@ -75,7 +72,7 @@ vector < int > moves ;
 Noeud(void);
 // constructeur 1	
 
-Noeud(bool estUnDepot, int idx, int jour, bool estPresent, Noeud * suiv , Noeud * pred, Route * route, double est);
+Noeud(bool _estUnDepot, int _idx, int _jour, bool _estPresent, Noeud * _suiv , Noeud * _pred, Route * _route);
 // constructeur 2
 
 ~Noeud(void);

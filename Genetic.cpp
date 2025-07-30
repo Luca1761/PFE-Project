@@ -151,9 +151,9 @@ int Genetic::crossPOX_scenario() {
 	int debut, fin;
     int j1, j2;
 	// Keeping track of the chromT of the parent
-	vector<vector<int>> chromTParent1 = rejeton->chromT;
+	vector<vector<unsigned int>> chromTParent1 = rejeton->chromT;
 	vector<vector<double>> chromLParent1 = rejeton->chromL;
-	vector<vector<int>> chromTParent2 = rejeton2->chromT;
+	vector<vector<unsigned int>> chromTParent2 = rejeton2->chromT;
 	vector<vector<double>> chromLParent2 = rejeton2->chromL;
 
 	for (unsigned int k = 1; k < rejeton->chromL.size(); k++) {

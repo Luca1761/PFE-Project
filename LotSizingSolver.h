@@ -50,7 +50,7 @@ public:
     void solveOneScenario(int scenario);
     void solveEquationSystemHoldingBackward(std::shared_ptr<LinearPiece> C, std::shared_ptr<LinearPiece> fromC,
         std::shared_ptr<LinearPiece> fromF, double I, double demand, double &fromI, double &quantity);
-    bool backtrackingStockoutBackward(int scenario, int valInsertMin);
+    bool backtrackingStockoutBackward(unsigned int scenario, int valInsertMin);
     ~LotSizingSolver();
 };
 

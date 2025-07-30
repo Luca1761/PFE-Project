@@ -1,8 +1,8 @@
 #include "Noeud.h"
 
 Noeud::Noeud(void){}
-Noeud::Noeud(bool estUnDepot, int idx, int jour, bool estPresent, Noeud * suiv , Noeud * pred, Route * route, double est) 
-: estUnDepot(estUnDepot),idx(idx),jour(jour), estPresent(estPresent),suiv(suiv), pred(pred), route(route), est(est)
+Noeud::Noeud(bool _estUnDepot, int _idx, int _jour, bool _estPresent, Noeud * _suiv , Noeud * _pred, Route * _route) 
+: estUnDepot(_estUnDepot),idx(_idx),jour(_jour), estPresent(_estPresent),suiv(_suiv), pred(_pred), route(_route)
 {
 coutInsertion = 1.e30 ;
 placeInsertion = NULL ;

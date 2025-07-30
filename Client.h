@@ -49,7 +49,7 @@ public:
 	double stockoutCost;
 
 	// ordre des sommets et depots, par proximit�
-	vector<int> ordreProximite ;
+	vector<unsigned int> ordreProximite ;
 
 	// les sommets les plus proches selon le critere de proximite
 	vector<int> sommetsVoisins ;

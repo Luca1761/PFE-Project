@@ -405,12 +405,12 @@ void LotSizingSolver::solveEquationSystemHoldingBackward(std::shared_ptr<LinearP
   nextI = I - demand + quantity;
 }
 
-bool LotSizingSolver::backtrackingStockoutBackward(int scenario, int idxInsert) {
+bool LotSizingSolver::backtrackingStockoutBackward(unsigned int scenario, int idxInsert) {
   // initialization
-  for (int i = 0; i < horizon; i++){
-    quantities[scenario][i] = 0.0;
-    breakpoints[scenario][i] = nullptr;
-    I[scenario][i] = 0;
+  for (unsigned int t = 0; t < horizon; t++){
+    quantities[scenario][t] = 0.0;
+    breakpoints[scenario][t] = nullptr;
+    I[scenario][t] = 0;
   }
   I[scenario].push_back(0.0);
   int day = 0;

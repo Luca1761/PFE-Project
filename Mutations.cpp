@@ -297,10 +297,6 @@ int LocalSearch::mutation8 ()
 
 	double chargeResteU = routeU->charge - noeudU->chargeAvant ;
 	double chargeResteV = routeV->charge - noeudV->chargeAvant ;
-	double tempsU = noeudU->est;
-	double tempsV = noeudV->est;
-	double tempsResteU = routeU->temps - tempsU - params->timeCost[noeudUCour][xCour] ;
-	double tempsResteV = routeV->temps - tempsV - params->timeCost[noeudVCour][yCour] ;
 
 	double cost = params->timeCost[noeudUCour][noeudVCour] 
 	+ params->timeCost[xCour][yCour]
@@ -395,10 +391,6 @@ int LocalSearch::mutation9 ()
 
 	double chargeResteU = routeU->charge - noeudU->chargeAvant ;
 	double chargeResteV = routeV->charge - noeudV->chargeAvant ;
-	double tempsU = noeudU->est;
-	double tempsV = noeudV->est;
-	double tempsResteU = routeU->temps - tempsU - params->timeCost[noeudUCour][xCour] ;
-	double tempsResteV = routeV->temps - tempsV - params->timeCost[noeudVCour][yCour] ;
 
 	double cost = params->timeCost[noeudUCour][yCour] 
 	+ params->timeCost[noeudVCour][xCour]
