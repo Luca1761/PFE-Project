@@ -77,7 +77,7 @@ class Individu
 
   // The giant tour of each individual 
   // chromT [i][j] -> jour i, client j dans la succession des clients du jour i
-  vector<vector<int>> chromT ;
+  vector<vector<unsigned int>> chromT ;
 
   // chromL [i][j] -> The load to be delivered to each customer [j] on day [i]
   vector<vector<double>> chromL ;
@@ -91,7 +91,7 @@ class Individu
 
   // pour chaque jour le tableau de [nbCamions] [predecesseur]
   // potentiels[i+1] -> predecesseur de i
-  vector<vector<vector<int>>> pred ;
+  vector<vector<vector<unsigned int>>> pred ;
 
   // says if the individual is a feasible solution
   bool estValide ;
@@ -124,12 +124,12 @@ class Individu
 
   // fonction split ne respectant pas forcement le nombre de vehicules
   // retourne 1 si succes, 0 sinon
-  int splitSimple_scenario(int k, int scenario) ;
+  int splitSimple_scenario(unsigned int k, unsigned int scenario) ;
   bool splitSimpleDay1();
 
   // fonction split pour problemes a flotte limitee
-  void splitLF_scenario(int k, int scenario);
-  void splitLF_scenario_day1();
+  bool splitLF_scenario(unsigned int k, unsigned int scenario);
+  bool splitLF_scenario_day1();
 
   // fonction qui se charge d'evaluer exactement les violations
   // et de remplir tous les champs d'evaluation de solution
@@ -138,7 +138,7 @@ class Individu
   double measureSol(std::vector<double> &delivers, int idxDay);
 
   // initialisation du vecteur potentiels
-  void initPot_scenario(int k, int scenario) ;
+  void initPot_scenario(unsigned int k, unsigned int scenario) ;
 
   // mise a jour de l'objet localSearch, 
   // Attention, Split doit avoir ete calcule avant
@@ -166,7 +166,7 @@ class Individu
   int mutation9_indiv();
 
 
-  Individu(Params* params);
+  Individu(Params* _params);
 
   //destructeur
   ~Individu();
