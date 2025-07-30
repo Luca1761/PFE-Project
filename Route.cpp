@@ -22,7 +22,6 @@ void Route::printRouteData(std::ostream& file)
 	Noeud * noeud = depot ;
 	noeud->place = place ;
 	depot->chargeAvant = 0 ;
-	depot->est = 0 ;
 
 	while ( !noeud->estUnDepot || firstIt )
 	{
@@ -34,7 +33,6 @@ void Route::printRouteData(std::ostream& file)
 		charge += myLS->deliveryPerDay[day][noeud->idx];
 		earlT += params->timeCost[noeud->pred->idx][noeud->idx] ;
 		noeud->chargeAvant = charge ;
-		noeud->est = earlT ;
 	}
 	file <<"depot"<<endl;
 	noeud->route->temps = earlT ;
@@ -52,7 +50,6 @@ void Route::updateRouteData () {
 	Noeud * noeud = depot ;
 	noeud->place = place ;
 	depot->chargeAvant = 0 ;
-	depot->est = 0 ;
 
 	while (!noeud->estUnDepot || firstIt) {
 		firstIt = false ;
@@ -62,7 +59,6 @@ void Route::updateRouteData () {
 		charge += myLS->deliveryPerDay[day][noeud->idx];
 		earlT += params->timeCost[noeud->pred->idx][noeud->idx] ;
 		noeud->chargeAvant = charge ;
-		noeud->est = earlT ;
 	}
 
 	noeud->route->temps = earlT ;

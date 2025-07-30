@@ -145,7 +145,7 @@ class Params {
   vector<vector<Vehicle>> ordreVehicules;
 
   // nombre de vehicules utilisables par jour
-  vector<int> nombreVehicules;
+  vector<unsigned int> nombreVehicules;
 
   // vecteur des depots et clients 客户，depot向量
   //vector<Client> cli;
