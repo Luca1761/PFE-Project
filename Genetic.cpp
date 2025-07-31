@@ -63,14 +63,14 @@ void Genetic::evolve(unsigned int maxIter, unsigned int maxIterNonProd, unsigned
 			if (params->traces) std::cout << endl;
 			if (params->traces) std::cout << endl;
 		}
-		if (nbIterNonProd / 750 == oldValue) {
+		if (nbIterNonProd / 500 == oldValue) {
 			if (params->traces) std::cout << "Diversification" << endl;
 			population->diversify();
-			oldValue = (nbIterNonProd / 750) + 1;
+			oldValue = (nbIterNonProd / 500) + 1;
 		}
 	
 		// MANAGEMENT OF PARAMETERS
-		if (nbIter % 100 == 0) gererPenalites_scenario();
+		if (nbIter % 200 == 0) gererPenalites_scenario();
 	
 		// TRACES
 		if (nbIter % 50 == 0 && params->traces) population->afficheEtat(nbIter);

@@ -18,10 +18,7 @@ int main(int argc, char *argv[]) {
   commandline command(argc, argv);
   
   // Nombre de ticks horloge que le programme est autorise a durer
-  clock_t nb_ticks_allowed; 
-  nb_ticks_allowed =  CLOCKS_PER_SEC;
-  int max_iter = 505;
-  int maxIterNonProd = 505;
+  clock_t nb_ticks_allowed = CLOCKS_PER_SEC;
   
   std::vector<double> deliveries;
   Params* params = new Params(

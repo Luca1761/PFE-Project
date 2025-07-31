@@ -42,8 +42,7 @@ Population::Population(Params* _params) : params(_params)
 	
 	// on initialise par defaut a 100, comme si tout etait valide au debut
 	// mais c'est arbitraire
-	
-	//TO CHECK
+
 	for (unsigned int scenario = 0; scenario < (unsigned int) nbScenario; scenario++) {
 		params->penalityCapa[scenario] = saveCapa[scenario];
 	}
@@ -303,11 +302,9 @@ void Population::ExportPop(string nomFichier,bool add, std::vector<double> deliv
 	// exporte les solutions actuelles des individus dans un dossier exports current individual solutions to a folder
 	vector<int> rout;
 	int compteur;
-	Noeud *noeudActuel;
 	LocalSearch *loc;
 	ofstream myfile;
 	double cost;
-	char *myBuff;
 	Individu *bestValide = getIndividuBestValide();
 	
 	if (bestValide != NULL) {
@@ -348,11 +345,9 @@ void Population::ExportPop(string nomFichier,bool add, std::vector<double> deliv
 		myfile << endl;
 
 		// exporting the total CPU time (ms)
-		myBuff = new char[100];
 		myfile <<"Total Time: " << (float) s / (float)CLOCKS_PER_SEC <<endl; 
 
 		// exporting the time to best solution
-		myBuff = new char[100];
 		myfile <<"Best Solution Time: " << (float) v / (float)CLOCKS_PER_SEC <<endl; 
 
 		myfile << "---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------" << endl;

@@ -35,7 +35,7 @@ int place ;
 // place dans la route
 
 
-int jour ;
+unsigned int jour ;
 // indice du jour en question
 
 bool estPresent ;

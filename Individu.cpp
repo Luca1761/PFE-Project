@@ -17,7 +17,7 @@ Individu::Individu(Params* _params) : params(_params)
 	double dailyDelivery;
 	vector<vector<double>> startInventory;
 	// DAY 1
-	bool isFirstOption = (params->rng->genrand64_real1() < 0.5) || (params->nbDays == 1);
+	bool isFirstOption = true || (params->rng->genrand64_real1() < 0.5) || (params->nbDays == 1);
 	for (unsigned int i = params->nbDepots; i < params->nbClients + params->nbDepots; i++) {
 		double initialInventory = params->cli[i].startingInventory;
 		vector<double> scenariosInventory(nbScenario);
@@ -504,7 +504,7 @@ void Individu::measureSol_scenario() {
 			for (unsigned int cus = params->nbDepots; cus < params->nbDepots + params->nbClients; cus++) {
 				inventoryCost[scenario] += params->cli[cus].inventoryCost * std::max<double>(0, I_end[k-1][cus]+chromL[day][cus]-params->cli[cus].dailyDemand[scenario][k]);
 				inventoryCost[scenario] += params->cli[cus].stockoutCost * std::max<double>(0, params->cli[cus].dailyDemand[scenario][k]-I_end[k-1][cus]-chromL[day][cus]);
-				inventoryCost[scenario] -= chromL[day][cus] * ((double) params->ancienNbDays + 1 - k) * params->inventoryCostSupplier;
+				inventoryCost[scenario] -= chromL[day][cus] * ((double) params->nbDays + 1 - k) * params->inventoryCostSupplier;
 
 				I_end[k][cus] = std::max<double>(0,I_end[k-1][cus] + chromL[day][cus] - params->cli[cus].dailyDemand[scenario][k]);
 			}
@@ -730,7 +730,7 @@ void Individu::localSearchRunSearch_scenario() {
 void Individu::runSearchDay1() {
 	int nbMoves = 1;
 	int nbPhases = 0;
-	while (nbMoves > 0 && nbPhases < 10000) {
+	while (nbMoves > 0 && nbPhases < 1000) {
 		nbMoves = 0;
 		nbMoves += mutationSameDay1();
 		nbPhases++;
@@ -872,9 +872,9 @@ int Individu::mutationSameDay1() {
 }
 
 void Individu::muterDifferentScenarioDP() {
-	vector<int> randomClients;
+	vector<unsigned int> randomClients;
 
-	for (int client = params->nbDepots; client < params->nbClients + params->nbDepots; client++) {
+	for (unsigned int client = params->nbDepots; client < params->nbClients + params->nbDepots; client++) {
 		randomClients.push_back(client);
 	}
 
@@ -884,7 +884,7 @@ void Individu::muterDifferentScenarioDP() {
 	bool rechercheTerminee = false;
    	int nbMoves = 0;
 	int nbPhases = 0;
-	while(!rechercheTerminee){
+	while (!rechercheTerminee) {
 		rechercheTerminee = true;		
 		for (int client : randomClients) {
 			nbMoves += mutationDP(client, rechercheTerminee);
@@ -898,7 +898,7 @@ int Individu::mutationDP(int client, bool &rechercheTerminee) {
 	double currentCost = 0.0;
 	// First, make sure all insertion costs are computed
 	for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
-		for (int k = 1; k <= params->ancienNbDays; k++){
+		for (unsigned int k = 1; k <= params->nbDays; k++){
 			noeudTravail = localSearchList[scenario]->clients[k][client]; //node* day k client
 			localSearchList[scenario]->computeCoutInsertion(noeudTravail); // detour,place (dominated) for each route
 		}
@@ -911,16 +911,11 @@ int Individu::mutationDP(int client, bool &rechercheTerminee) {
 	currentCost /= (double)nbScenario;
 	/* Generate the structures of the subproblem */
 	vector<vector<vector<Insertion>>> insertions = vector<vector<vector<Insertion>>>(nbScenario, vector<vector<Insertion>>(params->nbDays));
-	// std::cout << "pre1" << std::endl;
-	for (int scenario = 0; scenario < nbScenario; scenario++) {
-		// std::cout << "scenario " << scenario << std::endl;
-		for (int k = 1; k <= params->nbDays; k++) {
+	for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
+		for (unsigned int k = 1; k <= params->nbDays; k++) {
 			insertions[scenario][k - 1] = localSearchList[scenario]->clients[k][client]->allInsertions;
-			// for (Insertion i : insertions[scenario][k-1]) i.print();
 		}
-		// std::cout << std::endl;
 	}
-	// std::cout << "pre2" << std::endl;
 	
 	unique_ptr<LotSizingSolver> lotsizingSolver(
 			make_unique<LotSizingSolver>(params, insertions, client));
@@ -932,7 +927,7 @@ int Individu::mutationDP(int client, bool &rechercheTerminee) {
 	vector<vector<int>> breakpoints = vector<vector<int>>(nbScenario, vector<int>(params->nbDays));
 	vector<double> objectiveScenarios = lotsizingSolver->objective;
 	double objective = 0.0;
-	for (int scenario = 0; scenario < nbScenario; scenario++){
+	for (unsigned int scenario = 0; scenario < nbScenario; scenario++){
 		objective += objectiveScenarios[scenario];
 	}
 	objective /= (double) nbScenario;
@@ -949,7 +944,7 @@ int Individu::mutationDP(int client, bool &rechercheTerminee) {
 	// First, removing all occurences of the node.
 	double test = 0;
 	for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
-		for (int k = 1; k <= params->ancienNbDays; k++) {
+		for (unsigned int k = 1; k <= params->nbDays; k++) {
 			noeudTravail = localSearchList[scenario]->clients[k][client];
 			if (noeudTravail->estPresent){
 				localSearchList[scenario]->removeNoeud(noeudTravail);
@@ -958,9 +953,8 @@ int Individu::mutationDP(int client, bool &rechercheTerminee) {
 
 		}
 		// Then looking at the solution of the model and inserting in the good place
-		for (int k = 1; k <= params->ancienNbDays; k++)
-		{
-			if (quantities[scenario][k - 1] > 0.0001 || (lotsizingSolver->breakpoints[scenario][k - 1]&&gt(0,lotsizingSolver->breakpoints[scenario][k - 1]->detour) )) // don't forget that in the model the index      // goes from 0 to t-1
+		for (unsigned int k = 1; k <= params->nbDays; k++) {
+			if (quantities[scenario][k - 1] > 0.0001 || (lotsizingSolver->breakpoints[scenario][k - 1]&&gt(0, lotsizingSolver->breakpoints[scenario][k - 1]->detour) )) // don't forget that in the model the index      // goes from 0 to t-1
 			{
 			localSearchList[scenario]->deliveryPerDay[k][client] = round(quantities[scenario][k - 1]);
 			
@@ -975,10 +969,11 @@ int Individu::mutationDP(int client, bool &rechercheTerminee) {
 		if (fabs(realCost- objectiveScenarios[scenario])>0.001) {
 			std::cout << "The solution doesn't give the expected cost for scenario " << scenario << std::endl;
 			std::cout << "Cost: " << realCost << "; Expected cost: " << objectiveScenarios[scenario] << std::endl;
-			for (int scenario1 = 0; scenario1 < nbScenario; scenario1++) {
-				std::cout << round(quantities[scenario][0]) << std::endl;
-				std::cout << quantities[scenario][0] << std::endl;
+			std::cout << "scenario " << scenario << std::endl;
+			for (unsigned int k = 1; k <= params->nbDays; k++) {
+				std::cout << quantities[scenario][k-1] << std::endl;
 			}
+			realCost = localSearchList[scenario]->evaluateCurrentCost_stockout(client, true);
 			throw string("Cost error");
 			return 0;
 		}

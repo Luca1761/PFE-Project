@@ -27,22 +27,22 @@ public:
     vector<vector<double>> quantities;
     vector<vector<std::shared_ptr<Insertion>>> breakpoints;
 
-    int client;
-    int horizon;
+    unsigned int client;
+    unsigned int horizon;
     vector<double> objective;
-    int nbScenario;
+    unsigned int nbScenario;
 
     LotSizingSolver(Params* params, vector<vector<vector<Insertion>>> insertions, int client);
 
-    std::shared_ptr<PLFunction> copyPLFunction(std::shared_ptr<PLFunction> source, Params* paramsTemp);
+    std::shared_ptr<PLFunction> copyPLFunction(std::shared_ptr<PLFunction> source);
     void extractBreakpoints(const std::shared_ptr<PLFunction>& f, vector<double>& breakpoints);
     void extractRepeat(const std::shared_ptr<PLFunction>& f, vector<double>& breakpoints);
     vector<double > getBreakpoints_final(std::shared_ptr<PLFunction> f1, std::shared_ptr<PLFunction> f2);
-    std::shared_ptr<PLFunction> min_final(std::shared_ptr<PLFunction> f1, std::shared_ptr<PLFunction> f2, Params* paramsTemp);
+    std::shared_ptr<PLFunction> min_final(std::shared_ptr<PLFunction> f1, std::shared_ptr<PLFunction> f2);
     std::shared_ptr<LinearPiece> createPieceFromLowerY(std::shared_ptr<LinearPiece> chosenPiece,
          double x1, double y1, double x2, double y2);
-    std::shared_ptr<PLFunction> supperpositionPieces(std::shared_ptr<LinearPiece> fromPieceC, std::shared_ptr<LinearPiece> fromPieceF, Params* paramsTemp);
-    std::shared_ptr<PLFunction> supperposition(std::shared_ptr<PLFunction> fromC, std::shared_ptr<PLFunction> fromF, Params* paramsTemp);
+    std::shared_ptr<PLFunction> supperpositionPieces(std::shared_ptr<LinearPiece> fromPieceC, std::shared_ptr<LinearPiece> fromPieceF);
+    std::shared_ptr<PLFunction> supperposition(std::shared_ptr<PLFunction> fromC, std::shared_ptr<PLFunction> fromF);
     
     void Lastday(vector<std::shared_ptr<PLFunction>> &C, int scenario);
     bool solveStockoutBackward();
@@ -55,4 +55,4 @@ public:
 };
 
 
-#endif //IRP_LOTSIZINGSOLVER_H
+#endif 

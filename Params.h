@@ -132,9 +132,6 @@ class Params {
   // nombre de jours
   unsigned int nbDays;
 
-  // ancien nombre de jours
-  unsigned int ancienNbDays;
-
   // nombre de vehicules par d�pot
   unsigned int nbVehiculesPerDep;
 
@@ -186,8 +183,7 @@ class Params {
 
   void setJval(unsigned int _jVal) {
        jVal = _jVal;
-       nbDays = std::min(3, (int) (pHorizon - jVal + 1));
-       ancienNbDays = nbDays;
+       nbDays = pHorizon - jVal + 1;
   }
 
   void updateToDay(unsigned int j, std::vector<double> deliveries);

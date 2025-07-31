@@ -21,7 +21,7 @@ private:
 
 public:
     vector<std::shared_ptr<LinearPiece>> pieces;
-    int nbPieces;
+    unsigned int nbPieces;
 
     std::shared_ptr<LinearPiece> minimalPiece;
     double maxValue, minValue;

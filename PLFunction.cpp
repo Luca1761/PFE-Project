@@ -286,7 +286,7 @@ void PLFunction::append(shared_ptr<LinearPiece> lp){
     if (nbPieces == 0){
         pieces = vector<shared_ptr<LinearPiece>>();
         pieces.push_back(newPiece);
-        nbPieces = 1;
+        nbPieces += 1;
     }
     else{
         shared_ptr<LinearPiece> lastPiece = this->pieces[this->nbPieces - 1];
@@ -408,6 +408,7 @@ std::shared_ptr<PLFunction> PLFunction::getInBound(double lb, double ub, bool up
     std::shared_ptr<PLFunction> plFunction(std::make_shared<PLFunction>(params));
 
     plFunction->clear();
+    if (lt(ub, lb)) return plFunction;
 
     bool isFirstPiece = true;
 
@@ -438,7 +439,7 @@ double PLFunction::calculateGFunction(int day, int client, double detour, double
     double cost = detour;
 
     //cost-depot(holdingcost)
-    cost -= params->inventoryCostSupplier * replenishment * (double)(params->ancienNbDays - day); 
+    cost -= params->inventoryCostSupplier * replenishment * (double)(params->nbDays - day); 
     
     // possible excess capacity
     cost += params->penalityCapa[idxScenario] * std::max(0.0, replenishment - freeload);

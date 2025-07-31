@@ -75,12 +75,13 @@ void Params::adjustDemands() {
 		if (traces) std::cout << "Scenario " << scenario + 1 << " :" << std::endl;
 		for (unsigned int i = nbDepots; i < nbClients + nbDepots; i++) {	
 			if (traces) std::cout << "Client " << i << ": ";
+			normal_distribution<double> normDist((int) meanDemands[i - nbDepots], (int) stdDemands[i - nbDepots]);    
 			for (unsigned int day = 1; day <= nbDays; day++) {
-				normal_distribution<double> normDist((int) meanDemands[i - nbDepots], (int) stdDemands[i - nbDepots]);    
 				double x = normDist(gen);        // x ~ N(0,1)
 				x = max<double>(0.0, x);   
 				x = min<double>(x, cli[i].maxInventory);
-				cli[i].dailyDemand[scenario][day] = (double) round(x);
+				if (false) cli[i].dailyDemand[scenario][day] = cli[i].testDemand[jVal + day- 1];
+				else cli[i].dailyDemand[scenario][day] = (double) round(x);
 				if (traces) std::cout << cli[i].dailyDemand[scenario][day] << " ";
         	}
 			if (traces) std::cout << std::endl;
@@ -124,7 +125,7 @@ void Params::computeDistancierFromCoords()
 void Params::setMethodParams()
 {
 	// parameters related to how the problem is treated
-	isRoundingInteger = false; // using the rounding (for now set to true, because currently testing on the instances of Uchoa)
+	isRoundingInteger = true; // using the rounding (for now set to true, because currently testing on the instances of Uchoa)
 	isRoundingTwoDigits = false;
 
 	// parameters of the population
@@ -274,8 +275,8 @@ void Params::shuffleProches() {
 void Params::computeConstant_stockout() {
 	objectiveConstant_stockout = 0.;
 	// Adding the total cost for supplier inventory over the planning horizon (CONSTANT IN OBJECTIVE)
-	for (unsigned int k = 1; k <= ancienNbDays; k++) {
-		objectiveConstant_stockout += availableSupply[k] * (ancienNbDays + 1 - k) * inventoryCostSupplier;
+	for (unsigned int k = 1; k <= nbDays; k++) {
+		objectiveConstant_stockout += availableSupply[k] * (nbDays + 1 - k) * inventoryCostSupplier;
 	}
 }
 
