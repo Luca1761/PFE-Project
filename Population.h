@@ -107,25 +107,25 @@ class Population
    void validatePen ();
 
    // getter simple d'un individu
-   Individu * getIndividu (int p);
+   Individu * getIndividu(unsigned int p);
 
    // exporte la meilleure solution
-   void ExportPop (string nomFichier, bool add, std::vector<double> deliveries, double &totalCost) ;
+   void ExportPop(string nomFichier, bool add, std::vector<double> deliveries, double &totalCost) ;
 
    // retourne la fraction d'individus valides en terme de charge
-   double fractionValidesCharge () ;
+   double fractionValidesCharge() ;
 
    // diversite de la population
    double getDiversity(SousPop * pop);
 
    // retourne la moyenne des solutions valides
-   double getMoyenneValides ();
+   double getMoyenneValides();
 
     // retourne la moyenne des solutions invalides
-   double getMoyenneInvalides ();
+   double getMoyenneInvalides();
 
    // affiche l'etat de la population
-   void afficheEtat(int NbIter);
+   void afficheEtat(unsigned int NbIter);
 
    // met a jour le compte des valides
    void updateNbValides (Individu * indiv);

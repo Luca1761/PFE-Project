@@ -72,56 +72,53 @@ LotSizingSolver::LotSizingSolver(Params* params, vector<vector<vector<Insertion>
   }
 }
 
-std::shared_ptr<PLFunction> LotSizingSolver::copyPLFunction(
-    std::shared_ptr<PLFunction> source, Params* paramsTemp)
-{
-  std::shared_ptr<PLFunction> destination(std::make_shared<PLFunction>(paramsTemp));
+std::shared_ptr<PLFunction> LotSizingSolver::copyPLFunction(std::shared_ptr<PLFunction> source) {
+  std::shared_ptr<PLFunction> destination(std::make_shared<PLFunction>(params));
   destination->nbPieces = 0;
   destination->pieces = vector<shared_ptr<LinearPiece>>();
-  for (int i = 0; i < source->nbPieces; i++)
-  {
+  for (unsigned int i = 0; i < source->nbPieces; i++) {
     destination->append(source->pieces[i]);
   }
 
   return destination;
 }
 
-void LotSizingSolver::extractBreakpoints(const std::shared_ptr<PLFunction>& f, vector<double>& breakpoints) {
-    for (int i = 0; i < f->nbPieces; i++) {
-        if( neq(f->pieces[i]->p1->x,f->pieces[i]->p2->x) &&
-              ( i== 0 ||  neq(f->pieces[i]->p1->x,f->pieces[i-1]->p2->x) ) )
-            breakpoints.push_back(f->pieces[i]->p1->x);
-        breakpoints.push_back(f->pieces[i]->p2->x);
+void LotSizingSolver::extractBreakpoints(const std::shared_ptr<PLFunction>& f, vector<double>& _breakpoints) {
+    for (unsigned int i = 0; i < f->nbPieces; i++) {
+        if(neq(f->pieces[i]->p1->x,f->pieces[i]->p2->x) &&
+              (i== 0 ||  neq(f->pieces[i]->p1->x,f->pieces[i-1]->p2->x) ) )
+            _breakpoints.push_back(f->pieces[i]->p1->x);
+        _breakpoints.push_back(f->pieces[i]->p2->x);
     }
 }
-void LotSizingSolver::extractRepeat(const std::shared_ptr<PLFunction>& f, vector<double>& breakpoints) {
+void LotSizingSolver::extractRepeat(const std::shared_ptr<PLFunction>& f, vector<double>& _breakpoints) {
     for (int i = 0; i < f->nbPieces; i++) {
         if(fabs(f->pieces[i]->p1->x-f->pieces[i]->p2->x)<0.00001)
-          breakpoints.push_back(f->pieces[i]->p1->x);
+          _breakpoints.push_back(f->pieces[i]->p1->x);
     }
 }
 
 vector<double> LotSizingSolver::getBreakpoints_final(std::shared_ptr<PLFunction> f1, std::shared_ptr<PLFunction> f2){
-    vector<double> breakpoints;
+    vector<double> _breakpoints;
     vector<double> repeat;
-    extractBreakpoints(f1, breakpoints);
-    extractBreakpoints(f2, breakpoints);
+    extractBreakpoints(f1, _breakpoints);
+    extractBreakpoints(f2, _breakpoints);
     extractRepeat(f1, repeat);
     extractRepeat(f2, repeat);
-    std::sort(breakpoints.begin(), breakpoints.end());
+    std::sort(_breakpoints.begin(), _breakpoints.end());
     std::sort(repeat.begin(), repeat.end());
-  auto it = std::unique(breakpoints.begin(), breakpoints.end(), 
+  auto it = std::unique(_breakpoints.begin(), _breakpoints.end(), 
                       [](double a, double b) { return fabs(a - b) < 0.00001; });
-  breakpoints.erase(it, breakpoints.end());
+  _breakpoints.erase(it, _breakpoints.end());
 
   auto it1 = std::unique(repeat.begin(), repeat.end(), 
                         [](double a, double b) { return fabs(a - b) < 0.00001; });
   repeat.erase(it1, repeat.end());
 
-    breakpoints.insert(breakpoints.end(), repeat.begin(), repeat.end());
+    _breakpoints.insert(_breakpoints.end(), repeat.begin(), repeat.end());
     
-    std::sort(breakpoints.begin(), breakpoints.end());
-    return breakpoints;
+    std::sort(_breakpoints.begin(), _breakpoints.end());
+    return _breakpoints;
 }
 
 std::shared_ptr<LinearPiece> LotSizingSolver::createPieceFromLowerY(
@@ -139,14 +136,14 @@ std::shared_ptr<LinearPiece> LotSizingSolver::createPieceFromLowerY(
 }
 
 
-std::shared_ptr<PLFunction> LotSizingSolver::min_final(std::shared_ptr<PLFunction> f1, std::shared_ptr<PLFunction> f2, Params* paramsTemp) {
-  std::shared_ptr<PLFunction> f = std::make_shared<PLFunction>(paramsTemp);
+std::shared_ptr<PLFunction> LotSizingSolver::min_final(std::shared_ptr<PLFunction> f1, std::shared_ptr<PLFunction> f2) {
+  std::shared_ptr<PLFunction> f = std::make_shared<PLFunction>(params);
     if (f1->nbPieces == 0 && f2->nbPieces == 0) return f;
-    if (f1->nbPieces == 0 && f2->nbPieces > 0) return copyPLFunction(f2, paramsTemp);
-    if (f1->nbPieces > 0 && f2->nbPieces == 0) return copyPLFunction(f1, paramsTemp);
+    if (f1->nbPieces == 0 && f2->nbPieces > 0) return copyPLFunction(f2);
+    if (f1->nbPieces > 0 && f2->nbPieces == 0) return copyPLFunction(f1);
 
-    vector<double> breakpoints = getBreakpoints_final(f1, f2);
-    int nbBreakPoints = breakpoints.size();
+    vector<double> _breakpoints = getBreakpoints_final(f1, f2);
+    int nbBreakPoints = _breakpoints.size();
     std::shared_ptr<LinearPiece> lp1 = f1->pieces[0];
     std::shared_ptr<LinearPiece> lp2 = f2->pieces[0];
     int n1=0,n2=0;
@@ -155,10 +152,10 @@ std::shared_ptr<PLFunction> LotSizingSolver::min_final(std::shared_ptr<PLFunctio
       if(lp2)lp2->updateLinearPiece(lp2->p1->x,lp2->p1->y,lp2->p2->x,lp2->p2->y);
       std::shared_ptr<LinearPiece> piece1 = nullptr;
       
-      if (lp1) piece1 = lp1->getInpiece(breakpoints[i - 1], breakpoints[i]); 
+      if (lp1) piece1 = lp1->getInpiece(_breakpoints[i - 1], _breakpoints[i]); 
       
       std::shared_ptr<LinearPiece> piece2 = nullptr;
-      if (lp2)  piece2 = lp2->getInpiece(breakpoints[i - 1], breakpoints[i]); 
+      if (lp2)  piece2 = lp2->getInpiece(_breakpoints[i - 1], _breakpoints[i]); 
       
       if (!piece1 && !piece2);
       else if (!piece1)  f->append(piece2);
@@ -213,11 +210,11 @@ std::shared_ptr<PLFunction> LotSizingSolver::min_final(std::shared_ptr<PLFunctio
             }
            
         }
-        if (lp1&& fabs(breakpoints[i]- lp1->p2->x)<0.00001 ){
+        if (lp1&& fabs(_breakpoints[i]- lp1->p2->x)<0.00001 ){
             if(n1 + 1 < f1->nbPieces) lp1 = f1->pieces[++n1];
             else lp1 = nullptr;
         }
-        if (lp2&& fabs(breakpoints[i]- lp2->p2->x)<0.00001 ){
+        if (lp2&& fabs(_breakpoints[i]- lp2->p2->x)<0.00001 ){
           if(n2 + 1 < f2->nbPieces) lp2 = f2->pieces[++n2];
           else lp2 = nullptr;
         }
@@ -230,13 +227,9 @@ std::shared_ptr<PLFunction> LotSizingSolver::min_final(std::shared_ptr<PLFunctio
 
 
 
-std::shared_ptr<PLFunction> LotSizingSolver::supperpositionPieces(
-    std::shared_ptr<LinearPiece> fromPieceC,
-    std::shared_ptr<LinearPiece> fromPieceF,
-    Params* paramsTemp
-  )
+std::shared_ptr<PLFunction> LotSizingSolver::supperpositionPieces(std::shared_ptr<LinearPiece> fromPieceC, std::shared_ptr<LinearPiece> fromPieceF)
 {
-  std::shared_ptr<PLFunction> f(std::make_shared<PLFunction>(paramsTemp));
+  std::shared_ptr<PLFunction> f(std::make_shared<PLFunction>(params));
   vector<Point> points;
   shared_ptr<LinearPiece> tmpPiece,newpiece;
   points.push_back(fromPieceC->p1->convolve(fromPieceF->p2));  
@@ -326,25 +319,23 @@ std::shared_ptr<PLFunction> LotSizingSolver::supperpositionPieces(
   return f;
 }
 
-std::shared_ptr<PLFunction> LotSizingSolver:: supperposition(
-    std::shared_ptr<PLFunction> fromC, std::shared_ptr<PLFunction> fromF, Params* paramsTemp)
-{
- std::shared_ptr<PLFunction> f(std::make_shared<PLFunction>(paramsTemp));
+std::shared_ptr<PLFunction> LotSizingSolver:: supperposition(std::shared_ptr<PLFunction> fromC, std::shared_ptr<PLFunction> fromF) {
+ std::shared_ptr<PLFunction> f(std::make_shared<PLFunction>(params));
 
-  for (int i = 0; i < fromC->nbPieces; i++){
-    for (int j = 0; j < fromF->nbPieces; j++){
+  for (unsigned int i = 0; i < fromC->nbPieces; i++){
+    for (unsigned int j = 0; j < fromF->nbPieces; j++){
       
-      std::shared_ptr<PLFunction> tmpF = std::make_shared<PLFunction>(paramsTemp);
+      std::shared_ptr<PLFunction> tmpF = std::make_shared<PLFunction>(params);
       std::shared_ptr<LinearPiece> fromPieceC = fromC->pieces[i]->clone();
       
       std::shared_ptr<LinearPiece> fromPieceF = fromF->pieces[j]->clone();
 
-      tmpF = supperpositionPieces(fromPieceC, fromPieceF, paramsTemp);
+      tmpF = supperpositionPieces(fromPieceC, fromPieceF);
       
       if (f->nbPieces > 0 || tmpF->nbPieces > 0){
         std::shared_ptr<PLFunction> fmin;
-        fmin = min_final(f, tmpF, paramsTemp);
-        f = copyPLFunction(fmin, paramsTemp);
+        fmin = min_final(f, tmpF);
+        f = copyPLFunction(fmin);
       }
 
       tmpF.reset();
@@ -484,17 +475,17 @@ bool LotSizingSolver::backtrackingStockoutBackward(unsigned int scenario, int id
   return true;
 }
 
-void LotSizingSolver::Lastday(vector<std::shared_ptr<PLFunction>> &C, int scenario){//for the last day
+void LotSizingSolver::Lastday(vector<std::shared_ptr<PLFunction>> &Cf, unsigned int scenario){//for the last day
   double maxInventory = params->cli[client].maxInventory - params->cli[client].dailyDemand[scenario][horizon];
-  C[horizon]->nbPieces = 0;
-  C[horizon]->pieces = vector<shared_ptr<LinearPiece>>();
+  Cf[horizon]->nbPieces = 0;
+  Cf[horizon]->pieces = vector<shared_ptr<LinearPiece>>();
   std::shared_ptr<LinearPiece> tmp = std::make_shared<LinearPiece>(0, 0, maxInventory, 0);
   tmp->fromC = nullptr;
   tmp->fromC_pre = nullptr;
   tmp->replenishment_loss = 0;
   tmp->fromF = nullptr;
   tmp->fromInst = nullptr;
-  C[horizon]->append(tmp); 
+  Cf[horizon]->append(tmp); 
   return;
 }
 
@@ -510,19 +501,19 @@ bool LotSizingSolver::solveStockoutBackward() {
 
   breakpoints = vector<vector<std::shared_ptr<Insertion>>>(nbScenario, vector<std::shared_ptr<Insertion>>(horizon));
   
-  for (int scenario = 0; scenario < nbScenario; scenario++) {
-    for (int i = 0; i < horizon + 1; i++) {
+  for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
+    for (unsigned int i = 0; i < horizon + 1; i++) {
       C[scenario][i] = std::make_shared<PLFunction>(params); // a piecewise linear function in each period
     }
   }
   const int GROUP_SIZE_2 = nbScenario / 4 + 1;
 	vector<thread> threads;
-	for (int i = 0; i < nbScenario; i += GROUP_SIZE_2) {
-		int end = std::min(i + GROUP_SIZE_2, nbScenario);
-		threads.emplace_back([this, i, end]() {
-			for (int scenario = i; scenario < end; scenario++) {
-				solveOneScenario(scenario);
-        day1(scenario);
+	for (unsigned int scenario = 0; scenario < nbScenario; scenario += GROUP_SIZE_2) {
+		unsigned int end = std::min(scenario + GROUP_SIZE_2, nbScenario);
+		threads.emplace_back([this, scenario, end]() {
+			for (unsigned int scenario1 = scenario; scenario1 < end; scenario1++) {
+				solveOneScenario(scenario1);
+        day1(scenario1);
 			}
 		});
 	}
@@ -532,29 +523,28 @@ bool LotSizingSolver::solveStockoutBackward() {
   
   int idxInsert = 0;
   double valInsertMin = 1000000000;
-  for (int k = 0; k < Ck[0].size(); k++) {
+  for (unsigned int k = 0; k < Ck[0].size(); k++) {
     double valInsert = 0;
-    for (int scenario = 0; scenario < nbScenario; scenario++) {
+    for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
       valInsert += Ck[scenario][k];
     }
-    valInsert/=nbScenario;
+    valInsert /= (double) nbScenario;
     if (valInsert < valInsertMin) {
       valInsertMin = valInsert;
       idxInsert = k;
     }
   }
-  for (int scenario = 0; scenario < nbScenario; scenario++) {
+  for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
     backtrackingStockoutBackward(scenario, idxInsert);
   }
   return true;
 }
 
-void LotSizingSolver::solveOneScenario(int scenario) {
-    double minInventory, maxInventory;
+void LotSizingSolver::solveOneScenario(unsigned int scenario) {
+    double maxInventory;
     Lastday(C[scenario], scenario);
 
-    for (int t = horizon; t >= 2; t--)
-    {
+    for (unsigned int t = horizon; t >= 2; t--) {
       if (neq(C[scenario][t]->pieces[0]->p1->x,0)) {
         throw string("Ct(0) doesn't exist!!!");
       }
@@ -572,12 +562,11 @@ void LotSizingSolver::solveOneScenario(int scenario) {
       //(1). First case: no delivery and no stockout
       //q(t) = 0 and  I(t-1) > daily[t] ==> I(t) > 0 
       //dp <--- C(t)(I(t-1) - daily(t)) + inventoryCost * (I(t-1) - daily(t))
-      f1 = copyPLFunction(C[scenario][t], params); //f1(x) = Ct(x)
+      f1 = copyPLFunction(C[scenario][t]); //f1(x) = Ct(x)
       f1->addHoldingf(params->cli[client].inventoryCost); //f1(x) = Ct(x) + hi*x
       f1->shiftRight(params->cli[client].dailyDemand[scenario][t]); //f1(x) = Ct(x-d_i^t) + hi*(x-d_i^t)
 
-      for (int i = 0; i < f1->nbPieces; i++)
-      {
+      for (unsigned int i = 0; i < f1->nbPieces; i++) {
         f1->pieces[i]->fromC_pre = C[scenario][t]->pieces[i]->clone();
         f1->pieces[i]->replenishment_loss = -1; 
         f1->pieces[i]->fromF = nullptr;
@@ -591,7 +580,7 @@ void LotSizingSolver::solveOneScenario(int scenario) {
       f2 = std::make_shared<PLFunction>(params);
       shared_ptr<LinearPiece> tmpNoDelivery(make_shared<LinearPiece>(0, params->cli[client].dailyDemand[scenario][t] * params->cli[client].stockoutCost, params->cli[client].dailyDemand[scenario][t], 0));
       f2->append(tmpNoDelivery); //f2(x) = stockoutCost * (daily - x), x < d_i^t
-      for (int i = 0; i < f2->nbPieces; i++){
+      for (unsigned int i = 0; i < f2->nbPieces; i++){
         f2->pieces[i]->fromC_pre = C[scenario][t]->pieces[i]->clone();
         f2->pieces[i]->replenishment_loss = 0; 
         f2->pieces[i]->fromC = nullptr;
@@ -605,20 +594,20 @@ void LotSizingSolver::solveOneScenario(int scenario) {
       // q != 0, I(t-1)+q-daily > 0     ==> I(t)>0
       // C(t-1)(I(t-1)) <----- C(t)(I(t-1) + q - daily(t)) + holdingCost * (I(t-1) + q - daily(t)) + F_t^2(q)
       f3 = std::make_shared<PLFunction>(params);
-      fromF2 = copyPLFunction(F[scenario][t-1], params);  //fromF2(q) = F2(q)
+      fromF2 = copyPLFunction(F[scenario][t-1]);  //fromF2(q) = F2(q)
       fromF2 = fromF2->getInBound(-params->cli[client].maxInventory,-1); //q < maxInventory
       
-      fromC1 = copyPLFunction(C[scenario][t], params); //fromC1(x) = C_t(x)
+      fromC1 = copyPLFunction(C[scenario][t]); //fromC1(x) = C_t(x)
       fromC1->addHoldingf(params->cli[client].inventoryCost); //fromC1(x) = C_t(x) + hi*x
       fromC1->shiftRight(params->cli[client].dailyDemand[scenario][t]); //fromC1(x) = C_t(x-d_i^t) + hi*(x-d_i^t)
 
-      for (int i = 0; i < fromC1->nbPieces; i++){
+      for (unsigned int i = 0; i < fromC1->nbPieces; i++){
         fromC1->pieces[i]->fromC_pre = C[scenario][t]->pieces[i]->clone();
       }
       fromC1 = fromC1->getInBound(params->cli[client].dailyDemand[scenario][t], params->cli[client].maxInventory);
 
-      f3 = supperposition(fromC1, fromF2, params); //f3(x) = min_q (fromC1(x-q) + fromF2(q)) (q<0)
-      for (int i = 0; i < f3->nbPieces; i++){
+      f3 = supperposition(fromC1, fromF2); //f3(x) = min_q (fromC1(x-q) + fromF2(q)) (q<0)
+      for (unsigned int i = 0; i < f3->nbPieces; i++){
         f3->pieces[i]->replenishment_loss = -1; 
         f3->pieces[i]->fromC_pre = f3->pieces[i]->fromC->fromC_pre;
       } 
@@ -635,26 +624,26 @@ void LotSizingSolver::solveOneScenario(int scenario) {
       fromC2->append(tmpDelivery); //fromC2(x) = stockoutCost * (d_i^t-x)
       fromC2->moveUp(C[scenario][t]->pieces[0]->p1->y); //add C_t(0)
       
-      fromF1 = copyPLFunction(F[scenario][t-1], params); //fromF1(q) = F_1^t(q)
-      fromF1 = fromF1->getInBound(-params->cli[client].dailyDemand[scenario][t],-1); //q < d_i^t
+      fromF1 = copyPLFunction(F[scenario][t-1]); //fromF1(q) = F_1^t(q)
+      fromF1 = fromF1->getInBound(- std::min(params->cli[client].dailyDemand[scenario][t], params->cli[client].maxInventory),-1); //q < d_i^t
       
-      f4 = supperposition(fromC2, fromF1, params); //f4(x) = min_q (fromC2(x-q) + fromF1(q)) (q<0)
+      f4 = supperposition(fromC2, fromF1); //f4(x) = min_q (fromC2(x-q) + fromF1(q)) (q<0)
 
-      f4 = f4->getInBound(0,params->cli[client].dailyDemand[scenario][t]);
+      f4 = f4->getInBound(0, std::min(params->cli[client].dailyDemand[scenario][t], maxInventory));
 
-      for (int i = 0; i < f4->nbPieces; i++){
+      for (unsigned int i = 0; i < f4->nbPieces; i++){
         f4->pieces[i]->replenishment_loss = 0; 
         f4->pieces[i]->fromC_pre = f4->pieces[i]->fromC->fromC_pre; 
       }
-      C[scenario][t-1] = copyPLFunction(min_final(min_final(f1,f3, params),min_final(f2,f4, params), params), params); 
+      C[scenario][t-1] = copyPLFunction(min_final(min_final(f1,f3),min_final(f2,f4))); 
 
     }
 }
 
-void LotSizingSolver::day1(int scenario) {
+void LotSizingSolver::day1(unsigned int scenario) {
   double maxInventory = params->cli[client].startingInventory;
 
-  for (int k = 0; k < insertions[scenario][0].size(); k++) {
+  for (unsigned int k = 0; k < insertions[scenario][0].size(); k++) {
       //picewise linear functions
       std::shared_ptr<PLFunction> f3;
       std::shared_ptr<PLFunction> f4;
@@ -666,20 +655,20 @@ void LotSizingSolver::day1(int scenario) {
       // q != 0, I(t-1)+q-daily > 0     ==> I(t)>0
       // C(t-1)(I(t-1)) <----- C(t)(I(t-1) + q - daily(t)) + holdingCost * (I(t-1) + q - daily(t)) + F_t^2(q)
       f3 = std::make_shared<PLFunction>(params);
-      fromF2 = copyPLFunction(Gk[scenario][k], params);  //fromF2(q) = F2(q)
+      fromF2 = copyPLFunction(Gk[scenario][k]);  //fromF2(q) = F2(q)
       fromF2 = fromF2->getInBound(-params->cli[client].maxInventory,-1); //q < maxInventory
       
-      fromC1 = copyPLFunction(C[scenario][1], params); //fromC1(x) = C_t(x)
+      fromC1 = copyPLFunction(C[scenario][1]); //fromC1(x) = C_t(x)
       fromC1->addHoldingf(params->cli[client].inventoryCost); //fromC1(x) = C_t(x) + hi*x
       fromC1->shiftRight(params->cli[client].dailyDemand[scenario][1]); //fromC1(x) = C_t(x-d_i^t) + hi*(x-d_i^t)
 
-      for (int i = 0; i < fromC1->nbPieces; i++){
+      for (unsigned int i = 0; i < fromC1->nbPieces; i++){
         fromC1->pieces[i]->fromC_pre = C[scenario][1]->pieces[i]->clone();
       }
       fromC1 = fromC1->getInBound(params->cli[client].dailyDemand[scenario][1], params->cli[client].maxInventory);
 
-      f3 = supperposition(fromC1, fromF2, params); //f3(x) = min_q (fromC1(x-q) + fromF2(q)) (q<0)
-      for (int i = 0; i < f3->nbPieces; i++){
+      f3 = supperposition(fromC1, fromF2); //f3(x) = min_q (fromC1(x-q) + fromF2(q)) (q<0)
+      for (unsigned int i = 0; i < f3->nbPieces; i++){
         f3->pieces[i]->replenishment_loss = -1; 
         f3->pieces[i]->fromC_pre = f3->pieces[i]->fromC->fromC_pre;
       } 
@@ -696,18 +685,18 @@ void LotSizingSolver::day1(int scenario) {
       fromC2->append(tmpDelivery); //fromC2(x) = stockoutCost * (d_i^t-x)
       fromC2->moveUp(C[scenario][1]->pieces[0]->p1->y); //add C_t(0)
       
-      fromF1 = copyPLFunction(Gk[scenario][k], params); //fromF1(q) = F_1^t(q)
+      fromF1 = copyPLFunction(Gk[scenario][k]); //fromF1(q) = F_1^t(q)
       fromF1 = fromF1->getInBound(-params->cli[client].dailyDemand[scenario][1],-1); //q < d_i^t
       
-      f4 = supperposition(fromC2, fromF1, params); //f4(x) = min_q (fromC2(x-q) + fromF1(q)) (q<0)
+      f4 = supperposition(fromC2, fromF1); //f4(x) = min_q (fromC2(x-q) + fromF1(q)) (q<0)
 
-      f4 = f4->getInBound(0,params->cli[client].dailyDemand[scenario][1]);
+      f4 = f4->getInBound(0, std::min(params->cli[client].dailyDemand[scenario][1], maxInventory));
 
-      for (int i = 0; i < f4->nbPieces; i++){
+      for (unsigned int i = 0; i < f4->nbPieces; i++){
         f4->pieces[i]->replenishment_loss = 0; 
         f4->pieces[i]->fromC_pre = f4->pieces[i]->fromC->fromC_pre; 
       }
-      std::shared_ptr<PLFunction> temp = copyPLFunction(min_final(f3, f4, params), params); 
+      std::shared_ptr<PLFunction> temp = copyPLFunction(min_final(f3, f4)); 
       temp = temp->getInBound(params->cli[client].startingInventory, params->cli[client].startingInventory);
       double aTemp;
       std::shared_ptr<LinearPiece> tmp = 
@@ -721,7 +710,7 @@ void LotSizingSolver::day1(int scenario) {
       //(1). First case: no delivery and no stockout
       //q(t) = 0 and  I(t-1) > daily[t] ==> I(t) > 0 
       //dp <--- C(t)(I(t-1) - daily(t)) + inventoryCost * (I(t-1) - daily(t))
-      f1 = copyPLFunction(C[scenario][1], params); //f1(x) = Ct(x)
+      f1 = copyPLFunction(C[scenario][1]); //f1(x) = Ct(x)
       f1->addHoldingf(params->cli[client].inventoryCost); //f1(x) = Ct(x) + hi*x
       f1->shiftRight(params->cli[client].dailyDemand[scenario][1]); //f1(x) = Ct(x-d_i^t) + hi*(x-d_i^t)
 
@@ -740,7 +729,7 @@ void LotSizingSolver::day1(int scenario) {
       f2 = std::make_shared<PLFunction>(params);
       shared_ptr<LinearPiece> tmpNoDelivery(make_shared<LinearPiece>(0, params->cli[client].dailyDemand[scenario][1] * params->cli[client].stockoutCost, params->cli[client].dailyDemand[scenario][1], 0));
       f2->append(tmpNoDelivery); //f2(x) = stockoutCost * (daily - x), x < d_i^t
-      for (int i = 0; i < f2->nbPieces; i++){
+      for (unsigned int i = 0; i < f2->nbPieces; i++){
         f2->pieces[i]->fromC_pre = C[scenario][1]->pieces[i]->clone();
         f2->pieces[i]->replenishment_loss = 0; 
         f2->pieces[i]->fromC = nullptr;
@@ -750,7 +739,7 @@ void LotSizingSolver::day1(int scenario) {
       f2->moveUp(C[scenario][1]->pieces[0]->p1->y); //f2(x) = C_t(0) + stockoutCost * (daily - x), x < d_i^t
       
       f2 = f2->getInBound(0, params->cli[client].dailyDemand[0][1]); //x < d_i^t
-      std::shared_ptr<PLFunction> temp = copyPLFunction(min_final(f1,f2, params), params); 
+      std::shared_ptr<PLFunction> temp = copyPLFunction(min_final(f1,f2)); 
       temp = temp->getInBound(params->cli[client].startingInventory, params->cli[client].startingInventory);
       double aTemp;
       std::shared_ptr<LinearPiece> tmp = 

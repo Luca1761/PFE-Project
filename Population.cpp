@@ -285,7 +285,7 @@ Individu *Population::getIndividuBestInvalide() {
 }
 
 // getter simple d'un individu
-Individu *Population::getIndividu(int p) {
+Individu *Population::getIndividu(unsigned int p) {
 	return valides->individus[p];
 }
 // recopie un Individu dans un autre
@@ -300,15 +300,12 @@ void Population::recopieIndividu(Individu *destination, Individu *source) {
 
 void Population::ExportPop(string nomFichier,bool add, std::vector<double> deliveries, double &totalCost) {
 	// exporte les solutions actuelles des individus dans un dossier exports current individual solutions to a folder
-	vector<int> rout;
 	int compteur;
-	LocalSearch *loc;
-	ofstream myfile;
-	double cost;
 	Individu *bestValide = getIndividuBestValide();
 	
 	if (bestValide != NULL) {
 		// TO CHECK
+		ofstream myfile;
 		clock_t s = totalTime;
 		clock_t v = timeBest;
 		
@@ -319,12 +316,11 @@ void Population::ExportPop(string nomFichier,bool add, std::vector<double> deliv
 		params->penalityCapa = std::vector<double> (params->nbScenarios, 10000.0);
 		education_scenario(bestValide);
 		// le trainer a garde les infos des routes de bestValide
-		loc = trainer->localSearchList[0];
+		LocalSearch *loc = trainer->localSearchList[0];
 		params->penalityCapa = temp;
 		
 		myfile.precision(10);
 		cout.precision(10);
-		ofstream myfile;
 		bool ADD = add && (params->jVal != 1);
 		if (ADD) myfile.open(nomFichier.data(), std::ios::app);//add on previous
 		else myfile.open(nomFichier.data()); 
@@ -337,10 +333,9 @@ void Population::ExportPop(string nomFichier,bool add, std::vector<double> deliv
 
 		// exporting the number of routes
 		compteur = 0;
-		for (int k = 1; k <= 1; k++)
-			for (int i = 0; i < (int)loc->routes[k].size(); i++)
-				if (!loc->depots[k][i]->suiv->estUnDepot)
-					compteur++;
+		for (unsigned int i = 0; i < loc->routes[1].size(); i++)
+			if (!loc->depots[1][i]->suiv->estUnDepot)
+				compteur++;
 		myfile << "Route number: " << compteur << endl;
 		myfile << endl;
 
@@ -396,7 +391,7 @@ double Population::getMoyenneInvalides() {
 }
 
 int Population::selectCompromis(SousPop *souspop) {
-	vector<int> classement;
+	vector<unsigned int> classement;
 
 	evalExtFit(souspop);
 
@@ -453,7 +448,7 @@ void Population::measureAndUpdateQuantities(std::vector<double> &deliveries, dou
 
 }
 
-void Population::afficheEtat(int nbIter)
+void Population::afficheEtat(unsigned int nbIter)
 {
 	cout.precision(8);
 

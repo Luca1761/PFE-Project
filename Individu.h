@@ -135,7 +135,7 @@ class Individu
   // et de remplir tous les champs d'evaluation de solution
   void measureSol_scenario();
 
-  double measureSol(std::vector<double> &delivers, int idxDay);
+  double measureSol(std::vector<double> &delivers, unsigned int idxDay);
 
   // initialisation du vecteur potentiels
   void initPot_scenario(unsigned int k, unsigned int scenario) ;
@@ -146,7 +146,7 @@ class Individu
 
   void localSearchRunSearch_scenario();
   void muterDifferentScenarioDP();
-  int mutationDP(int client, bool &rechercheTerminee);
+  int mutationDP(unsigned int client, bool &rechercheTerminee);
   void runSearchDay1();
   int mutationSameDay1();
 

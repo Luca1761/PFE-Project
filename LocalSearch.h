@@ -38,7 +38,7 @@ Individu *individu;
 public:
   Params *params;
 
-  int idxScenario;
+  unsigned int idxScenario;
 
   bool rechercheTerminee;
   // vecteur donnant l'ordre de parcours des sommets pour chaque jour, ne
@@ -70,7 +70,7 @@ public:
   Route *routeV;
   int noeudUCour, noeudUPredCour, xCour, xSuivCour, ySuivCour, noeudVCour,
       noeudVPredCour, yCour;
-  int dayCour;
+  unsigned int dayCour;
 
   /* vecteur de taille nbClients , l'element client(day)(i) contient des donnees
   // relatives
@@ -158,7 +158,7 @@ public:
   int mutation9();
 
   // Evaluates the current objective function from the model
-  double evaluateCurrentCost_stockout(int client);
+  double evaluateCurrentCost_stockout(unsigned int client, bool test = false);
 
   // Prints some useful information on the current solution
   void printInventoryLevels(std::ostream& file,bool add, std::vector<double> deliveries, double &totalCost);

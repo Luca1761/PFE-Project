@@ -28,7 +28,7 @@ public :
 bool estUnDepot ;
 // est un depot ou un client
 
-int idx ;
+unsigned int idx ;
 // indice du depot ou du client represente
 
 int place ;

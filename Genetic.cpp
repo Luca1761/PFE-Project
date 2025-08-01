@@ -31,7 +31,7 @@ void Genetic::evolve(unsigned int maxIter, unsigned int maxIterNonProd, unsigned
 	double rangRelatif;
 	nbIterNonProd = 1;
 	nbIter = 0;
-	int oldValue = 1;
+	unsigned int oldValue = 1;
 	while (nbIter < maxIter && nbIterNonProd < maxIterNonProd && (float) (clock() - population->totalTime) / CLOCKS_PER_SEC <=  (float)maxTime ) {
 		// on demande deux individus a la population
 		population->recopieIndividu(rejeton, population->getIndividuBinT(rangRelatif));
@@ -151,8 +151,8 @@ Genetic::Genetic(Params* _params, clock_t _ticks, Population* _population) : par
 int Genetic::crossPOX_scenario() {
     vector<int> vide, tableauEtat;
     vector<double> charge;
-	int debut, fin;
-    int j1, j2;
+	unsigned int debut, fin;
+    unsigned int j1, j2;
 	// Keeping track of the chromT of the parent
 	vector<vector<unsigned int>> chromTParent1 = rejeton->chromT;
 	vector<vector<double>> chromLParent1 = rejeton->chromL;
@@ -168,14 +168,14 @@ int Genetic::crossPOX_scenario() {
 	int firstDayInheritance = params->rng->genrand64_int64() % 4;
 	rejeton->chromT[1].clear();
 	if (firstDayInheritance == 0) {
-		for (int ii : chromTParent1[1]) {
+		for (unsigned int ii : chromTParent1[1]) {
 			rejeton->chromT[1].push_back(ii);
 			for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
 				rejeton->chromL[1 + scenario * params->nbDays][ii] = chromLParent1[1 + scenario * params->nbDays][ii];
 			}
 		}
 	} else if (firstDayInheritance == 1) {
-		for (int ii : chromTParent2[1]) {
+		for (unsigned int ii : chromTParent2[1]) {
 			rejeton->chromT[1].push_back(ii);
 			for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
 				rejeton->chromL[1 + scenario * params->nbDays][ii] = chromLParent2[1 + scenario * params->nbDays][ii];
@@ -183,8 +183,8 @@ int Genetic::crossPOX_scenario() {
 		}
 	} else {
 		if (!chromTParent1[1].empty()) {
-			unsigned int begin = params->rng->genrand64_int64() % chromTParent1[1].size();
-			unsigned int end = params->rng->genrand64_int64() % chromTParent1[1].size();
+			unsigned int begin = (unsigned int) params->rng->genrand64_int64() % chromTParent1[1].size();
+			unsigned int end = (unsigned int) params->rng->genrand64_int64() % chromTParent1[1].size();
 			unsigned int i = begin;
 			while (i != end) {
 				int ii = chromTParent1[1][i];
@@ -208,35 +208,35 @@ int Genetic::crossPOX_scenario() {
 		}
 	}
 	if (params->nbDays > 1) {
-		for (int scenario = 0; scenario < nbScenario; scenario++) {
-			vector<int> garder;
+		for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
+			vector<unsigned int> garder;
 			vector<int> tableauFin;
 			vector<vector<bool>> hasBeenInserted = vector<vector<bool>>(params->nbDays + 1, vector<bool>(params->nbClients + params->nbDepots, false));
-			int scenarioBegin = scenario * (params->nbDays - 1) + 2;
-			vector<int> randomDays = vector<int>(params->nbDays - 1, 0);
+			unsigned int scenarioBegin = scenario * (params->nbDays - 1) + 2;
+			vector<unsigned int> randomDays = vector<unsigned int>(params->nbDays - 1, 0);
 			for (unsigned int i = 0; i < randomDays.size(); i++) {
 				randomDays[i] = scenarioBegin + i;
 			}
 
-			std::mt19937 g(params->seed);
+			std::mt19937 g((unsigned int) params->seed);
 			std::shuffle(randomDays.begin(), randomDays.end(), g);
 
-			j1 = params->rng->genrand64_int64() % randomDays.size();
-			j2 = params->rng->genrand64_int64() % randomDays.size();
+			j1 = (unsigned int) params->rng->genrand64_int64() % randomDays.size();
+			j2 = (unsigned int) params->rng->genrand64_int64() % randomDays.size();
 			if (j1 > j2) std::swap(j1, j2);
 			for (unsigned int k = 0; k < randomDays.size(); k++) {
-				int day = randomDays[k];
-				int dayL = scenario + day;
-				int realDay = day - scenario * (params->nbDays - 1);
+				unsigned int day = randomDays[k];
+				unsigned int dayL = scenario + day;
+				unsigned int realDay = day - scenario * (params->nbDays - 1);
 				// on recopie un segment
 				if (k < j1 && !rejeton->chromT[day].empty()) {
-					debut = (int)(params->rng->genrand64_int64() % rejeton->chromT[day].size());
-					fin = (int)(params->rng->genrand64_int64() % rejeton->chromT[day].size());
-					tableauFin.push_back(fin);
-					int j = debut;
+					debut = (unsigned int) (params->rng->genrand64_int64() % rejeton->chromT[day].size());
+					fin = (unsigned int) (params->rng->genrand64_int64() % rejeton->chromT[day].size());
+					tableauFin.push_back((int) fin);
+					unsigned int j = debut;
 					garder.clear();
 					while (j != fin) {
-						int ii = rejeton->chromT[day][j]; // getting the index to be inherited
+						unsigned int ii = rejeton->chromT[day][j]; // getting the index to be inherited
 						double quantity = chromLParent1[dayL][ii];
 						if (quantity > 0.0001) {
 							garder.push_back(ii);
@@ -246,7 +246,7 @@ int Genetic::crossPOX_scenario() {
 						j = (j + 1) % rejeton->chromT[day].size();
 					}
 					rejeton->chromT[day].clear();
-					for (int g : garder) {
+					for (unsigned int g : garder) {
 						rejeton->chromT[day].push_back(g);
 					}
 				}
@@ -258,7 +258,7 @@ int Genetic::crossPOX_scenario() {
 				else // on recopie tout
 				{
 					tableauFin.push_back(0);
-					for (int ii : rejeton->chromT[day]) {
+					for (unsigned int ii : rejeton->chromT[day]) {
 						garder.push_back(ii);
 						rejeton->chromL[dayL][ii] = chromLParent1[dayL][ii];
 						hasBeenInserted[realDay][ii] = true;
@@ -268,12 +268,12 @@ int Genetic::crossPOX_scenario() {
 		
 			// completing with rejeton 2
 			for (unsigned int k = 0; k < j2; k++) {
-				int day = randomDays[k];
-				int dayL = day + scenario;
-				int realDay = day - scenario * (params->nbDays - 1);
+				unsigned int day = randomDays[k];
+				unsigned int dayL = day + scenario;
+				unsigned int realDay = day - scenario * (params->nbDays - 1);
 				fin = tableauFin[k];
-				for (unsigned int i = 0; i < (int)rejeton2->chromT[day].size(); i++) {
-					int ii = rejeton2->chromT[day][(i + fin + 1) % (int)rejeton2->chromT[day].size()];
+				for (unsigned int i = 0; i < rejeton2->chromT[day].size(); i++) {
+					unsigned int ii = rejeton2->chromT[day][(i + fin + 1) % (int)rejeton2->chromT[day].size()];
 					if (!hasBeenInserted[realDay][ii]) {
 						// computing maximum possible delivery quantity
 						double quantity = chromLParent2[dayL][ii];

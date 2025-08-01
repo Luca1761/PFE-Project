@@ -44,10 +44,10 @@ public:
     std::shared_ptr<PLFunction> supperpositionPieces(std::shared_ptr<LinearPiece> fromPieceC, std::shared_ptr<LinearPiece> fromPieceF);
     std::shared_ptr<PLFunction> supperposition(std::shared_ptr<PLFunction> fromC, std::shared_ptr<PLFunction> fromF);
     
-    void Lastday(vector<std::shared_ptr<PLFunction>> &C, int scenario);
+    void Lastday(vector<std::shared_ptr<PLFunction>> &C, unsigned int scenario);
     bool solveStockoutBackward();
-    void day1(int scenario);
-    void solveOneScenario(int scenario);
+    void day1(unsigned int scenario);
+    void solveOneScenario(unsigned int scenario);
     void solveEquationSystemHoldingBackward(std::shared_ptr<LinearPiece> C, std::shared_ptr<LinearPiece> fromC,
         std::shared_ptr<LinearPiece> fromF, double I, double demand, double &fromI, double &quantity);
     bool backtrackingStockoutBackward(unsigned int scenario, int valInsertMin);

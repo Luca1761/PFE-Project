@@ -4,7 +4,7 @@
 void LocalSearch::runSearchSameDay() {
   int nbMoves = 1;
   int nbPhases = 0;
-  while (nbMoves > 0 && nbPhases < 10000) {
+  while (nbMoves > 0 && nbPhases < 1000) {
     nbMoves = 0;
     updateMoves();
     for (unsigned int day = 2; day <= params->nbDays; day++) {
@@ -52,8 +52,8 @@ void LocalSearch::updateMoves() {
 
 int LocalSearch::mutationSameDay(unsigned int day) {
   dayCour = day;
-  int size = ordreParcours[day].size();
-  int size2;
+  unsigned int size = ordreParcours[day].size();
+  unsigned int size2;
   rechercheTerminee = false;
   bool moveEffectue = false;
   int nbMoves = 0;
@@ -77,7 +77,7 @@ int LocalSearch::mutationSameDay(unsigned int day) {
       noeudUPredCour = noeudUPred->idx;
       xCour = x->idx;
 
-      size2 = noeudU->moves.size();
+      size2 = (unsigned int) noeudU->moves.size();
       for (unsigned int posV = 0; posV < size2 && moveEffectue == 0; posV++) {
         noeudV = clients[day][noeudU->moves[posV]];
         if (!noeudV->route->nodeAndRouteTested[noeudU->idx] ||
@@ -220,11 +220,9 @@ void LocalSearch::printInventoryLevels(std::ostream& file,bool add, std::vector<
 
   // Summing distance and load penalty
 
-  for (int r = 0; r < params->nombreVehicules[1]; r++)
-  {
+  for (unsigned int r = 0; r < params->nombreVehicules[1]; r++) {
     routeCosts += routes[1][r]->temps; // temps: total travel time
-    
-    if(!add)  file << "route["<<r<<"]: travel time = " << routes[1][r]->temps << "; capacity = " << routes[1][r]->capacity  << "; charge = " << routes[1][r]->charge << "; depot = " << routes[1][r]->depot->idx << endl;
+    if(!add)  file << "route["<<r<<"]: travel time = " << routes[1][r]->temps << "; capacity = " << routes[1][r]->capacity  << "; charge = " << std::accumulate(deliveries.begin(), deliveries.end(), 0.0) << "; depot = " << routes[1][r]->depot->idx << endl;
     routes[1][r]->printRouteData(file);
   }
   
@@ -232,12 +230,10 @@ void LocalSearch::printInventoryLevels(std::ostream& file,bool add, std::vector<
   // Printing customer inventory and computing customer inventory cost
 
   double inventoryClient;
-  for (int i = params->nbDepots; i < params->nbDepots + params->nbClients;
-        i++)
-  {
+  for (unsigned int i = params->nbDepots; i < params->nbDepots + params->nbClients; i++) {
     inventoryClient = params->cli[i].startingInventory;
     if(!add) file  << "CUSTOMER " << i << " bounds (" << params->cli[i].minInventory
-          << "," << params->cli[i].maxInventory << ") ";
+          << "," << params->cli[i].maxInventory << ") " << " " << params->meanDemands[i - params->nbDepots] << " " << params->stdDemands[i - params->nbDepots] << " " << params->cli[i].testDemand[params->jVal] << " " ; 
 
     // print the level in the morning
     if(!add) file << "[morning: " << inventoryClient;
@@ -337,7 +333,7 @@ void LocalSearch::computeCoutInsertion(Noeud *client)
   Route *myRoute;
   client->allInsertions.clear();
   // for each route of this day
-  for (int r = 0; r < (int)routes[client->jour].size(); r++){
+  for (unsigned int r = 0; r < routes[client->jour].size(); r++){
     // later on we can simply retrieve
     // calculate the best insertion point as well as its load
 
@@ -350,25 +346,28 @@ void LocalSearch::computeCoutInsertion(Noeud *client)
   client->removeDominatedInsertions(params->penalityCapa[idxScenario]);
 }
 
-double LocalSearch::evaluateCurrentCost_stockout(int client) {
+double LocalSearch::evaluateCurrentCost_stockout(unsigned int client, bool test) {
   Noeud *noeudClient;
   double myCost = 0.;
   double I = params->cli[client].startingInventory;
   // Sum up the detour cost, inventory cost, and eventual excess of capacity
-  for (int k = 1; k <= params->ancienNbDays; k++) {
+  if (test) std::cout << "client "  << client << std::endl;
+  for (unsigned int k = 1; k <= params->nbDays; k++) {
+    if (test) std::cout << "day "<< k << std::endl;
     noeudClient = clients[k][client];
     if (noeudClient->estPresent){
       // adding the inventory cost
         myCost +=
           params->cli[client].inventoryCost * 
           std::max<double> (0., I + deliveryPerDay[k][client] - params->cli[client].dailyDemand[idxScenario][k]);
+          if (test && true) std::cout << "case 1 " << I << " " << deliveryPerDay[k][client] << " " << params->cli[client].dailyDemand[idxScenario][k] << " " << params->cli[client].maxInventory << std::endl;
       //stockout
         myCost +=
           params->cli[client].stockoutCost * std::max<double> (0., params->cli[client].dailyDemand[idxScenario][k] - I - deliveryPerDay[k][client]);
 
       //-supplier *q[]
         myCost -=  params->inventoryCostSupplier *
-            (double)(params->ancienNbDays + 1 - k) * deliveryPerDay[k][client];
+            (double)(params->nbDays + 1 - k) * deliveryPerDay[k][client];
 
       // the detour cost
         myCost +=
@@ -391,6 +390,7 @@ double LocalSearch::evaluateCurrentCost_stockout(int client) {
         myCost += params->cli[client].inventoryCost *  std::max<double>(0., I - params->cli[client].dailyDemand[idxScenario][k]);
         myCost += params->cli[client].stockoutCost * std::max<double>  (0., params->cli[client].dailyDemand[idxScenario][k] - I);
 
+        if (test && I + deliveryPerDay[k][client] > params->cli[client].maxInventory) std::cout << "case 2 " << I << " " << deliveryPerDay[k][client] << " " << params->cli[client].dailyDemand[idxScenario][k]  << " " << params->cli[client].maxInventory << std::endl;
         I = std::max<double> (0., I - params->cli[client].dailyDemand[idxScenario][k]);
         
       }
