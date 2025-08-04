@@ -21,7 +21,25 @@ The different parameters are:
 -Concrete example: `./irp dsirp/standard/dirp-5-5-1.dat -seed 42 -veh 1 -scenarios 5 -iter 20000 -iterNonProd 20000 -time 10 -traces 1`
 
 ## Detailed Files Description
-This repository is organized as follows:
-- The 
+Here, you can find the description of every different file in this repository:
+- The `data_dsirp folder` folder contains all the instances (standard, seasonal, correlated) we use for our experiences. They come from http://www.leandro-coelho.com/instances/stochastic-and-dynamic-inventory-routing/. A README file is also here to remind the structure of these instances.
+- The `dsirp_results` folder contains all the experiences results. A README file is also here to describe their structure.
+- `expes.py`
+- `commandline.h` and `commandline.cpp`
+- `Client.h` and `Client.cpp` contain the definition of the Client class, related to customers (and also supplier).
+- `Genetic.h` and `Genetic.cpp`
+- `Individu.h` and `Individu.cpp`
+- `LinearPiece.h` and `LinearPiece.cpp`
+- `LotSizingSolver.h` and `LotSizingSolver.cpp`
+- `main.cpp`
+- `Mutations.cpp`
+- `Noeud.h` and `Noeud.cpp`
+- `Params.h` and `Params.cpp`
+- `PLFunction.h` and `PLFunction.cpp`
+- `Population.h` and `Population.cpp`
+- `Rng.h` and `Rng.cpp`
+- `Route.h` and `Route.cpp`
+- `Vehicle.h` and `Vehicle.cpp`
+
 
 ### How to launch experiments
