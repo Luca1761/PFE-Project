@@ -10,7 +10,7 @@ class Vehicle
 
 private:
 
-// acces aux donnees de l'instance
+// instance parameters
 Params * params ;
 
 public:
@@ -21,8 +21,12 @@ unsigned int depotNumber ;
 // capacity limit
 double capacity ;
 
+// constructor
 Vehicle(unsigned int _depotNumber, double _capacity);
+
+// destructor
 ~Vehicle(void);
+
 };
 
 #endif
