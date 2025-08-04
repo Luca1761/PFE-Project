@@ -317,7 +317,7 @@ void Population::ExportPop(string nomFichier,bool add, std::vector<double> deliv
 		bool ADD = add && (params->jVal != 1);
 		if (ADD) myfile.open(nomFichier.data(), std::ios::app);//add on previous
 		else myfile.open(nomFichier.data()); 
-		if (params->nbDays == params->pHorizon) myfile << "---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------" << endl;
+		if (params->jVal == 1) myfile << "---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------" << endl;
 		myfile << "Day "<< params->jVal << endl;
 		myfile << endl;
 		loc->printInventoryLevels(myfile,false, deliveries, totalCost);
