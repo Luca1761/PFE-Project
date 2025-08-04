@@ -316,8 +316,6 @@ int LocalSearch::mutation8 ()
 	Noeud * depotUFin = routeU->depot->pred ;
 	Noeud * depotVFin = routeV->depot->pred ;
 	Noeud * depotVSuiv = depotV->suiv ;
-	Noeud * depotUSuiv = depotU->suiv ;
-	Noeud * depotVPred = depotVFin->pred ;
 
 	// on inverse le sens et on change le nom des routes
 	Noeud * temp ;
@@ -412,8 +410,6 @@ int LocalSearch::mutation9 ()
 	Noeud * depotUFin = depotU->pred ;
 	Noeud * depotVFin = depotV->pred ;
 	Noeud * depotUpred = depotUFin->pred ;
-	Noeud * depotUSuiv = depotU->suiv ;
-	Noeud * depotVPred = depotVFin->pred ;
 
 	count = y ;
 	while ( !count->estUnDepot )

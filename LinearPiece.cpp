@@ -33,15 +33,14 @@ LinearPiece::LinearPiece(double left_x, double left_y, double right_x, double ri
     fromInst = NULL;
 }
 
-void LinearPiece::updateLinearPiece(double left_x, double left_y, double right_x, double right_y)
-{
-    this->p1 = make_shared<Point>(left_x, left_y);
-    this->p2 = make_shared<Point>(right_x, right_y);
+void LinearPiece::updateLinearPiece(double left_x, double left_y, double right_x, double right_y) {
+    p1 = make_shared<Point>(left_x, left_y);
+    p2 = make_shared<Point>(right_x, right_y);
  
     
-    if(eq(right_y , left_y) )this->slope=0;
-    else this->slope = (right_y - left_y) / (right_x - left_x);
-    this->next = nullptr;
+    if(eq(right_y , left_y) ) slope = 0.0;
+    else slope = (right_y - left_y) / (right_x - left_x);
+    next = nullptr;
 }
 
  LinearPiece::LinearPiece(LinearPiece *lp)
@@ -239,40 +238,38 @@ std::shared_ptr<LinearPiece> LinearPiece::getInpiece(double start, double end) c
     double endX = std::min<double>(p2->x, end);
     double endY = (endX - p1->x) * slope + p1->y;
 
-    std::shared_ptr<LinearPiece> lp= std::make_shared<LinearPiece>(startX, startY, endX, endY);
-    lp->fromC = this->fromC;
-    lp->fromF = this->fromF;
-    lp->fromC_pre = this->fromC_pre;
-    lp->replenishment_loss=this->replenishment_loss;
-    lp->fromInst = this->fromInst;
+    std::shared_ptr<LinearPiece> lp = std::make_shared<LinearPiece>(startX, startY, endX, endY);
+    lp->fromC = fromC;
+    lp->fromF = fromF;
+    lp->fromC_pre = fromC_pre;
+    lp->replenishment_loss=replenishment_loss;
+    lp->fromInst = fromInst;
 
     return lp;
 }
 
-std::shared_ptr<LinearPiece> LinearPiece::clone()
-{
-    shared_ptr<LinearPiece> lp(make_shared<LinearPiece>(this->p1->x, this->p1->y, this->p2->x, this->p2->y));
-    lp->slope = this->slope;
-    lp->next = this->next;
-    lp->fromC = this->fromC;
-    lp->fromF = this->fromF;
-    lp->fromInst = this->fromInst;
-    lp->fromC_pre = this->fromC_pre;  
-    lp->replenishment_loss = this->replenishment_loss;
-    
+std::shared_ptr<LinearPiece> LinearPiece::clone() {
+    shared_ptr<LinearPiece> lp(make_shared<LinearPiece>(p1->x, p1->y, p2->x, p2->y));
+    lp->slope = slope;
+    lp->next = next;
+    lp->fromC = fromC;
+    lp->fromF = fromF;
+    lp->fromInst = fromInst;
+    lp->fromC_pre = fromC_pre;  
+    lp->replenishment_loss = replenishment_loss;
     return lp;
 }
 
 std::shared_ptr<LinearPiece> LinearPiece::cloneWithout()
 {
-    shared_ptr<LinearPiece> lp(make_shared<LinearPiece>(this->p1->x, this->p1->y, this->p2->x, this->p2->y));
-    lp->slope = this->slope;
-    lp->next = this->next;
+    shared_ptr<LinearPiece> lp(make_shared<LinearPiece>(p1->x, p1->y, p2->x, p2->y));
+    lp->slope = slope;
+    lp->next = next;
     lp->fromC = nullptr;
     lp->fromF = nullptr;
     lp->fromInst = nullptr;
     lp->fromC_pre = nullptr;  
-    lp->replenishment_loss=this->replenishment_loss;
+    lp->replenishment_loss = replenishment_loss;
     
     return lp;
 }

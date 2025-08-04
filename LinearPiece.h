@@ -40,23 +40,16 @@ struct Point
 
     Point() {}
 
-    Point(double _x, double _y) : x(_x), y(_y) { isFeasible = true; }
+    Point(double _x, double _y) : x(_x), y(_y), isFeasible(true) {}
 
-    virtual ~Point()
-    {
-
-    }
+    virtual ~Point() {}
+    
     friend bool operator==(const Point& lhs, const Point& rhs) {
         return eq(lhs.x, rhs.x) && eq(lhs.y, rhs.y);
     }
-    inline Point convolve(shared_ptr<Point> p)
-    {
-        double _x = this->x + p->x;
-        double _y = this->y + p->y;
 
-        Point pc = Point(_x, _y);
-
-        return pc;
+    inline Point convolve(shared_ptr<Point> p) {
+        return Point(x + p->x, y + p->y);
     }
 };
 

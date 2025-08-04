@@ -52,7 +52,7 @@ public:
 	vector<unsigned int> ordreProximite ;
 
 	// les sommets les plus proches selon le critere de proximite
-	vector<int> sommetsVoisins ;
+	vector<unsigned int> sommetsVoisins ;
 
 	Client(void);
 

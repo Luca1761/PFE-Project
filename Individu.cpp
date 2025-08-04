@@ -40,7 +40,7 @@ Individu::Individu(Params* _params) : params(_params)
 				}
 			}
 		} else {
-			int nb = 0;
+			unsigned int nb = 0;
 			for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
 				nb += (initialInventory >= params->cli[i].dailyDemand[scenario][1]);
 			}
@@ -124,7 +124,7 @@ Individu::Individu(Params* _params) : params(_params)
 	if (params->nbDays > 1) {
 		for (unsigned int day = 1; day <= params->nbDays; day++) {
 			for (unsigned int i = 0; i < chromT[day].size(); i++) {
-				unsigned int j = i + (unsigned int) params->rng->genrand64_int64() % ((int)chromT[day].size() - i); 
+				unsigned int j = i + (unsigned int) (params->rng->genrand64_int64() % (chromT[day].size() - i)); 
 				// swap i and j elements
 				std::swap(chromT[day][i], chromT[day][j]);
 			}
@@ -256,7 +256,7 @@ bool Individu::splitSimpleDay1() {
 			}
 		}
 	}
-	unsigned int l = chromT[1].size();
+	unsigned int l = (unsigned int) chromT[1].size();
 	for (unsigned int jj = 0; jj < params->nombreVehicules[1]; jj++) {
 		pred[1][params->nombreVehicules[1] - jj][l] = pred[1][1][l];
 		l = pred[1][1][l];
@@ -306,7 +306,7 @@ bool Individu::splitLF_scenario_day1() {
 			}
 		}
 	}
-	unsigned int l = chromT[1].size();
+	unsigned int l = (unsigned int) chromT[1].size();
 	bool isEveryonePlaced = false;
 	for (unsigned int cam = 0; cam < params->nombreVehicules[1]; cam++) {
 		isEveryonePlaced |= (potentiels[cam + 1][l] < 1.e29);
@@ -356,7 +356,7 @@ bool Individu::splitLF_scenario(unsigned int k, unsigned int scenario)
 		}
 	}
 
-	unsigned int l = chromT[k].size();
+	unsigned int l = (unsigned int) chromT[k].size();
 	bool isEveryonePlaced = false;
 	for (unsigned int cam = 0; cam < params->nombreVehicules[day]; cam++) {
 		isEveryonePlaced |= (potentiels[cam + 1][l] < 1.e29);
@@ -513,7 +513,7 @@ void Individu::measureSol_scenario() {
 			unsigned int dayT = dayIndexT[kk];
 			unsigned int dayL = dayIndexL[kk];
 
-			j = chromT[dayT].size();
+			j = (unsigned int) chromT[dayT].size();
 			for (unsigned int jj = 0; jj < params->nombreVehicules[kk]; jj++) {
 				depot = params->ordreVehicules[kk][params->nombreVehicules[kk] - jj - 1].depotNumber;
 				distance = 0;
@@ -617,7 +617,7 @@ void Individu::updateLS_scenario() {
 			}
 
 			unsigned int chromIndex = (kk == 1) ? 1 : startIndexT + kk;
-			j = chromT[chromIndex].size();
+			j = (unsigned int) chromT[chromIndex].size();
 
 			for (unsigned int jj = 0; jj < params->nombreVehicules[kk]; jj++) {
 				i = pred[kk][params->nombreVehicules[kk] - jj][j];
@@ -766,14 +766,14 @@ int Individu::mutationSameDay1() {
 				localSearchList[scenario]->xCour = localSearchList[scenario]->x->idx;
 			}
 
-			size2 = localSearchList[0]->noeudU->moves.size();
+			size2 = (unsigned int) localSearchList[0]->noeudU->moves.size();
 			for (unsigned int posV = 0; posV < size2 && moveEffectue == 0; posV++) {
 				for (unsigned int scenario = 0; scenario < nbScenario; scenario++) 
 				localSearchList[scenario]->noeudV = localSearchList[scenario]->clients[1][localSearchList[0]->noeudU->moves[posV]];
 				if (!localSearchList[0]->noeudV->route->nodeAndRouteTested[localSearchList[0]->noeudU->idx] ||
 					!localSearchList[0]->noeudU->route->nodeAndRouteTested[localSearchList[0]->noeudU->idx] || localSearchList[0]->firstLoop)
 					{
-						for (int scenario = 0; scenario < nbScenario; scenario++) {
+						for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
 							localSearchList[scenario]->noeudVPred = localSearchList[scenario]->noeudV->pred;
 							localSearchList[scenario]->y = localSearchList[scenario]->noeudV->suiv;
 							localSearchList[scenario]->noeudYSuiv = localSearchList[scenario]->y->suiv;
@@ -810,7 +810,7 @@ int Individu::mutationSameDay1() {
 						moveEffectue = mutation9_indiv();
 						
 						if (moveEffectue) {
-							for (int scenario = 0; scenario < nbScenario; scenario++) {
+							for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
 								localSearchList[scenario]->routeU->reinitSingleDayMoves();
 								localSearchList[scenario]->routeV->reinitSingleDayMoves();
 							}
@@ -822,7 +822,7 @@ int Individu::mutationSameDay1() {
 			// si il ya correlation
 			if (localSearchList[0]->params->isCorrelated1[localSearchList[0]->noeudU->idx][localSearchList[0]->depots[1][0]->idx] &&
 				!moveEffectue)
-				for (int route = 0; route < (int)localSearchList[0]->depots[1].size(); route++)
+				for (unsigned int route = 0; route < localSearchList[0]->depots[1].size(); route++)
 				{
 					for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
 						localSearchList[scenario]->noeudV = localSearchList[scenario]->depots[1][route];
@@ -857,7 +857,7 @@ int Individu::mutationSameDay1() {
 						}
 
 						if (moveEffectue) {
-							for (int scenario = 0; scenario < nbScenario; scenario++) {
+							for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
 								localSearchList[scenario]->routeU->reinitSingleDayMoves();
 								localSearchList[scenario]->routeV->reinitSingleDayMoves();
 							}
@@ -878,7 +878,7 @@ void Individu::muterDifferentScenarioDP() {
 		randomClients.push_back(client);
 	}
 
-	std::mt19937 g(params->seed);
+	std::mt19937 g((unsigned int) params->seed);
 	shuffle(randomClients.begin(), randomClients.end(), g);
 
 	bool rechercheTerminee = false;
@@ -992,8 +992,8 @@ int Individu::mutationDP(unsigned int client, bool &rechercheTerminee) {
 // mise a jour du chromT et chromL suite aux modification de localSearch
 void Individu::updateIndiv_scenario() {
 	for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
-		int startIndex = scenario * (params->nbDays) + 1;
-		int endIndex = startIndex + (params->nbDays);
+		unsigned int startIndex = scenario * (params->nbDays) + 1;
+		unsigned int endIndex = startIndex + (params->nbDays);
 		for (unsigned int i = startIndex; i < endIndex; i++) {  
 			if (localSearchList[scenario] != nullptr && i - startIndex + 1 < localSearchList[scenario]->deliveryPerDay.size()) {
 				chromL[i] = localSearchList[scenario]->deliveryPerDay[i - startIndex + 1];
@@ -1021,18 +1021,18 @@ double Individu::distance(Individu *indiv2) {
 	// TO CHECK
 	double note = 0;
 	bool isIdentical;
-	vector<int> dayIndexL(params->nbDays + 1, 0);
+	vector<unsigned int> dayIndexL(params->nbDays + 1, 0);
 
 	// Inventory Routing
 	// distance based on number of customers which have different service days
-	for (int scenario = 0; scenario < nbScenario; scenario++) {
+	for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
 		int noteScenario = 0;
-		int startIndex = scenario * (params->nbDays);
-		for (int k = 1; k <= params->nbDays; k++)
+		unsigned int startIndex = scenario * (params->nbDays);
+		for (unsigned int k = 1; k <= params->nbDays; k++)
 			dayIndexL[k] = startIndex + k;
-		for (int client = params->nbDepots; client < params->nbClients + params->nbDepots; client++) {
+		for (unsigned int client = params->nbDepots; client < params->nbClients + params->nbDepots; client++) {
 			isIdentical = true;
-			for (int k : dayIndexL)
+			for (unsigned int k : dayIndexL)
 				if ((chromL[k][client] < 0.0001 && indiv2->chromL[k][client] > 0.0001) || (indiv2->chromL[k][client] < 0.0001 && chromL[k][client] > 0.0001))
 					isIdentical = false;
 			if (isIdentical == false)
@@ -1097,7 +1097,7 @@ int Individu::mutation1_indiv() {
 	// dans le cas ou l'on est dans la meme route , le cout n'est pas calcule correctement en realite
 	// tout ce qu'on sait c'est que si il est negatif c'est qu'il est bien reellement negatif
 	// pas d'incidence pour l'instant mais attention
-	for (int scenario = 0; scenario < nbScenario; scenario++) {
+	for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
 		if (localSearchList[scenario]->routeU != localSearchList[scenario]->routeV) {
 			costSuppU += (localSearchList[scenario]->routeU->excedentCharge(localSearchList[scenario]->routeU->charge - localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->noeudUCour])*params->penalityCapa[scenario]
 			- localSearchList[scenario]->routeU->excedentCharge(localSearchList[scenario]->routeU->charge)*params->penalityCapa[scenario]) / (double)nbScenario ;
@@ -1111,7 +1111,7 @@ int Individu::mutation1_indiv() {
 	if (localSearchList[0]->noeudUCour == localSearchList[0]->yCour) return 0;
 
 	// mettre a jour les noeuds
-	for (int scenario = 0; scenario < nbScenario; scenario++) {
+	for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
 		localSearchList[scenario]->insertNoeud(localSearchList[scenario]->noeudU,localSearchList[scenario]->noeudV);
 	}
 
@@ -1130,7 +1130,7 @@ int Individu::mutation2_indiv() {
 	+ params->timeCost[localSearchList[0]->xCour][localSearchList[0]->yCour] 
 	- params->timeCost[localSearchList[0]->noeudVCour][localSearchList[0]->yCour];
 
-	for (int scenario = 0; scenario < nbScenario; scenario++) {
+	for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
 		if (localSearchList[scenario]->routeU != localSearchList[scenario]->routeV) {
 			costSuppU += (localSearchList[scenario]->routeU->excedentCharge(localSearchList[scenario]->routeU->charge - localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->noeudUCour] - localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->xCour])*params->penalityCapa[scenario]
 			- localSearchList[scenario]->routeU->excedentCharge(localSearchList[scenario]->routeU->charge)*params->penalityCapa[scenario]) / (double) nbScenario;
@@ -1369,8 +1369,6 @@ int Individu::mutation8_indiv() {
 		Noeud * depotUFin = localTemp->routeU->depot->pred ;
 		Noeud * depotVFin = localTemp->routeV->depot->pred ;
 		Noeud * depotVSuiv = depotV->suiv ;
-		Noeud * depotUSuiv = depotU->suiv ;
-		Noeud * depotVPred = depotVFin->pred ;
 
 		// on inverse le sens et on change le nom des routes
 		Noeud * temp ;

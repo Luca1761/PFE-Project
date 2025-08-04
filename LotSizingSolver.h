@@ -32,7 +32,7 @@ public:
     vector<double> objective;
     unsigned int nbScenario;
 
-    LotSizingSolver(Params* params, vector<vector<vector<Insertion>>> insertions, int client);
+    LotSizingSolver(Params* params, vector<vector<vector<Insertion>>> insertions, unsigned int _client);
 
     std::shared_ptr<PLFunction> copyPLFunction(std::shared_ptr<PLFunction> source);
     void extractBreakpoints(const std::shared_ptr<PLFunction>& f, vector<double>& breakpoints);
@@ -50,7 +50,7 @@ public:
     void solveOneScenario(unsigned int scenario);
     void solveEquationSystemHoldingBackward(std::shared_ptr<LinearPiece> C, std::shared_ptr<LinearPiece> fromC,
         std::shared_ptr<LinearPiece> fromF, double I, double demand, double &fromI, double &quantity);
-    bool backtrackingStockoutBackward(unsigned int scenario, int valInsertMin);
+    bool backtrackingStockoutBackward(unsigned int scenario, unsigned int idxInsert);
     ~LotSizingSolver();
 };
 

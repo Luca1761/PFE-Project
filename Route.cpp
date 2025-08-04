@@ -2,7 +2,7 @@
 #include "LocalSearch.h"
 
 Route::Route(void){}
-Route::Route(Params* _params, LocalSearch* _myLS, int _idx, int _day, Noeud * _depot, double _temps, double _charge, double _capacity) : 
+Route::Route(Params* _params, LocalSearch* _myLS, unsigned int _idx, unsigned int _day, Noeud * _depot, double _temps, double _charge, double _capacity) : 
 params(_params), myLS(_myLS), idx(_idx), day(_day), depot(_depot), temps(_temps) , charge(_charge), capacity(_capacity)
 {
 	bestInsertion = vector<Insertion>(params->nbClients + params->nbDepots);
@@ -11,11 +11,10 @@ params(_params), myLS(_myLS), idx(_idx), day(_day), depot(_depot), temps(_temps)
 
 Route::~Route(void){}
 
-void Route::printRouteData(std::ostream& file)
-{
+void Route::printRouteData(std::ostream& file) {
 	bool firstIt = true ;
 	int place = 0 ;
-	double charge = 0 ;
+	charge = 0 ;
 	double earlT = 0 ;
 
 	// on parcourt du debut a la fin
@@ -44,7 +43,7 @@ void Route::printRouteData(std::ostream& file)
 void Route::updateRouteData () {
 	bool firstIt = true ;
 	int place = 0 ;
-	double charge = 0 ;
+	charge = 0 ;
 	double earlT = 0 ;
 
 	// on parcourt du debut � la fin
@@ -55,7 +54,7 @@ void Route::updateRouteData () {
 	while (!noeud->estUnDepot || firstIt) {
 		firstIt = false ;
 		noeud = noeud->suiv ;
-		place ++ ;
+		place++ ;
 		noeud->place = place ;
 		charge += myLS->deliveryPerDay[day][noeud->idx];
 		earlT += params->timeCost[noeud->pred->idx][noeud->idx] ;

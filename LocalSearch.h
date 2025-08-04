@@ -45,12 +45,12 @@ public:
   // contenant pas les sommets
   // qui n'existent pas pour le jour donn�
   // afin de diversifier la recherche
-  vector<vector<int>> ordreParcours;
+  vector<vector<unsigned int>> ordreParcours;
 
   // ajoute un client dans l'ordre de parcours
-  void addOP(int day, int client);
+  void addOP(unsigned int day, unsigned int client);
 
-  void removeOP(int day, int client);
+  void removeOP(unsigned int day, unsigned int client);
   
   void melangeParcours();
   
@@ -68,7 +68,7 @@ public:
   Noeud *noeudYSuiv;
   Route *routeU;
   Route *routeV;
-  int noeudUCour, noeudUPredCour, xCour, xSuivCour, ySuivCour, noeudVCour,
+  unsigned int noeudUCour, noeudUPredCour, xCour, xSuivCour, ySuivCour, noeudVCour,
       noeudVPredCour, yCour;
   unsigned int dayCour;
 
@@ -106,10 +106,6 @@ public:
   // effectue une parcours complet de toutes les mutations possibles
   // retourne le nombre de mouvements effectues
   int mutationSameDay(unsigned int day);
-
-  // pour un client, marque que tous les mouvements impliquant ce noeud ont �t�
-  // test�s pour chaque route du jour day
-  void nodeTestedForEachRoute(int cli, int day);
 
   // effectue un parcours complet de tous les changement de pattern et swap
   // intra-jours possibles
@@ -185,7 +181,7 @@ public:
 
   // constructeur, cree les structures de noeuds
   // n'initialise pas pas la pile ni les routes
-  LocalSearch(Individu* _individu, Params* _params, int _idxScenario);
+  LocalSearch(Individu* _individu, Params* _params, unsigned int _idxScenario);
 
   ~LocalSearch(void);
 };

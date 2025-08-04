@@ -43,7 +43,7 @@ Params::Params(string nomInstance, int seedRNG, unsigned int nbScenario, unsigne
 	fichier.open(nomInstance.c_str());
 
 	if (fichier.is_open())
-		preleveDonnees(nomInstance);	
+		preleveDonnees();	
 	else
 	{
 		cout << "Unable to open file : " << nomInstance << endl;
@@ -80,7 +80,7 @@ void Params::adjustDemands() {
 				double x = normDist(gen);        // x ~ N(0,1)
 				x = max<double>(0.0, x);   
 				x = min<double>(x, cli[i].maxInventory);
-				if (false) cli[i].dailyDemand[scenario][day] = cli[i].testDemand[jVal + day- 1];
+				if (false) cli[i].dailyDemand[scenario][day] = cli[i].testDemand[jVal + day - 1];
 				else cli[i].dailyDemand[scenario][day] = (double) round(x);
 				if (traces) std::cout << cli[i].dailyDemand[scenario][day] << " ";
         	}
@@ -152,8 +152,7 @@ void Params::setMethodParams()
 Params::~Params(void) {}
 
 // effectue le prelevement des donnees du fichier
-void Params::preleveDonnees(string nomInstance)
-{	
+void Params::preleveDonnees() {	
 	jVal = 1;
 	// variables temporaires utilisees dans la fonction
 	vector<Vehicle> tempI;
@@ -208,7 +207,7 @@ void Params::calculeStructures() {
 				}
 
 		// on remplit les x% plus proches
-		for (unsigned int j = 0; j < (prox * cli[i].ordreProximite.size()) / 100 && j < proxCst; j++) {
+		for (unsigned int j = 0; j < (prox * (unsigned int) cli[i].ordreProximite.size()) / 100 && j < proxCst; j++) {
 			cli[i].sommetsVoisins.push_back(cli[i].ordreProximite[j]);
 			isCorrelated1[i][cli[i].ordreProximite[j]] = true;
 		}
@@ -265,8 +264,8 @@ void Params::shuffleProches() {
 	// on introduit du desordre dans la liste des plus proches pour chaque client
 	for (unsigned int i = nbDepots; i < nbClients + nbDepots; i++) {
 		// on introduit du desordre
-		for (int a1 = 0; a1 < (int)cli[i].sommetsVoisins.size() - 1; a1++) {
-			int temp = a1 + rng->genrand64_int64() % ((int)cli[i].sommetsVoisins.size() - a1);
+		for (unsigned int a1 = 1; a1 < cli[i].sommetsVoisins.size(); a1++) {
+			unsigned int temp = a1 - 1 + (unsigned int) (rng->genrand64_int64() % (cli[i].sommetsVoisins.size() - a1 + 1));
 			std::swap(cli[i].sommetsVoisins[a1], cli[i].sommetsVoisins[temp]);
 		}
 	}

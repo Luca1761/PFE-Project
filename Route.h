@@ -31,10 +31,10 @@ LocalSearch * myLS ;
 public:
 
 // numero de la route
-int idx ;
+unsigned int idx ;
 
 // day associated to the route
-int day ;
+unsigned int day ;
 
 // depot associe a la route
 Noeud * depot ;
@@ -77,7 +77,7 @@ void reinitSingleDayMoves();
 
 Route(void);
 
-Route(Params* _params, LocalSearch* _myLS, int _idx, int _day, Noeud * _depot, double _temps, double _charge, double _capacity);
+Route(Params* _params, LocalSearch* _myLS, unsigned int _idx, unsigned int _day, Noeud * _depot, double _temps, double _charge, double _capacity);
 
 ~Route(void);
 };

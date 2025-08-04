@@ -67,12 +67,12 @@ double coutInsertion ;
 Noeud * placeInsertion ;
 // noeud o� serait ins�r�
 
-vector < int > moves ;
+vector <unsigned int> moves ;
 // mouvements possibles
 Noeud(void);
 // constructeur 1	
 
-Noeud(bool _estUnDepot, int _idx, int _jour, bool _estPresent, Noeud * _suiv , Noeud * _pred, Route * _route);
+Noeud(bool _estUnDepot, unsigned int _idx, unsigned int _jour, bool _estPresent, Noeud * _suiv , Noeud * _pred, Route * _route);
 // constructeur 2
 
 ~Noeud(void);

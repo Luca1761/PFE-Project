@@ -43,11 +43,11 @@ class Population
    void education_scenario(Individu * indiv);
 
    // fonction booleenne verifiant si le fitness n'existe pas deja
-   bool fitExist ( SousPop * pop, Individu * indiv ) ;
+   bool fitExist(SousPop * pop, Individu * indiv);
 
    // place un individu donne dans le tableau
-   // retourne -1 si echec sinon sa position dans la population
-   int placeIndividu (SousPop * pop, Individu * indiv);
+   // retourne une erreur si echec sinon sa position dans la population
+   unsigned int placeIndividu(SousPop * pop, Individu * indiv);
 
    public:
 
@@ -62,11 +62,11 @@ class Population
    // ajoute un individu a la population
    // la population se debrouille pour le placer ou il lui semble bon
    // updateNbValides est mis a true si on veut mettre jour la proportion de valides aussi 
-   // retourne -1 si echec, sinon sa nouvelle position dans la population
-   int addIndividu (Individu * indiv);
+   // retourne une erreur si echec, sinon sa nouvelle position dans la population
+   unsigned int addIndividu (Individu * indiv);
 
    // enleve un individu de la population en fonction de la replacement policy
-   void removeIndividu(SousPop * pop, int p);
+   void removeIndividu(SousPop * pop, unsigned int p);
 
    // met a jour les individus les plus proches d'une population
    // en fonction de l'arrivant
@@ -99,7 +99,7 @@ class Population
    Individu * getIndividuBestInvalide ();
 
    // compromis entre fitness et diversite
-   int selectCompromis (SousPop * souspop) ;
+   unsigned int selectCompromis (SousPop * souspop) ;
 
    // recalcule l'evaluation des individus a partir des violations
    // puis effectue un tri a bulles de la population

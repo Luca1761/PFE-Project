@@ -73,10 +73,10 @@ class Params {
   vector<double> borneSplit;
 
   // crit�re de proximit� des individus (RI)
-  int prox;
+  unsigned int prox;
 
   // crit�re de proximit� des individus (RI -- constante)
-  int proxCst;
+  unsigned int proxCst;
 
   // nombre d'individus pris en compte dans la mesure de distance
   int nbCountDistMeasure;
@@ -88,10 +88,10 @@ class Params {
   int el;
 
   // nombre d'individus dans la population
-  int mu;
+  unsigned int mu;
 
   // nombre d'offspring dans une generation
-  int lambda;
+  unsigned int lambda;
 
   unsigned int nbScenarios;
 
@@ -177,7 +177,7 @@ class Params {
   void setMethodParams();
 
   // effectue le prelevement des donnees du fichier
-  void preleveDonnees(string nomInstance);
+  void preleveDonnees();
 
   Client getClientDSIRP();
 

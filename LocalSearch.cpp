@@ -14,14 +14,12 @@ void LocalSearch::runSearchSameDay() {
   }
 }
 
-void LocalSearch::melangeParcours()
-{
-  int j;
+void LocalSearch::melangeParcours() {
+  unsigned int j;
   for (unsigned int k = 0; k <= params->nbDays; k++) {
-    for (int i = 0; i < (int)ordreParcours[k].size() - 1; i++) {
-      j = i + params->rng->genrand64_int64() % ((int)ordreParcours[k].size() - i);
+    for (unsigned int i = 1; i < ordreParcours[k].size(); i++) {
+      j = i - 1 + (unsigned int) (params->rng->genrand64_int64() % (ordreParcours[k].size() - i + 1));
       std::swap(ordreParcours[k][i], ordreParcours[k][j]);
-      
     }
   }
 }
@@ -29,14 +27,14 @@ void LocalSearch::melangeParcours()
 // updates the moves for each node which will be tried in mutationSameDay
 void LocalSearch::updateMoves() {
   unsigned int client, client2;
-  int size;
+  unsigned int size;
 
   for (unsigned int k = 1; k <= params->nbDays; k++) {
     // pour chaque client present dans ce jour
-    for (unsigned int i = 0; i < (int)ordreParcours[k].size(); i++) {
+    for (unsigned int i = 0; i < ordreParcours[k].size(); i++) {
       client = ordreParcours[k][i];
       clients[k][client]->moves.clear();
-      size = params->cli[client].sommetsVoisins.size();
+      size = (unsigned int) params->cli[client].sommetsVoisins.size();
 
       for (unsigned int a1 = 0; a1 < size; a1++) {
         client2 = params->cli[client].sommetsVoisins[a1];
@@ -46,13 +44,13 @@ void LocalSearch::updateMoves() {
     }
   }
 
-  // params->shuffleProches();
+  params->shuffleProches();
   melangeParcours();
 }
 
 int LocalSearch::mutationSameDay(unsigned int day) {
   dayCour = day;
-  unsigned int size = ordreParcours[day].size();
+  unsigned int size = (unsigned int) ordreParcours[day].size();
   unsigned int size2;
   rechercheTerminee = false;
   bool moveEffectue = false;
@@ -128,8 +126,7 @@ int LocalSearch::mutationSameDay(unsigned int day) {
       // si il ya correlation
       if (params->isCorrelated1[noeudU->idx][depots[day][0]->idx] &&
           moveEffectue != 1)
-        for (int route = 0; route < (int)depots[day].size(); route++)
-        {
+        for (unsigned int route = 0; route < depots[day].size(); route++) {
           noeudV = depots[day][route];
           if (!noeudV->route->nodeAndRouteTested[noeudU->idx] ||
               !noeudU->route->nodeAndRouteTested[noeudU->idx] || firstLoop)
@@ -172,45 +169,31 @@ int LocalSearch::mutationSameDay(unsigned int day) {
   return nbMoves;
 }
 
-// pour un noeud, marque que tous les mouvements impliquant ce noeud ont �t�
-// test�s pour chaque route du jour day
-void LocalSearch::nodeTestedForEachRoute(int cli, int day)
-{
-  for (int route = 0; route < (int)depots[day].size(); route++)
-    routes[day][route]->nodeAndRouteTested[cli] = true;
-}
-
 // enleve un client de l'ordre de parcours
-void LocalSearch::removeOP(int day, int client)
-{
-  int it = 0;
-  while (ordreParcours[day][it] != client)
-  {
+void LocalSearch::removeOP(unsigned int day, unsigned int client) {
+  unsigned int it = 0;
+  while (ordreParcours[day][it] != client) {
     it++;
   }
-  ordreParcours[day][it] =
-      ordreParcours[day][(int)ordreParcours[day].size() - 1];
+  if (ordreParcours[day].empty()) throw std::string("ERROR SIZE");
+  ordreParcours[day][it] = ordreParcours[day][ordreParcours[day].size() - 1];
   ordreParcours[day].pop_back();
 }
 
 // ajoute un client dans l'ordre de parcours
-void LocalSearch::addOP(int day, int client)
-{
-  int it, temp2;
-  if (ordreParcours[day].size() != 0)
-  {
-    it = (int)params->rng->genrand64_int64() % ordreParcours[day].size();
-    temp2 = ordreParcours[day][it];
+void LocalSearch::addOP(unsigned int day, unsigned int client) {
+  unsigned int it;
+  if (!ordreParcours[day].empty()) {
+    it = (unsigned int) (params->rng->genrand64_int64() % ordreParcours[day].size());
+    ordreParcours[day].push_back(ordreParcours[day][it]);
     ordreParcours[day][it] = client;
-    ordreParcours[day].push_back(temp2);
   }
   else
     ordreParcours[day].push_back(client);
 }
 
 // Evaluates the current objective function of the whole solution
-void LocalSearch::printInventoryLevels(std::ostream& file,bool add, std::vector<double> deliveries, double &totalCost)
-{
+void LocalSearch::printInventoryLevels(std::ostream& file,bool add, std::vector<double> deliveries, double &totalCost) {
   double inventoryClientCosts = 0.;
   double inventorySupplyCosts = 0.;
   double stockClientCosts = 0;
@@ -260,8 +243,7 @@ void LocalSearch::printInventoryLevels(std::ostream& file,bool add, std::vector<
   inventorySupply += params->availableSupply[1];
   // print the level in the morning
   if(!add) file << "[" << inventorySupply << ",";
-  for (int i = params->nbDepots; i < params->nbDepots + params->nbClients;
-        i++)
+  for (unsigned int i = params->nbDepots; i < params->nbDepots + params->nbClients; i++)
     inventorySupply -= deliveries[i - params->nbDepots];
   // print the level after delivery
   if(!add) file  << inventorySupply << "] ";
@@ -281,8 +263,7 @@ void LocalSearch::printInventoryLevels(std::ostream& file,bool add, std::vector<
 }
 
 // supprime le noeud
-void LocalSearch::removeNoeud(Noeud *U)
-{
+void LocalSearch::removeNoeud(Noeud *U) {
   // mettre a jour les noeuds
   U->pred->suiv = U->suiv;
  
@@ -298,9 +279,8 @@ void LocalSearch::removeNoeud(Noeud *U)
   U->route->initiateInsertions();
 
   // signifier que pour ce jour les insertions de noeuds ne sont plus bonnes
-  for (int i = params->nbDepots; i < params->nbDepots + params->nbClients; i++)
+  for (unsigned int i = params->nbDepots; i < params->nbDepots + params->nbClients; i++)
     clients[U->jour][i]->coutInsertion = 1.e30;
-
 }
 
 void LocalSearch::addNoeud(Noeud *U)
@@ -322,7 +302,7 @@ void LocalSearch::addNoeud(Noeud *U)
   U->route->initiateInsertions();
 
   // signifier que pour ce jour les insertions de noeuds ne sont plus bonnes
-  for (int i = params->nbDepots; i < params->nbDepots + params->nbClients; i++)
+  for (unsigned int i = params->nbDepots; i < params->nbDepots + params->nbClients; i++)
     clients[U->jour][i]->coutInsertion = 1.e30;
 }
 
@@ -402,7 +382,7 @@ double LocalSearch::evaluateCurrentCost_stockout(unsigned int client, bool test)
 LocalSearch::LocalSearch(void) {}
 
 // constructeur 2
-LocalSearch::LocalSearch(Individu *_individu, Params *_params, int _idxScenario)
+LocalSearch::LocalSearch(Individu *_individu, Params *_params, unsigned int _idxScenario)
     : individu(_individu), params(_params), idxScenario(_idxScenario)
 {
   vector<Noeud*> tempNoeud; 
@@ -444,7 +424,7 @@ LocalSearch::LocalSearch(Individu *_individu, Params *_params, int _idxScenario)
   }
               
   // initialisation de la structure ordreParcours 
-  ordreParcours = std::vector<std::vector<int>>(params->nbDays + 1);
+  ordreParcours = std::vector<std::vector<unsigned int>>(params->nbDays + 1);
 
   for (unsigned int client = params->nbDepots; client < params->nbDepots + params->nbClients; client++)
     ordreParcours[0].push_back(client);
