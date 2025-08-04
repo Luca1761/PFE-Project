@@ -16,3 +16,5 @@ make
 
 ## stockout test4
 ./irp Data/Small/Istanze0105h3/abs1n10_1.dat -seed 1000 -veh 2 -stock 100
+
+ded
