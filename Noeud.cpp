@@ -1,7 +1,7 @@
 #include "Noeud.h"
 
 Noeud::Noeud(void){}
-Noeud::Noeud(bool _estUnDepot, int _idx, int _jour, bool _estPresent, Noeud * _suiv , Noeud * _pred, Route * _route) 
+Noeud::Noeud(bool _estUnDepot, unsigned int _idx, unsigned  int _jour, bool _estPresent, Noeud * _suiv , Noeud * _pred, Route * _route) 
 : estUnDepot(_estUnDepot),idx(_idx),jour(_jour), estPresent(_estPresent),suiv(_suiv), pred(_pred), route(_route)
 {
 coutInsertion = 1.e30 ;
@@ -17,6 +17,7 @@ bool mySort (Insertion i, Insertion j)
 }
 void Noeud::removeDominatedInsertions(double penalityCapa)
 {
+	if (false) std::cout << penalityCapa << std::endl;
 	// First order the elements by increasing detour
 	std::sort (allInsertions.begin(), allInsertions.end(), mySort);
 
