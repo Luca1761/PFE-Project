@@ -21,7 +21,7 @@ using namespace std;
 const double MAXCOST = 1.e30;
 
 class Vehicle;
-class Noeud;
+class Node;
 
 // needed structure for a few places in the code (easily accessible from here)
 struct Insertion
@@ -30,7 +30,7 @@ struct Insertion
        //the remain load of this route
        double load;
 
-       Noeud *place;
+       Node *place;
 
        Insertion()
        {
@@ -38,7 +38,7 @@ struct Insertion
               load = -1.e30;
               place = NULL;
        }
-       Insertion(double _detour, double _load, Noeud *_place)
+       Insertion(double _detour, double _load, Node *_place)
            : detour(_detour), load(_load), place(_place) {}
        void print()
        {

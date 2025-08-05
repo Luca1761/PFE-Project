@@ -206,7 +206,7 @@ void LocalSearch::printInventoryLevels(std::ostream& file,bool add, std::vector<
   for (unsigned int r = 0; r < params->nombreVehicules[1]; r++) {
     routeCosts += routes[1][r]->temps; // temps: total travel time
     if(!add)  file << "route["<<r<<"]: travel time = " << routes[1][r]->temps << "; capacity = " << routes[1][r]->capacity  << "; charge = " << std::accumulate(deliveries.begin(), deliveries.end(), 0.0) << "; depot = " << routes[1][r]->depot->idx << endl;
-    routes[1][r]->printRouteData(file);
+    routes[1][r]->printRoute(file);
   }
   
 
@@ -263,7 +263,7 @@ void LocalSearch::printInventoryLevels(std::ostream& file,bool add, std::vector<
 }
 
 // supprime le noeud
-void LocalSearch::removeNoeud(Noeud *U) {
+void LocalSearch::removeNoeud(Node *U) {
   // mettre a jour les noeuds
   U->pred->suiv = U->suiv;
  
@@ -283,7 +283,7 @@ void LocalSearch::removeNoeud(Noeud *U) {
     clients[U->jour][i]->coutInsertion = 1.e30;
 }
 
-void LocalSearch::addNoeud(Noeud *U)
+void LocalSearch::addNoeud(Node *U)
 {
   U->placeInsertion->suiv->pred = U;
   U->pred = U->placeInsertion;
@@ -308,8 +308,7 @@ void LocalSearch::addNoeud(Noeud *U)
 
 // calcule pour un jour donn� et un client donn� (repr�sent� par un noeud)
 // les couts d'insertion dans les differentes routes constituant ce jour
-void LocalSearch::computeCoutInsertion(Noeud *client)
-{
+void LocalSearch::computeCoutInsertion(Node *client) {
   Route *myRoute;
   client->allInsertions.clear();
   // for each route of this day
@@ -327,7 +326,7 @@ void LocalSearch::computeCoutInsertion(Noeud *client)
 }
 
 double LocalSearch::evaluateCurrentCost_stockout(unsigned int client, bool test) {
-  Noeud *noeudClient;
+  Node *noeudClient;
   double myCost = 0.;
   double I = params->cli[client].startingInventory;
   // Sum up the detour cost, inventory cost, and eventual excess of capacity
@@ -356,11 +355,11 @@ double LocalSearch::evaluateCurrentCost_stockout(unsigned int client, bool test)
             params->timeCost[noeudClient->pred->idx][noeudClient->suiv->idx];
 
       // and the possible excess capacity, the privous penalty are calculated already.
-        double x1 = noeudClient->route->charge -  noeudClient->route->capacity;
+        double x1 = noeudClient->route->load -  noeudClient->route->capacity;
         if(eq(x1,0)) x1 = 0;
-        double x2=noeudClient->route->charge -
+        double x2 = noeudClient->route->load -
                   noeudClient->route->capacity - deliveryPerDay[k][client];
-        if(eq(x2,0)) x2 = 0;
+        if(eq(x2, 0)) x2 = 0;
         myCost += params->penalityCapa[idxScenario] *(std::max<double>(0., x1) - std::max<double>(0., x2));
         myCost += 1000000*std::max<double> (0., I + deliveryPerDay[k][client]- params->cli[client].maxInventory);
 
@@ -385,11 +384,11 @@ LocalSearch::LocalSearch(void) {}
 LocalSearch::LocalSearch(Individu *_individu, Params *_params, unsigned int _idxScenario)
     : individu(_individu), params(_params), idxScenario(_idxScenario)
 {
-  vector<Noeud*> tempNoeud; 
+  vector<Node*> tempNoeud; 
   vector<Route*> tempRoute;
 
-  Noeud *myDepot;
-  Noeud *myDepotFin;
+  Node *myDepot;
+  Node *myDepotFin;
   Route *myRoute;
   
   clients.push_back(tempNoeud);
@@ -407,13 +406,13 @@ LocalSearch::LocalSearch(Individu *_individu, Params *_params, unsigned int _idx
       clients[day].push_back(NULL);
     }
     for (unsigned int client = params->nbDepots; client < params->nbClients + params->nbDepots; client++) {
-      clients[day].push_back(new Noeud(false, client, day, false, NULL, NULL, NULL));
+      clients[day].push_back(new Node(false, client, day, false, NULL, NULL, NULL));
     }
         
     // dimensionnement du champ depots et routes a la bonne taille       
     for (unsigned int i = 0; i < params->nombreVehicules[day]; i++) {
-      myDepot = new Noeud(true, params->ordreVehicules[day][i].depotNumber, day, false, NULL, NULL, NULL);
-      myDepotFin = new Noeud(true, params->ordreVehicules[day][i].depotNumber, day, false, NULL, NULL, NULL);
+      myDepot = new Node(true, params->ordreVehicules[day][i].depotNumber, day, false, NULL, NULL, NULL);
+      myDepotFin = new Node(true, params->ordreVehicules[day][i].depotNumber, day, false, NULL, NULL, NULL);
       myRoute = new Route(params, this, i, day, myDepot, 0, 0, params->ordreVehicules[day][i].capacity);
       myDepot->route = myRoute;
       myDepotFin->route = myRoute;

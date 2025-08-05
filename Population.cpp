@@ -36,7 +36,9 @@ Population::Population(Params* _params) : params(_params)
 		
 		education_scenario(randomIndiv);
 		if (compter) updateNbValides(randomIndiv);
-		addIndividu(randomIndiv);
+		if (addIndividu(randomIndiv) == 0 && randomIndiv->estValide) {
+			std::cout << "NEW BEST FEASIBLE FROM INITIALIZATION" << std::endl;
+		}
 		delete randomIndiv;
 	}
 	
@@ -60,7 +62,6 @@ Population::~Population() {
 void Population::evalExtFit(SousPop *pop) {
 	vector<unsigned int> classement;
 	vector<double> distances;
-
 	for (unsigned int indiv = 0; indiv < pop->nbIndiv; indiv++) {
 		classement.push_back(indiv);
 		distances.push_back(pop->individus[indiv]->distPlusProche(params->nbCountDistMeasure));
@@ -68,7 +69,7 @@ void Population::evalExtFit(SousPop *pop) {
 
 	// classement des individus en fonction de leur note de distance
 	for (unsigned int n = 0; n < pop->nbIndiv; n++) {
-		for (unsigned int i = 0; i < pop->nbIndiv - n - 1; i++) {
+		for (unsigned int i = 0; i < pop->nbIndiv - 1 - n; i++) { //i in 0 and 0 or 0 and nbIndiv - 2
 			if (distances[classement[i]] < distances[classement[i + 1]] - 0.000001)	{
 				std::swap(classement[i], classement[i + 1]);
 			}
@@ -126,16 +127,12 @@ void Population::diversify() {
 	for (unsigned int scenario = 0; scenario < (unsigned int) nbScenario; scenario++) {
 		savePenalities[scenario] = params->penalityCapa[scenario];
 	}
-
-	while ((double) valides->nbIndiv > params->rho * (double)params->mu) {
-		delete valides->individus[valides->nbIndiv - 1];
-		valides->individus.pop_back();
-		valides->nbIndiv--;
+	
+	while (valides->nbIndiv > params->rho * params->mu) {
+		removeIndividu(valides, valides->nbIndiv - 1);
 	}
-	while ((double) invalides->nbIndiv > params->rho * (double)params->mu) {
-		delete invalides->individus[invalides->nbIndiv - 1];
-		invalides->individus.pop_back();
-		invalides->nbIndiv--;
+	while (invalides->nbIndiv > params->rho * params->mu) {
+		removeIndividu(invalides, invalides->nbIndiv-1);
 	}
 	for (unsigned int i = 0; i < params->mu * 2; i++) {
 		if (i == params->mu) {
@@ -145,9 +142,12 @@ void Population::diversify() {
 		}
 		Individu *random = new Individu(params);
 		education_scenario(random);
-		addIndividu(random);
+		if (addIndividu(random) == 0 && random->estValide) {
+			std::cout << "NEW BEST FEASIBLE FROM DIVERSIFY" << std::endl;
+		}
+		delete random;
 	}
-	for (unsigned int scenario = 0; scenario < (unsigned int) nbScenario; scenario++) {
+	for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
 		params->penalityCapa[scenario] = savePenalities[scenario];
 	}
 }
@@ -183,7 +183,8 @@ unsigned int Population::placeIndividu(SousPop *pop, Individu *indiv) {
 		if (pop == valides) timeBest = clock();
 		return 0; // reussite
 	}
-	throw std::string("failed to place individual");
+	std::cout << "Failed to place individual" << std::endl;
+	throw std::string("Failed to place individual");
 	return 1000000;
 }
 
@@ -389,9 +390,9 @@ unsigned int Population::selectCompromis(SousPop *souspop) {
 	evalExtFit(souspop);
 
 	// pour chaque individu on modifie le fitness etendu
-	for (unsigned int i = 0; i < (unsigned int) souspop->nbIndiv; i++) {
+	for (unsigned int i = 0; i < souspop->nbIndiv; i++) {
 		classement.push_back(i);
-		if (souspop->individus[i]->distPlusProche(1) < params->distMin) souspop->individus[i]->fitnessEtendu += 5;
+		if (souspop->individus[i]->distPlusProche(1) < params->distMin) souspop->individus[i]->fitnessEtendu += 5.0;
 		// for the CVRP instances, we need to allow duplicates with the same fitness since in the Golden instances
 		// there is a lot of symmetry.
 		if (fitExist(souspop, souspop->individus[i])) souspop->individus[i]->fitnessEtendu += 5.0;

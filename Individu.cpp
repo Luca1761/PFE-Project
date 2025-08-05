@@ -32,11 +32,18 @@ Individu::Individu(Params* _params) : params(_params)
 				for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
 					chromL[1 + scenario * params->nbDays][i] = dailyDelivery;
 					scenariosInventory[scenario] = params->cli[i].maxInventory - params->cli[i].dailyDemand[scenario][1];
+					if (scenariosInventory[scenario] < 0 || scenariosInventory[scenario] > params->cli[i].maxInventory) {
+						std::cout << "WRONG INVENTORY" << std::endl;
+						throw std::string("WRONG INVENTORY");
+					}
 				}
 			} else {
 				for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
-					chromL[1 + scenario * params->nbDays][i] = 0.0;
 					scenariosInventory[scenario] = std::max(initialInventory - params->cli[i].dailyDemand[scenario][1], 0.0);
+					if (scenariosInventory[scenario] < 0 || scenariosInventory[scenario] > params->cli[i].maxInventory) {
+						std::cout << "WRONG INVENTORY" << std::endl;
+						throw std::string("WRONG INVENTORY");
+					}
 				}
 			}
 		} else {
@@ -62,12 +69,20 @@ Individu::Individu(Params* _params) : params(_params)
 				}
 				for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
 					scenariosInventory[scenario] = initialInventory - params->cli[i].dailyDemand[scenario][1] + chromL[1 + scenario * params->nbDays][i];
-				}
+					if (scenariosInventory[scenario] < 0 || scenariosInventory[scenario] > params->cli[i].maxInventory) {
+						std::cout << "WRONG INVENTORY" << std::endl;
+						throw std::string("WRONG INVENTORY");
+					}
+				}	
 			} else {
 				chromT[1].push_back(i);
 				for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
 					chromL[1 + scenario * params->nbDays][i] = std::max(params->cli[i].dailyDemand[scenario][1] - initialInventory, 1.0);
 					scenariosInventory[scenario] = initialInventory - params->cli[i].dailyDemand[scenario][1] + chromL[1 + scenario * params->nbDays][i];
+					if (scenariosInventory[scenario] < 0 || scenariosInventory[scenario] > params->cli[i].maxInventory) {
+						std::cout << "WRONG INVENTORY" << std::endl;
+						throw std::string("WRONG INVENTORY");
+					}
 				}
 			}
 
@@ -98,7 +113,7 @@ Individu::Individu(Params* _params) : params(_params)
 
 					if (tempInventory >= currentDayClientDemand) {
 						// enough initial inventory, no need to service
-						chromL[k + scenario * params->nbDays][i] = 0;
+						chromL[k + scenario * params->nbDays][i] = 0.0;
 
 						bool isInventoryEnoughForNextDay = tempInventory - currentDayClientDemand >= nextDayClientDemand;
 						if (k < params->nbDays && !isInventoryEnoughForNextDay) {
@@ -109,6 +124,10 @@ Individu::Individu(Params* _params) : params(_params)
 							}
 						}
 						tempInventory = tempInventory + chromL[k + scenario * params->nbDays][i] - currentDayClientDemand;
+						if (tempInventory < 0 || tempInventory > params->cli[i].maxInventory) {
+							std::cout << "WRONG INVENTORY" << std::endl;
+							throw std::string("WRONG INVENTORY");
+						}
 					} else {
 						// not enough initial inventory, just in time policy for the initial solution
 						dailyDelivery = currentDayClientDemand - tempInventory;
@@ -403,10 +422,10 @@ double Individu::measureSol(std::vector<double> &delivers, unsigned int idxDay) 
 			toDeliver += chromL[1 + scenario * (params->nbDays)][cus];
 		}
 		toDeliver /= (double)nbScenario;
+		toDeliver = round(toDeliver);
 		inventoryCost += params->cli[cus].inventoryCost * std::max<double>(0, I_end[cus] + toDeliver - params->cli[cus].testDemand[idxDay]);
 		stockoutCost += params->cli[cus].stockoutCost * std::max<double>(0, params->cli[cus].testDemand[idxDay] - I_end[cus] - toDeliver);
 		supplyCost -= toDeliver * params->inventoryCostSupplier;
-		toDeliver = round(toDeliver);
 		delivers.push_back(toDeliver);
 	}
 
@@ -588,15 +607,15 @@ void Individu::initPot_scenario(unsigned int k, unsigned int scenario)
 
 void Individu::updateLS_scenario() {
 	unsigned int i, j;
-	vector<Noeud*> myDepot(nbScenario);
-	vector<Noeud*> myDepotFin(nbScenario);
-	vector<Noeud*> myClient(nbScenario);
+	vector<Node*> myDepot(nbScenario);
+	vector<Node*> myDepotFin(nbScenario);
+	vector<Node*> myClient(nbScenario);
 	vector<Route*> myRoute(nbScenario);
 
 	for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
-		Noeud * tempDepot = myDepot[scenario];
-		Noeud * tempDepotFin = myDepotFin[scenario];
-		Noeud * tempClient = myClient[scenario];
+		Node * tempDepot = myDepot[scenario];
+		Node * tempDepotFin = myDepotFin[scenario];
+		Node * tempClient = myClient[scenario];
 		Route * tempRoute = myRoute[scenario];
 
 		unsigned int startIndex = scenario * (params->nbDays);
@@ -894,7 +913,7 @@ void Individu::muterDifferentScenarioDP() {
 }
 
 int Individu::mutationDP(unsigned int client, bool &rechercheTerminee) {
-	Noeud *noeudTravail;
+	Node *noeudTravail;
 	double currentCost = 0.0;
 	// First, make sure all insertion costs are computed
 	for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
@@ -999,7 +1018,7 @@ void Individu::updateIndiv_scenario() {
 				chromL[i] = localSearchList[scenario]->deliveryPerDay[i - startIndex + 1];
 			}
 		}
-		Noeud *node;
+		Node *node;
 		unsigned int startIndexT = scenario * (params->nbDays - 1);
 		for (unsigned int day = 1; day <= params->nbDays; day++) {
 			unsigned int chromIndex = (day == 1) ? 1 : startIndexT + day;
@@ -1065,9 +1084,13 @@ void Individu::addProche(Individu *indiv) {
 // enleve un element dans les structures de proximite
 void Individu::removeProche(Individu *indiv) {
 	list<proxData>::iterator last = plusProches.end();
-	for (list<proxData>::iterator it = plusProches.begin(); it != last;)
-		if (it->indiv == indiv) it = plusProches.erase(it);
+	for (list<proxData>::iterator it = plusProches.begin(); it != last;) {
+		if (it->indiv == indiv) {
+			it = plusProches.erase(it);
+			return;
+		}
 		else ++it;
+	}
 }
 
 // distance moyenne avec les n individus les plus proches
@@ -1082,6 +1105,7 @@ double Individu::distPlusProche(int n) {
 		compte += 1.0;
 		++it;
 	}
+	if (compte == 0) return 10000000;
 	return result / compte;
 }
 
@@ -1099,11 +1123,11 @@ int Individu::mutation1_indiv() {
 	// pas d'incidence pour l'instant mais attention
 	for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
 		if (localSearchList[scenario]->routeU != localSearchList[scenario]->routeV) {
-			costSuppU += (localSearchList[scenario]->routeU->excedentCharge(localSearchList[scenario]->routeU->charge - localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->noeudUCour])*params->penalityCapa[scenario]
-			- localSearchList[scenario]->routeU->excedentCharge(localSearchList[scenario]->routeU->charge)*params->penalityCapa[scenario]) / (double)nbScenario ;
+			costSuppU += (localSearchList[scenario]->routeU->excedentCharge(localSearchList[scenario]->routeU->load - localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->noeudUCour])*params->penalityCapa[scenario]
+			- localSearchList[scenario]->routeU->excedentCharge(localSearchList[scenario]->routeU->load)*params->penalityCapa[scenario]) / (double)nbScenario ;
 
-			costSuppV += (localSearchList[scenario]->routeV->excedentCharge(localSearchList[scenario]->routeV->charge + localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->noeudUCour])*params->penalityCapa[scenario]
-			- localSearchList[scenario]->routeV->excedentCharge(localSearchList[scenario]->routeV->charge)*params->penalityCapa[scenario]) / (double)nbScenario ;
+			costSuppV += (localSearchList[scenario]->routeV->excedentCharge(localSearchList[scenario]->routeV->load + localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->noeudUCour])*params->penalityCapa[scenario]
+			- localSearchList[scenario]->routeV->excedentCharge(localSearchList[scenario]->routeV->load)*params->penalityCapa[scenario]) / (double)nbScenario ;
 		}
 	}
 
@@ -1132,11 +1156,11 @@ int Individu::mutation2_indiv() {
 
 	for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
 		if (localSearchList[scenario]->routeU != localSearchList[scenario]->routeV) {
-			costSuppU += (localSearchList[scenario]->routeU->excedentCharge(localSearchList[scenario]->routeU->charge - localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->noeudUCour] - localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->xCour])*params->penalityCapa[scenario]
-			- localSearchList[scenario]->routeU->excedentCharge(localSearchList[scenario]->routeU->charge)*params->penalityCapa[scenario]) / (double) nbScenario;
+			costSuppU += (localSearchList[scenario]->routeU->excedentCharge(localSearchList[scenario]->routeU->load - localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->noeudUCour] - localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->xCour])*params->penalityCapa[scenario]
+			- localSearchList[scenario]->routeU->excedentCharge(localSearchList[scenario]->routeU->load)*params->penalityCapa[scenario]) / (double) nbScenario;
 			
-			costSuppV += (localSearchList[scenario]->routeV->excedentCharge(localSearchList[scenario]->routeV->charge + localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->noeudUCour] + localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->xCour])*params->penalityCapa[scenario]
-			- localSearchList[scenario]->routeV->excedentCharge(localSearchList[scenario]->routeV->charge)*params->penalityCapa[scenario]) / (double) nbScenario;
+			costSuppV += (localSearchList[scenario]->routeV->excedentCharge(localSearchList[scenario]->routeV->load + localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->noeudUCour] + localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->xCour])*params->penalityCapa[scenario]
+			- localSearchList[scenario]->routeV->excedentCharge(localSearchList[scenario]->routeV->load)*params->penalityCapa[scenario]) / (double) nbScenario;
 		}
 	}
 
@@ -1167,11 +1191,11 @@ int Individu::mutation3_indiv() {
 	for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
 		if (localSearchList[scenario]->routeU != localSearchList[scenario]->routeV)
 		{
-		costSuppU += (localSearchList[scenario]->routeU->excedentCharge(localSearchList[scenario]->routeU->charge - localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->noeudUCour] - localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->xCour])*params->penalityCapa[scenario]
-		- localSearchList[scenario]->routeU->excedentCharge(localSearchList[scenario]->routeU->charge)*params->penalityCapa[scenario]) / (double) nbScenario;
+		costSuppU += (localSearchList[scenario]->routeU->excedentCharge(localSearchList[scenario]->routeU->load - localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->noeudUCour] - localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->xCour])*params->penalityCapa[scenario]
+		- localSearchList[scenario]->routeU->excedentCharge(localSearchList[scenario]->routeU->load)*params->penalityCapa[scenario]) / (double) nbScenario;
 		
-		costSuppV += (localSearchList[scenario]->routeV->excedentCharge(localSearchList[scenario]->routeV->charge + localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->noeudUCour] + localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->xCour])*params->penalityCapa[scenario]
-		- localSearchList[scenario]->routeV->excedentCharge(localSearchList[scenario]->routeV->charge)*params->penalityCapa[scenario]) / (double) nbScenario;
+		costSuppV += (localSearchList[scenario]->routeV->excedentCharge(localSearchList[scenario]->routeV->load + localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->noeudUCour] + localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->xCour])*params->penalityCapa[scenario]
+		- localSearchList[scenario]->routeV->excedentCharge(localSearchList[scenario]->routeV->load)*params->penalityCapa[scenario]) / (double) nbScenario;
 		}
 	}
 
@@ -1203,11 +1227,11 @@ int Individu::mutation4_indiv() {
 	for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
 		if (localSearchList[scenario]->routeU != localSearchList[scenario]->routeV)
 		{
-		costSuppU += (localSearchList[scenario]->routeU->excedentCharge(localSearchList[scenario]->routeU->charge + localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->noeudVCour] - localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->noeudUCour])*params->penalityCapa[scenario]
-		- localSearchList[scenario]->routeU->excedentCharge(localSearchList[scenario]->routeU->charge)*params->penalityCapa[scenario]) / (double) nbScenario;
+		costSuppU += (localSearchList[scenario]->routeU->excedentCharge(localSearchList[scenario]->routeU->load + localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->noeudVCour] - localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->noeudUCour])*params->penalityCapa[scenario]
+		- localSearchList[scenario]->routeU->excedentCharge(localSearchList[scenario]->routeU->load)*params->penalityCapa[scenario]) / (double) nbScenario;
 		
-		costSuppV += (localSearchList[scenario]->routeV->excedentCharge(localSearchList[scenario]->routeV->charge + localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->noeudUCour] - localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->noeudVCour])*params->penalityCapa[scenario]
-		- localSearchList[scenario]->routeV->excedentCharge(localSearchList[scenario]->routeV->charge)*params->penalityCapa[scenario]) / (double) nbScenario;
+		costSuppV += (localSearchList[scenario]->routeV->excedentCharge(localSearchList[scenario]->routeV->load + localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->noeudUCour] - localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->noeudVCour])*params->penalityCapa[scenario]
+		- localSearchList[scenario]->routeV->excedentCharge(localSearchList[scenario]->routeV->load)*params->penalityCapa[scenario]) / (double) nbScenario;
 		}
 	}
 
@@ -1240,11 +1264,11 @@ int Individu::mutation5_indiv() {
 	for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
 		if (localSearchList[scenario]->routeU != localSearchList[scenario]->routeV)
 		{
-		costSuppU += (localSearchList[scenario]->routeU->excedentCharge(localSearchList[scenario]->routeU->charge + localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->noeudVCour] - localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->noeudUCour] - localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->xCour])*params->penalityCapa[scenario]
-		- localSearchList[scenario]->routeU->excedentCharge(localSearchList[scenario]->routeU->charge)*params->penalityCapa[scenario]) / (double) nbScenario;
+		costSuppU += (localSearchList[scenario]->routeU->excedentCharge(localSearchList[scenario]->routeU->load + localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->noeudVCour] - localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->noeudUCour] - localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->xCour])*params->penalityCapa[scenario]
+		- localSearchList[scenario]->routeU->excedentCharge(localSearchList[scenario]->routeU->load)*params->penalityCapa[scenario]) / (double) nbScenario;
 
-		costSuppV += (localSearchList[scenario]->routeV->excedentCharge(localSearchList[scenario]->routeV->charge + localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->noeudUCour] + localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->xCour] - localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->noeudVCour])*params->penalityCapa[scenario]
-		- localSearchList[scenario]->routeV->excedentCharge(localSearchList[scenario]->routeV->charge)*params->penalityCapa[scenario]) / (double) nbScenario;
+		costSuppV += (localSearchList[scenario]->routeV->excedentCharge(localSearchList[scenario]->routeV->load + localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->noeudUCour] + localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->xCour] - localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->noeudVCour])*params->penalityCapa[scenario]
+		- localSearchList[scenario]->routeV->excedentCharge(localSearchList[scenario]->routeV->load)*params->penalityCapa[scenario]) / (double) nbScenario;
 		}
 	}
 
@@ -1279,11 +1303,11 @@ int Individu::mutation6_indiv() {
 	for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
 		if (localSearchList[scenario]->routeU != localSearchList[scenario]->routeV)
 		{
-		costSuppU += (localSearchList[scenario]->routeU->excedentCharge(localSearchList[scenario]->routeU->charge + localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->noeudVCour] + localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->yCour] - localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->noeudUCour] - localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->xCour])*params->penalityCapa[scenario]
-		- localSearchList[scenario]->routeU->excedentCharge(localSearchList[scenario]->routeU->charge)*params->penalityCapa[scenario]) / (double) nbScenario;
+		costSuppU += (localSearchList[scenario]->routeU->excedentCharge(localSearchList[scenario]->routeU->load + localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->noeudVCour] + localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->yCour] - localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->noeudUCour] - localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->xCour])*params->penalityCapa[scenario]
+		- localSearchList[scenario]->routeU->excedentCharge(localSearchList[scenario]->routeU->load)*params->penalityCapa[scenario]) / (double) nbScenario;
 		
-		costSuppV += (localSearchList[scenario]->routeV->excedentCharge(localSearchList[scenario]->routeV->charge + localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->noeudUCour] + localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->xCour] - localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->noeudVCour] - localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->yCour])*params->penalityCapa[scenario]
-		- localSearchList[scenario]->routeV->excedentCharge(localSearchList[scenario]->routeV->charge)*params->penalityCapa[scenario]) / (double) nbScenario;
+		costSuppV += (localSearchList[scenario]->routeV->excedentCharge(localSearchList[scenario]->routeV->load + localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->noeudUCour] + localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->xCour] - localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->noeudVCour] - localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->yCour])*params->penalityCapa[scenario]
+		- localSearchList[scenario]->routeV->excedentCharge(localSearchList[scenario]->routeV->load)*params->penalityCapa[scenario]) / (double) nbScenario;
 		}
 	}
 
@@ -1312,8 +1336,8 @@ int Individu::mutation7_indiv() {
 	
 	// mettre a jour les noeuds
 	for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
-		Noeud * nodeNum = localSearchList[scenario]->noeudXSuiv ;
-		Noeud * temp ;
+		Node * nodeNum = localSearchList[scenario]->noeudXSuiv ;
+		Node * temp ;
 		localSearchList[scenario]->x->pred = nodeNum ;
 		localSearchList[scenario]->x->suiv = localSearchList[scenario]->y ;
 
@@ -1346,8 +1370,8 @@ int Individu::mutation8_indiv() {
 
 	for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
 		LocalSearch* localTemp = localSearchList[scenario];
-		double chargeResteU = localTemp->routeU->charge - localTemp->noeudU->chargeAvant ;
-		double chargeResteV = localTemp->routeV->charge - localTemp->noeudV->chargeAvant ;
+		double chargeResteU = localTemp->routeU->load - localTemp->noeudU->chargeAvant ;
+		double chargeResteV = localTemp->routeV->load - localTemp->noeudV->chargeAvant ;
 
 		cost += (params->timeCost[localTemp->noeudUCour][localTemp->noeudVCour] 
 		+ params->timeCost[localTemp->xCour][localTemp->yCour]
@@ -1355,8 +1379,8 @@ int Individu::mutation8_indiv() {
 		- params->timeCost[localTemp->noeudVCour][localTemp->yCour]
 		+ localTemp->routeU->excedentCharge(localTemp->noeudU->chargeAvant + localTemp->noeudV->chargeAvant)*params->penalityCapa[scenario]
 		+ localTemp->routeV->excedentCharge(chargeResteV + chargeResteU)*params->penalityCapa[scenario]
-		- localTemp->routeU->excedentCharge(localTemp->routeU->charge)*params->penalityCapa[scenario]
-		- localTemp->routeV->excedentCharge(localTemp->routeV->charge)*params->penalityCapa[scenario]) / (double) nbScenario;
+		- localTemp->routeU->excedentCharge(localTemp->routeU->load)*params->penalityCapa[scenario]
+		- localTemp->routeV->excedentCharge(localTemp->routeV->load)*params->penalityCapa[scenario]) / (double) nbScenario;
 	}
 
 	if ( cost > -0.0001 ) { return 0 ; } 
@@ -1364,16 +1388,16 @@ int Individu::mutation8_indiv() {
 	/////////////////////////// ON EFFECTUE LA MUTATION ///////////////////////////////
 	for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
 		LocalSearch* localTemp = localSearchList[scenario];
-		Noeud * depotU = localTemp->routeU->depot ;
-		Noeud * depotV = localTemp->routeV->depot ;
-		Noeud * depotUFin = localTemp->routeU->depot->pred ;
-		Noeud * depotVFin = localTemp->routeV->depot->pred ;
-		Noeud * depotVSuiv = depotV->suiv ;
+		Node * depotU = localTemp->routeU->depot ;
+		Node * depotV = localTemp->routeV->depot ;
+		Node * depotUFin = localTemp->routeU->depot->pred ;
+		Node * depotVFin = localTemp->routeV->depot->pred ;
+		Node * depotVSuiv = depotV->suiv ;
 
 		// on inverse le sens et on change le nom des routes
-		Noeud * temp ;
-		Noeud * xx = localTemp->x ;
-		Noeud * vv = localTemp->noeudV ;
+		Node * temp ;
+		Node * xx = localTemp->x ;
+		Node * vv = localTemp->noeudV ;
 
 		while ( !xx->estUnDepot )
 		{
@@ -1441,8 +1465,8 @@ int Individu::mutation9_indiv() {
 	double cost = 0.0;
 	for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
 		LocalSearch* localTemp = localSearchList[scenario];
-		double chargeResteU = localTemp->routeU->charge - localTemp->noeudU->chargeAvant ;
-		double chargeResteV = localTemp->routeV->charge - localTemp->noeudV->chargeAvant ;
+		double chargeResteU = localTemp->routeU->load - localTemp->noeudU->chargeAvant ;
+		double chargeResteV = localTemp->routeV->load - localTemp->noeudV->chargeAvant ;
 
 		cost += (params->timeCost[localTemp->noeudUCour][localTemp->yCour] 
 		+ params->timeCost[localTemp->noeudVCour][localTemp->xCour]
@@ -1450,23 +1474,23 @@ int Individu::mutation9_indiv() {
 		- params->timeCost[localTemp->noeudVCour][localTemp->yCour]
 		+ (localTemp->routeU->excedentCharge(localTemp->noeudU->chargeAvant + chargeResteV)
 		+ localTemp->routeV->excedentCharge(localTemp->noeudV->chargeAvant + chargeResteU)
-		- localTemp->routeU->excedentCharge(localTemp->routeU->charge)
-		- localTemp->routeV->excedentCharge(localTemp->routeV->charge))*params->penalityCapa[scenario]) / (double) nbScenario;
+		- localTemp->routeU->excedentCharge(localTemp->routeU->load)
+		- localTemp->routeV->excedentCharge(localTemp->routeV->load))*params->penalityCapa[scenario]) / (double) nbScenario;
 	}
 
 	if (cost > -0.0001) {return 0;} 
 
 	for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
 		LocalSearch* localTemp = localSearchList[scenario];
-		Noeud * count ;
+		Node * count ;
 		/////////////////////////// ON EFFECTUE LA MUTATION ///////////////////////////////
 		// on parcourt les noeuds pour les associer aux bonnes routes
 
-		Noeud * depotU = localTemp->routeU->depot ;
-		Noeud * depotV = localTemp->routeV->depot ;
-		Noeud * depotUFin = depotU->pred ;
-		Noeud * depotVFin = depotV->pred ;
-		Noeud * depotUpred = depotUFin->pred ;
+		Node * depotU = localTemp->routeU->depot ;
+		Node * depotV = localTemp->routeV->depot ;
+		Node * depotUFin = depotU->pred ;
+		Node * depotVFin = depotV->pred ;
+		Node * depotUpred = depotUFin->pred ;
 
 		count = localTemp->y ;
 		while ( !count->estUnDepot )

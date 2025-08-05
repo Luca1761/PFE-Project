@@ -19,7 +19,7 @@ double cout ;
 
 };
 
-class Noeud
+class Node
 {
 
 public :
@@ -42,11 +42,11 @@ bool estPresent ;
 // presence de le ce client � ce jour ci
 
 
-Noeud * suiv ;
+Node * suiv ;
 // depot ou client suivant dans la route
 
 
-Noeud * pred ;
+Node * pred ;
 
 
 Route * route ;
@@ -64,18 +64,18 @@ void removeDominatedInsertions (double penalityCapa);
 
 double coutInsertion ;
 // cout insertion dans ce jour si il devait �tre ins�r�
-Noeud * placeInsertion ;
+Node * placeInsertion ;
 // noeud o� serait ins�r�
 
 vector <unsigned int> moves ;
 // mouvements possibles
-Noeud(void);
+Node(void);
 // constructeur 1	
 
-Noeud(bool _estUnDepot, unsigned int _idx, unsigned int _jour, bool _estPresent, Noeud * _suiv , Noeud * _pred, Route * _route);
+Node(bool _estUnDepot, unsigned int _idx, unsigned int _jour, bool _estPresent, Node * _suiv , Node * _pred, Route * _route);
 // constructeur 2
 
-~Noeud(void);
+~Node(void);
 // destructeur
 };
 

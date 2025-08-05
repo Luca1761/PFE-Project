@@ -57,7 +57,7 @@ PLFunction::PLFunction(Params *_params, vector<Insertion> insertions, unsigned i
 
     double pre_x = 0;
     double pre_y, x, y, pre_load, pre_detour;
-    Noeud *pre_place = nullptr;
+    Node *pre_place = nullptr;
 
     // loop through all pieces
     while (index != insertions.end())
@@ -157,6 +157,7 @@ double PLFunction::cost(double x)
 
 shared_ptr<LinearPiece> PLFunction::getPiece(double x) {
     if (nbPieces == 0) {
+        std::cout << "No pieces to search" << std::endl;
         throw std::string("Can't find a piece");
         return nullptr;
     }

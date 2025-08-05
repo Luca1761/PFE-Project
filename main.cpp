@@ -42,7 +42,7 @@ int main(int argc, char *argv[]) {
     
     // we create the solver
     Genetic solver(params, nb_ticks_allowed, population);
-    
+
     //launch evolution
     if (params->traces) std::cout << "Solve day " << j << "..." << std::endl;
     solver.evolve(command.get_maxIter(), command.get_maxIterNonProd(), command.get_maxTime());

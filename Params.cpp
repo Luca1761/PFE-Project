@@ -281,6 +281,8 @@ void Params::computeConstant_stockout() {
 
 void Params::updateToDay(unsigned int j, std::vector<double> deliveries) {
     setJval(j);
+	delete rng;
+	rng = new Rng((unsigned long long)(seed + jVal));	
 	if (j!=1) cli[0].startingInventory = availableSupply[1] - std::accumulate(deliveries.begin(), deliveries.end(), 0.0);
 	if (traces) std::cout << "Init | MAX | Previous delivery | True demand" << std::endl;
     for (unsigned int c = nbDepots; c < nbDepots + nbClients; c++) {  
