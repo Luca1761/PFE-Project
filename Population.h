@@ -11,7 +11,7 @@
 #include <list>
 #include <math.h>
 #include <time.h>
-#include "Noeud.h"
+#include "Node.h"
 #include "Individu.h"
 
 using namespace std ;

@@ -1,12 +1,11 @@
-#include "Noeud.h"
+#include "Node.h"
 
 Node::Node(void){}
-Node::Node(bool _estUnDepot, unsigned int _idx, unsigned  int _jour, bool _estPresent, Node * _suiv , Node * _pred, Route * _route) 
-: estUnDepot(_estUnDepot),idx(_idx),jour(_jour), estPresent(_estPresent),suiv(_suiv), pred(_pred), route(_route)
+Node::Node(bool _isADepot, unsigned int _idx, unsigned  int _day, bool _isPresent, Node * _next , Node * _prev, Route * _route) 
+: isADepot(_isADepot),idx(_idx),day(_day), isPresent(_isPresent), next(_next), prev(_prev), route(_route)
 {
-coutInsertion = 1.e30 ;
-placeInsertion = NULL ;
-place = -1 ;
+	placeInsertion = NULL ;
+	place = -1 ;
 }
 
 bool mySort (Insertion i, Insertion j) 

@@ -2,8 +2,8 @@
 /*                    Propriete de Thibaut VIDAL                     */
 /*                    thibaut.vidal@cirrelt.ca                       */
 
-#ifndef NOEUD_H
-#define NOEUD_H
+#ifndef NODE_H
+#define NODE_H
 
 #include "Route.h"
 #include<iostream>

@@ -16,7 +16,7 @@ Des getters auraient pu etre faits afin de restreindre l'acces mais dans un souc
 #include <vector>
 #include <list>
 #include <iostream> 
-#include "Noeud.h"
+#include "Node.h"
 #include "Params.h"
 #include "LocalSearch.h"
 #include <thread>

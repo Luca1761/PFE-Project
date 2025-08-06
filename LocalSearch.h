@@ -17,7 +17,7 @@
 #include <vector>
 #include "Individu.h"
 #include "LotSizingSolver.h"
-#include "Noeud.h"
+#include "Node.h"
 #include "Route.h"
 
 using namespace std;
