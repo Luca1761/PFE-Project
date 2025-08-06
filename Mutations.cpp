@@ -3,12 +3,12 @@
 // effectue l'insertion du client U apres V
 void LocalSearch::insertNoeud(Node * U, Node * V) {
 	// mettre a jour les noeuds
-	U->pred->suiv = U->suiv ;
-	U->suiv->pred = U->pred ;
-	V->suiv->pred = U ;
-	U->pred = V ;
-	U->suiv = V->suiv ;
-	V->suiv = U ;
+	U->prev->next = U->next ;
+	U->next->prev = U->prev ;
+	V->next->prev = U ;
+	U->prev = V ;
+	U->next = V->next ;
+	V->next = U ;
 
 	U->route = routeV ;
 	routeU->updateRouteData();
@@ -17,22 +17,22 @@ void LocalSearch::insertNoeud(Node * U, Node * V) {
 // effectue le swap du client U avec V
 void LocalSearch::swapNoeud(Node * U, Node * V) 
 {
-	Node * VPred = V->pred ;
-	Node * VSuiv = V->suiv ;
-	Node * UPred = U->pred ;
-	Node * USuiv = U->suiv ;
+	Node * VPred = V->prev ;
+	Node * VSuiv = V->next ;
+	Node * UPred = U->prev ;
+	Node * USuiv = U->next ;
 	Route * myRouteU = U->route ;
 	Route * myRouteV = V->route ;
 
-	UPred->suiv = V ;
-	USuiv->pred = V ;
-	VPred->suiv = U ;
-	VSuiv->pred = U ;
+	UPred->next = V ;
+	USuiv->prev = V ;
+	VPred->next = U ;
+	VSuiv->prev = U ;
 
-	U->pred = VPred ;
-	U->suiv = VSuiv ;
-	V->pred = UPred ;
-	V->suiv = USuiv ;
+	U->prev = VPred ;
+	U->next = VSuiv ;
+	V->prev = UPred ;
+	V->next = USuiv ;
 
 	U->route = myRouteV ;
 	V->route = myRouteU ;
@@ -95,7 +95,7 @@ int LocalSearch::mutation2 ()
 	}
 
 	if ( costSuppU + costSuppV > -0.0001 ) { return 0 ;}
-	if ( noeudU == y || noeudV == x || x->estUnDepot ) { return 0 ;}
+	if ( noeudU == y || noeudV == x || x->isADepot ) { return 0 ;}
 
 	// mettre a jour les noeuds
 	insertNoeud(noeudU,noeudV);
@@ -128,7 +128,7 @@ int LocalSearch::mutation3 ()
 	}
 
 	if ( costSuppU + costSuppV > -0.0001 ) return 0;
-	if ( noeudU == y ||  x == noeudV || x->estUnDepot ) return 0;
+	if ( noeudU == y ||  x == noeudV || x->isADepot ) return 0;
 
 	// mettre a jour les noeuds
 	insertNoeud(x,noeudV);
@@ -198,7 +198,7 @@ int LocalSearch::mutation5 ()
 	}
 
 	if ( costSuppU + costSuppV > -0.0001 ) { return 0 ;}
-	if ( noeudU == noeudVPred || x == noeudVPred || noeudU == y || x->estUnDepot ) { return 0 ;}
+	if ( noeudU == noeudVPred || x == noeudVPred || noeudU == y || x->isADepot ) { return 0 ;}
 
 	// mettre a jour les noeuds
 	swapNoeud(noeudU, noeudV) ;
@@ -233,7 +233,7 @@ int LocalSearch::mutation6 ()
 	}
 
 	if ( costSuppU + costSuppV > -0.0001 ) { return 0 ;}
-	if ( x->estUnDepot || y->estUnDepot || y == noeudUPred || noeudU == y || x == noeudV || noeudV == noeudXSuiv ) { return 0 ;}
+	if ( x->isADepot || y->isADepot || y == noeudUPred || noeudU == y || x == noeudV || noeudV == noeudXSuiv ) { return 0 ;}
 
 	// mettre a jour les noeuds
 	swapNoeud(noeudU, noeudV) ;
@@ -252,7 +252,7 @@ int LocalSearch::mutation7 ()
 	Node * nodeNum = noeudXSuiv ;
 	Node * temp ;
 
-	if  ((routeU->idx != routeV->idx) || noeudU->suiv == noeudV || noeudU->place > noeudV->place ) {  return 0 ; }
+	if  ((routeU->idx != routeV->idx) || noeudU->next == noeudV || noeudU->place > noeudV->place ) {  return 0 ; }
 
 	double cost = params->timeCost[noeudUCour][noeudVCour] + params->timeCost[xCour][yCour]
 	- params->timeCost[noeudUCour][xCour] - params->timeCost[noeudVCour][yCour] ;
@@ -260,21 +260,21 @@ int LocalSearch::mutation7 ()
 	if ( cost > -0.0001 ) { return 0 ;}
 
 	// mettre a jour les noeuds
-	x->pred = nodeNum ;
-	x->suiv = y ;
+	x->prev = nodeNum ;
+	x->next = y ;
 
 	while ( nodeNum != noeudV )
 	{
-		temp = nodeNum->suiv ;
-		nodeNum->suiv = nodeNum->pred ;
-		nodeNum->pred = temp ;
+		temp = nodeNum->next ;
+		nodeNum->next = nodeNum->prev ;
+		nodeNum->prev = temp ;
 		nodeNum = temp ;
 	}
 
-	noeudV->suiv = noeudV->pred ;
-	noeudV->pred = noeudU ;
-	noeudU->suiv = noeudV ;
-	y->pred = x ;
+	noeudV->next = noeudV->prev ;
+	noeudV->prev = noeudU ;
+	noeudU->next = noeudV ;
+	y->prev = x ;
 
 	// et mettre a jour les routes
 	routeU->updateRouteData();
@@ -290,14 +290,14 @@ int LocalSearch::mutation8 ()
 	// TODO : heterogenous fleet, 2 types de mutations suivant les camions choisis pour chaque segment
 	if  ( routeU->idx == routeV->idx || routeU->depot->idx != routeV->depot->idx) { return 0 ; }
 
-	double chargeResteU = routeU->load - noeudU->chargeAvant ;
-	double chargeResteV = routeV->load - noeudV->chargeAvant ;
+	double chargeResteU = routeU->load - noeudU->previousLoad ;
+	double chargeResteV = routeV->load - noeudV->previousLoad ;
 
 	double cost = params->timeCost[noeudUCour][noeudVCour] 
 	+ params->timeCost[xCour][yCour]
 	- params->timeCost[noeudUCour][xCour] 
 	- params->timeCost[noeudVCour][yCour]
-    + routeU->excedentCharge(noeudU->chargeAvant + noeudV->chargeAvant)*params->penalityCapa[idxScenario]
+    + routeU->excedentCharge(noeudU->previousLoad + noeudV->previousLoad)*params->penalityCapa[idxScenario]
 	+ routeV->excedentCharge(chargeResteV + chargeResteU)*params->penalityCapa[idxScenario]
 	- routeU->excedentCharge(routeU->load)*params->penalityCapa[idxScenario]
 	- routeV->excedentCharge(routeV->load)*params->penalityCapa[idxScenario] ;
@@ -308,62 +308,62 @@ int LocalSearch::mutation8 ()
 
 	Node * depotU = routeU->depot ;
 	Node * depotV = routeV->depot ;
-	Node * depotUFin = routeU->depot->pred ;
-	Node * depotVFin = routeV->depot->pred ;
-	Node * depotVSuiv = depotV->suiv ;
+	Node * depotUFin = routeU->depot->prev ;
+	Node * depotVFin = routeV->depot->prev ;
+	Node * depotVSuiv = depotV->next ;
 
 	// on inverse le sens et on change le nom des routes
 	Node * temp ;
 	Node * xx = x ;
 	Node * vv = noeudV ;
 
-	while ( !xx->estUnDepot )
+	while ( !xx->isADepot )
 	{
-		temp = xx->suiv ;
-		xx->suiv = xx->pred ;
-		xx->pred = temp ;
+		temp = xx->next ;
+		xx->next = xx->prev ;
+		xx->prev = temp ;
 		xx->route = routeV ;
 		xx = temp ;
 	}
 
-	while ( !vv->estUnDepot )
+	while ( !vv->isADepot )
 	{
-		temp = vv->pred ;
-		vv->pred = vv->suiv ;
-		vv->suiv = temp ;
+		temp = vv->prev ;
+		vv->prev = vv->next ;
+		vv->next = temp ;
 		vv->route = routeU ;
 		vv = temp ;
 	}
 
 	// mettre a jour les noeuds
-	noeudU->suiv = noeudV ;
-	noeudV->pred = noeudU ;
-	x->suiv = y ;
-	y->pred = x ;
+	noeudU->next = noeudV ;
+	noeudV->prev = noeudU ;
+	x->next = y ;
+	y->prev = x ;
 
 	// mettre � jour les extr�mit�s
-	if (x->estUnDepot)
+	if (x->isADepot)
 	{
-		depotUFin->suiv = depotU ;
-		depotUFin->pred = depotVSuiv ;
-		depotUFin->pred->suiv = depotUFin ;
-		depotV->suiv = y ;
-		y->pred = depotV ;
+		depotUFin->next = depotU ;
+		depotUFin->prev = depotVSuiv ;
+		depotUFin->prev->next = depotUFin ;
+		depotV->next = y ;
+		y->prev = depotV ;
 	}
-	else if ( noeudV->estUnDepot )
+	else if ( noeudV->isADepot )
 	{
-		depotV->suiv = depotUFin->pred ;
-		depotV->suiv->pred = depotV ;
-		depotV->pred = depotVFin ;
-		depotUFin->pred = noeudU ;
-		noeudU->suiv = depotUFin ;
+		depotV->next = depotUFin->prev ;
+		depotV->next->prev = depotV ;
+		depotV->prev = depotVFin ;
+		depotUFin->prev = noeudU ;
+		noeudU->next = depotUFin ;
 	}
 	else
 	{
-		depotV->suiv = depotUFin->pred ;
-		depotV->suiv->pred = depotV ;
-		depotUFin->pred = depotVSuiv ;
-		depotUFin->pred->suiv = depotUFin ;
+		depotV->next = depotUFin->prev ;
+		depotV->next->prev = depotV ;
+		depotUFin->prev = depotVSuiv ;
+		depotUFin->prev->next = depotUFin ;
 	}
 
 	// et mettre a jour les routes
@@ -382,15 +382,15 @@ int LocalSearch::mutation9 ()
 
 	Node * count ;
 
-	double chargeResteU = routeU->load - noeudU->chargeAvant ;
-	double chargeResteV = routeV->load - noeudV->chargeAvant ;
+	double chargeResteU = routeU->load - noeudU->previousLoad ;
+	double chargeResteV = routeV->load - noeudV->previousLoad ;
 
 	double cost = params->timeCost[noeudUCour][yCour] 
 	+ params->timeCost[noeudVCour][xCour]
 	- params->timeCost[noeudUCour][xCour] 
 	- params->timeCost[noeudVCour][yCour]
-	+ (routeU->excedentCharge(noeudU->chargeAvant + chargeResteV)
-	+ routeV->excedentCharge(noeudV->chargeAvant + chargeResteU)
+	+ (routeU->excedentCharge(noeudU->previousLoad + chargeResteV)
+	+ routeV->excedentCharge(noeudV->previousLoad + chargeResteU)
 	- routeU->excedentCharge(routeU->load)
 	- routeV->excedentCharge(routeV->load))*params->penalityCapa[idxScenario] ;
 
@@ -402,44 +402,44 @@ int LocalSearch::mutation9 ()
 
 	Node * depotU = routeU->depot ;
 	Node * depotV = routeV->depot ;
-	Node * depotUFin = depotU->pred ;
-	Node * depotVFin = depotV->pred ;
-	Node * depotUpred = depotUFin->pred ;
+	Node * depotUFin = depotU->prev ;
+	Node * depotVFin = depotV->prev ;
+	Node * depotUpred = depotUFin->prev ;
 
 	count = y ;
-	while ( !count->estUnDepot )
+	while ( !count->isADepot )
 	{
 		count->route = routeU ;
-		count = count->suiv ;
+		count = count->next ;
 	}
 
 	count = x ;
-	while ( !count->estUnDepot )
+	while ( !count->isADepot )
 	{
 		count->route = routeV ;
-		count = count->suiv ;
+		count = count->next ;
 	}
 
 	// mettre a jour les noeuds
-	noeudU->suiv = y ;
-	y->pred = noeudU ;
-	noeudV->suiv = x ;
-	x->pred = noeudV ;
+	noeudU->next = y ;
+	y->prev = noeudU ;
+	noeudV->next = x ;
+	x->prev = noeudV ;
 
 	// mettre � jour les extr�mit�s
-	if (x->estUnDepot)
+	if (x->isADepot)
 	{
-		depotUFin->pred = depotVFin->pred ;
-		depotUFin->pred->suiv = depotUFin ;
-		noeudV->suiv = depotVFin ;
-		depotVFin->pred = noeudV ;
+		depotUFin->prev = depotVFin->prev ;
+		depotUFin->prev->next = depotUFin ;
+		noeudV->next = depotVFin ;
+		depotVFin->prev = noeudV ;
 	}
 	else
 	{
-		depotUFin->pred = depotVFin->pred ;
-		depotUFin->pred->suiv = depotUFin ;
-		depotVFin->pred = depotUpred ;
-		depotVFin->pred->suiv = depotVFin ;
+		depotUFin->prev = depotVFin->prev ;
+		depotUFin->prev->next = depotUFin ;
+		depotVFin->prev = depotUpred ;
+		depotVFin->prev->next = depotVFin ;
 	}
 
 	routeU->updateRouteData();
