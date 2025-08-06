@@ -48,6 +48,7 @@ commandline::commandline(int argc, char *argv[])
     maxIter = 100;
     maxIterNonProd = 100;
     traces = true;
+    true_demand = false;
     bool hasSolName = false;
 
     // parameters
@@ -60,6 +61,8 @@ commandline::commandline(int argc, char *argv[])
         seed = atoi(argv[i + 1]);
       else if (string(argv[i]) == "-cores")
         nb_cores = (unsigned int) atoi(argv[i+1]);
+      else if (string(argv[i]) == "-trueDemand")
+        true_demand = (atoi(argv[i + 1]) == 1);
       else if (string(argv[i]) == "-traces")
         traces = (atoi(argv[i + 1]) == 1);
       else if (string(argv[i]) == "-time")
@@ -133,3 +136,5 @@ unsigned int commandline::get_maxTime() {return maxTime;}
 
 // traces
 bool commandline::get_trace() {return traces;}
+
+bool commandline::get_true_demand() {return true_demand;}

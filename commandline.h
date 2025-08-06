@@ -16,6 +16,8 @@ private:
 
     unsigned int nb_cores;
 
+    bool true_demand;
+
     // number of scenarios
     unsigned int nb_scenarios;
 
@@ -86,5 +88,7 @@ public:
 
     // get trace
     bool get_trace();
+
+    bool get_true_demand();
 };
 #endif

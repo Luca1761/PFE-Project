@@ -204,7 +204,7 @@ class Params {
   void adjustDemands();
   // constructeur de Params qui remplit les structures en les pr�levant dans le
   // fichier
-  Params(string nomInstance, int seedRNG, unsigned int nbCores, unsigned int nbScenario, unsigned int nbVeh, bool trace);
+  Params(string nomInstance, int seedRNG, unsigned int nbCores, unsigned int nbScenario, unsigned int nbVeh, bool trace, bool trueDemand);
 
 
   // destructeur de Params
