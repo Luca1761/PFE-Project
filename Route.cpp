@@ -20,16 +20,16 @@ void Route::printRoute(std::ostream& file) {
 	// we loop across all the route
 	Node * node = depot ;
 	node->place = place ;
-	depot->chargeAvant = 0 ;
+	depot->previousLoad = 0 ;
 
-	while (!node->estUnDepot || place == 0) {
+	while (!node->isADepot || place == 0) {
 		file << " " << node->idx << " ->";
-		node = node->suiv ;
+		node = node->next ;
 		place++;
 		node->place = place ;
 		load += myLS->deliveryPerDay[day][node->idx];
-		time += params->timeCost[node->pred->idx][node->idx] ;
-		node->chargeAvant = load ;
+		time += params->timeCost[node->prev->idx][node->idx] ;
+		node->previousLoad = load ;
 	}
 	file <<" " << node->idx <<endl;
 }
@@ -42,15 +42,15 @@ void Route::updateRouteData () {
 	// we loop across all the route
 	Node* node = depot ;
 	node->place = place ;
-	depot->chargeAvant = 0 ;
+	depot->previousLoad = 0 ;
 
-	while (!node->estUnDepot || place == 0) {
-		node = node->suiv ;
+	while (!node->isADepot || place == 0) {
+		node = node->next ;
 		place++;
 		node->place = place ;
 		load += myLS->deliveryPerDay[day][node->idx];
-		time += params->timeCost[node->pred->idx][node->idx] ;
-		node->chargeAvant = load ;
+		time += params->timeCost[node->prev->idx][node->idx] ;
+		node->previousLoad = load ;
 	}
 
 	initiateInsertions();
@@ -64,52 +64,52 @@ void Route::evalInsertClient(Node* U)  {
 	bestInsertion[U->idx].load = -1.e30;
 	
 	bool firstIt = true ;
-	if (U->route != this || !U->estPresent) {
+	if (U->route != this || !U->isPresent) {
 		bestInsertion[U->idx].load = std::max<double>(0.0, capacity - load);
 		currentNode = depot ;
-		while (!currentNode->estUnDepot || firstIt == true) {
+		while (!currentNode->isADepot || firstIt == true) {
 			firstIt = false ;
 			cost = params->timeCost[currentNode->idx][U->idx] 
-			+ params->timeCost[U->idx][currentNode->suiv->idx] 
-			- params->timeCost[currentNode->idx][currentNode->suiv->idx] ;
+			+ params->timeCost[U->idx][currentNode->next->idx] 
+			- params->timeCost[currentNode->idx][currentNode->next->idx] ;
 			
 			if (cost < bestInsertion[U->idx].detour - 0.0001) { 
 				bestInsertion[U->idx].detour = cost ;
 				bestInsertion[U->idx].place = currentNode ;
 			}
-			currentNode = currentNode->suiv ;
+			currentNode = currentNode->next ;
 		}
 	} else // U is already in the route
 	{
 		bestInsertion[U->idx].load = std::max<double>(0.0, capacity + myLS->deliveryPerDay[day][U->idx] - load);
-		bestInsertion[U->idx].detour = params->timeCost[U->pred->idx][U->idx] - params->timeCost[U->pred->idx][U->suiv->idx]   
-										+ params->timeCost[U->idx][U->suiv->idx] ;
-		bestInsertion[U->idx].place = U->pred ;
+		bestInsertion[U->idx].detour = params->timeCost[U->prev->idx][U->idx] - params->timeCost[U->prev->idx][U->next->idx]   
+										+ params->timeCost[U->idx][U->next->idx] ;
+		bestInsertion[U->idx].place = U->prev ;
 
 		// however, we'll see if there's a better insertion possible
 		// temporarily we'll remove the node from the list (in O(1))
-		U->pred->suiv = U->suiv ;
-		U->suiv->pred = U->pred ;
+		U->prev->next = U->next ;
+		U->next->prev = U->prev ;
 		currentNode = depot ;
 
 		// and explore the route, again
-		while (!currentNode->estUnDepot || firstIt == true ) {
+		while (!currentNode->isADepot || firstIt == true ) {
 			firstIt = false ;
 			cost = params->timeCost[currentNode->idx][U->idx] 
-			+ params->timeCost[U->idx][currentNode->suiv->idx]
-			- params->timeCost[currentNode->idx][currentNode->suiv->idx] ;
+			+ params->timeCost[U->idx][currentNode->next->idx]
+			- params->timeCost[currentNode->idx][currentNode->next->idx] ;
 
 			// finally, check if we can find a best insertion
 			if (cost < bestInsertion[U->idx].detour - 0.0001) { 
 				bestInsertion[U->idx].detour = cost ;
 				bestInsertion[U->idx].place = currentNode ;
 			}
-			currentNode = currentNode->suiv ;
+			currentNode = currentNode->next ;
 		}
 		
 		// we replace the node
-		U->pred->suiv = U ;
-		U->suiv->pred = U ;
+		U->prev->next = U ;
+		U->next->prev = U ;
 	}
 }
 

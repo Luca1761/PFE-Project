@@ -328,7 +328,7 @@ void Population::ExportPop(string nomFichier,bool add, std::vector<double> deliv
 		// exporting the number of routes
 		compteur = 0;
 		for (unsigned int i = 0; i < loc->routes[1].size(); i++)
-			if (!loc->depots[1][i]->suiv->estUnDepot)
+			if (!loc->depots[1][i]->next->isADepot)
 				compteur++;
 		myfile << "Route number: " << compteur << endl;
 		myfile << endl;

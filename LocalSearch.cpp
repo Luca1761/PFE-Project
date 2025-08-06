@@ -38,7 +38,7 @@ void LocalSearch::updateMoves() {
 
       for (unsigned int a1 = 0; a1 < size; a1++) {
         client2 = params->cli[client].sommetsVoisins[a1];
-        if (client2 >= params->nbDepots && clients[k][client2]->estPresent)
+        if (client2 >= params->nbDepots && clients[k][client2]->isPresent)
           clients[k][client]->moves.push_back(client2);
       }
     }
@@ -66,10 +66,10 @@ int LocalSearch::mutationSameDay(unsigned int day) {
       moveEffectue = false;
       noeudU = clients[day][ordreParcours[day][posU]];
 
-      noeudUPred = noeudU->pred;
-      x = noeudU->suiv;
-      noeudXSuiv = x->suiv;
-      xSuivCour = x->suiv->idx;
+      noeudUPred = noeudU->prev;
+      x = noeudU->next;
+      noeudXSuiv = x->next;
+      xSuivCour = x->next->idx;
       routeU = noeudU->route;
       noeudUCour = noeudU->idx;
       noeudUPredCour = noeudUPred->idx;
@@ -81,10 +81,10 @@ int LocalSearch::mutationSameDay(unsigned int day) {
         if (!noeudV->route->nodeAndRouteTested[noeudU->idx] ||
             !noeudU->route->nodeAndRouteTested[noeudU->idx] || firstLoop)
         {
-          noeudVPred = noeudV->pred;
-          y = noeudV->suiv;
-          noeudYSuiv = y->suiv;
-          ySuivCour = y->suiv->idx;
+          noeudVPred = noeudV->prev;
+          y = noeudV->next;
+          noeudYSuiv = y->next;
+          ySuivCour = y->next->idx;
           routeV = noeudV->route;
           noeudVCour = noeudV->idx;
           noeudVPredCour = noeudVPred->idx;
@@ -131,10 +131,10 @@ int LocalSearch::mutationSameDay(unsigned int day) {
           if (!noeudV->route->nodeAndRouteTested[noeudU->idx] ||
               !noeudU->route->nodeAndRouteTested[noeudU->idx] || firstLoop)
           {
-            noeudVPred = noeudV->pred;
-            y = noeudV->suiv;
-            noeudYSuiv = y->suiv;
-            ySuivCour = y->suiv->idx;
+            noeudVPred = noeudV->prev;
+            y = noeudV->next;
+            noeudYSuiv = y->next;
+            ySuivCour = y->next->idx;
             routeV = noeudV->route;
             noeudVCour = noeudV->idx;
             noeudVPredCour = noeudVPred->idx;
@@ -147,7 +147,7 @@ int LocalSearch::mutationSameDay(unsigned int day) {
             if (!moveEffectue)
               moveEffectue = mutation3();
 
-            if (!noeudV->suiv->estUnDepot)
+            if (!noeudV->next->isADepot)
             {
               if (!moveEffectue)
                 moveEffectue = mutation8();
@@ -265,45 +265,36 @@ void LocalSearch::printInventoryLevels(std::ostream& file,bool add, std::vector<
 // supprime le noeud
 void LocalSearch::removeNoeud(Node *U) {
   // mettre a jour les noeuds
-  U->pred->suiv = U->suiv;
+  U->prev->next = U->next;
  
-  U->suiv->pred = U->pred;
+  U->next->prev = U->prev;
 
   U->route->updateRouteData();
 
   // on g�re les autres structures de donn�es
-  removeOP(U->jour, U->idx);
-  U->estPresent = false;
+  removeOP(U->day, U->idx);
+  U->isPresent = false;
 
   // signifier que les insertions sur cette route ne sont plus bonnes
   U->route->initiateInsertions();
-
-  // signifier que pour ce jour les insertions de noeuds ne sont plus bonnes
-  for (unsigned int i = params->nbDepots; i < params->nbDepots + params->nbClients; i++)
-    clients[U->jour][i]->coutInsertion = 1.e30;
 }
 
-void LocalSearch::addNoeud(Node *U)
-{
-  U->placeInsertion->suiv->pred = U;
-  U->pred = U->placeInsertion;
-  U->suiv = U->placeInsertion->suiv;
-  U->placeInsertion->suiv = U;
+void LocalSearch::addNoeud(Node *U) {
+  U->placeInsertion->next->prev = U;
+  U->prev = U->placeInsertion;
+  U->next = U->placeInsertion->next;
+  U->placeInsertion->next = U;
 
   // et mettre a jour les routes
   U->route = U->placeInsertion->route;
   U->route->updateRouteData();
 
   // on g�re les autres structures de donn�es
-  addOP(U->jour, U->idx);
-  U->estPresent = true;
+  addOP(U->day, U->idx);
+  U->isPresent = true;
 
   // signifier que les insertions sur cette route ne sont plus bonnes
   U->route->initiateInsertions();
-
-  // signifier que pour ce jour les insertions de noeuds ne sont plus bonnes
-  for (unsigned int i = params->nbDepots; i < params->nbDepots + params->nbClients; i++)
-    clients[U->jour][i]->coutInsertion = 1.e30;
 }
 
 // calcule pour un jour donn� et un client donn� (repr�sent� par un noeud)
@@ -312,11 +303,11 @@ void LocalSearch::computeCoutInsertion(Node *client) {
   Route *myRoute;
   client->allInsertions.clear();
   // for each route of this day
-  for (unsigned int r = 0; r < routes[client->jour].size(); r++){
+  for (unsigned int r = 0; r < routes[client->day].size(); r++){
     // later on we can simply retrieve
     // calculate the best insertion point as well as its load
 
-    myRoute = routes[client->jour][r];
+    myRoute = routes[client->day][r];
     myRoute->evalInsertClient(client);
     client->allInsertions.push_back(myRoute->bestInsertion[client->idx]);
   }
@@ -334,7 +325,7 @@ double LocalSearch::evaluateCurrentCost_stockout(unsigned int client, bool test)
   for (unsigned int k = 1; k <= params->nbDays; k++) {
     if (test) std::cout << "day "<< k << std::endl;
     noeudClient = clients[k][client];
-    if (noeudClient->estPresent){
+    if (noeudClient->isPresent){
       // adding the inventory cost
         myCost +=
           params->cli[client].inventoryCost * 
@@ -350,9 +341,9 @@ double LocalSearch::evaluateCurrentCost_stockout(unsigned int client, bool test)
 
       // the detour cost
         myCost +=
-            params->timeCost[noeudClient->idx][noeudClient->suiv->idx] +
-            params->timeCost[noeudClient->pred->idx][noeudClient->idx] -
-            params->timeCost[noeudClient->pred->idx][noeudClient->suiv->idx];
+            params->timeCost[noeudClient->idx][noeudClient->next->idx] +
+            params->timeCost[noeudClient->prev->idx][noeudClient->idx] -
+            params->timeCost[noeudClient->prev->idx][noeudClient->next->idx];
 
       // and the possible excess capacity, the privous penalty are calculated already.
         double x1 = noeudClient->route->load -  noeudClient->route->capacity;

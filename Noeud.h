@@ -1,5 +1,5 @@
 /*                       Algorithme - HGSADC                         */
-/*                    Propri�t� de Thibaut VIDAL                     */
+/*                    Propriete de Thibaut VIDAL                     */
 /*                    thibaut.vidal@cirrelt.ca                       */
 
 #ifndef NOEUD_H
@@ -10,73 +10,58 @@
 using namespace std;
 
 class Route ;
-
-struct Move {
-	
-int destination ;
-
-double cout ;
-
-};
-
 class Node
 {
-
+    
 public :
-
   
-bool estUnDepot ;
-// est un depot ou un client
+// status of the node (customer or supplier)
+bool isADepot;
 
-unsigned int idx ;
-// indice du depot ou du client represente
+// index of the represented customer/supplier 
+unsigned int idx;
 
-int place ;
-// place dans la route
+// place in its potential route
+int place;
 
+// node day
+unsigned int day;
 
-unsigned int jour ;
-// indice du jour en question
+// true if this customer is delivered by a route on this day
+bool isPresent;
 
-bool estPresent ;
-// presence de le ce client � ce jour ci
+// next customer/depot on its potential route
+Node* next;
 
+// next customer/depot on its potential route
+Node* prev;
 
-Node * suiv ;
-// depot ou client suivant dans la route
+// its potential route 
+Route* route;
 
+// total load of the road until this node (including itself)
+double previousLoad;
 
-Node * pred ;
+// list of possible best insertions in the different routes
+vector<Insertion> allInsertions;
 
+// removing dominated insertions
+void removeDominatedInsertions(double penalityCapa);
 
-Route * route ;
-// depot ou client precedent dans la route
-// route associee 
+// final choosen place to insert this node
+Node* placeInsertion;
 
-double chargeAvant ;
-// charge de la portion de route situee avant lui (lui compris)
+// possible moves
+vector<unsigned int> moves;
 
-//  List of possible insertions in different routes
-vector <Insertion> allInsertions ;
-
-void removeDominatedInsertions (double penalityCapa);
-// Removing dominated insertions
-
-double coutInsertion ;
-// cout insertion dans ce jour si il devait �tre ins�r�
-Node * placeInsertion ;
-// noeud o� serait ins�r�
-
-vector <unsigned int> moves ;
-// mouvements possibles
+// default constructor	
 Node(void);
-// constructeur 1	
 
-Node(bool _estUnDepot, unsigned int _idx, unsigned int _jour, bool _estPresent, Node * _suiv , Node * _pred, Route * _route);
-// constructeur 2
+// true constructor
+Node(bool _isADepot, unsigned int _idx, unsigned int _day, bool _isPresent, Node * _next , Node * _prev, Route * _route);
 
+// destructor
 ~Node(void);
-// destructeur
 };
 
 #endif
