@@ -1,5 +1,5 @@
 /*                       Algorithme - HGSADC                         */
-/*                    Propri�t� de Thibaut VIDAL                     */
+/*                    Propriete de Thibaut VIDAL                     */
 /*                    thibaut.vidal@cirrelt.ca                       */
 
 #ifndef ROUTE_H
@@ -14,7 +14,7 @@
 #include <algorithm>
 using namespace std ;
 
-class Noeud ;
+class Node ;
 class LocalSearch ;
 
 class Route
@@ -22,63 +22,65 @@ class Route
 
 private:
 
-// acces aux donnees de l'instance
+// instance parameters
 Params * params;
 
-// access  to other features
+// local search related to this route
 LocalSearch * myLS ;
 
 public:
 
-// numero de la route
-unsigned int idx ;
+// route index
+unsigned int idx;
 
 // day associated to the route
-unsigned int day ;
+unsigned int day;
 
-// depot associe a la route
-Noeud * depot ;
+// related depot
+Node * depot;
 
-// distance total de parcours sur la route
-double temps ;
+// total traveled distance (time) on the road
+double time;
 
-// chargement total sur la route
-double charge ;
+// total load on the road
+double load;
 
-// chargement maximum de la route
-double capacity ;
+// maximum capacity of the route
+double capacity;
 
-// valide ou non
-bool isFeasible ;
-
-inline double excedentCharge(double _charge) {
-	return std::max<double>(0, _charge - capacity);
+// compute the possible excedent of charge
+inline double excedentCharge(double _load) {
+	return std::max<double>(0.0, _load - capacity);
 }
 
-// met a jour les charges partielles de la route associ�e au noeud U
-void updateRouteData () ;
-void printRouteData (std::ostream& file) ;
-// pour chaque noeud, stocke le cout de l'insertion dans la route
-vector<Insertion> bestInsertion ;
+// update load and time of the route
+void updateRouteData();
 
-// pour chaque noeud, booleen indiquant si tous les mouvements impliquant ce noeud
-// et cette route ont ete testes sans succes
-vector<bool> nodeAndRouteTested ;
+// print the route
+void printRoute(std::ostream& file);
 
-// pour un client donne, trouve la meilleure position d'insertion
-// eventuellement fait le calcul pour tous les clients d'un coup, ou pour plusieurs
-void evalInsertClient (Noeud * U) ;
-void evalInsertClientp (Noeud * U) ;
-// no insertion is calculated
+// for each client, stores the best insertion of this one in this route
+vector<Insertion> bestInsertion;
+
+// for each client, stores if every move related to this node and this route have been tested without success
+vector<bool> nodeAndRouteTested;
+
+// for a given client, find the best position to a less-cost insertion in the route
+void evalInsertClient(Node * U);
+
+// initialize insertions with default values
 void initiateInsertions();
 
-// moves having nodes in this route need to be examined again:
+// re-initialize moves related to thiw route
 void reinitSingleDayMoves();
 
+// default constructor
 Route(void);
 
-Route(Params* _params, LocalSearch* _myLS, unsigned int _idx, unsigned int _day, Noeud * _depot, double _temps, double _charge, double _capacity);
+// constructor
+Route(Params* _params, LocalSearch* _myLS, unsigned int _idx, unsigned int _day, Node * _depot, double _time, double _load, double _capacity);
 
+// destructor
 ~Route(void);
 };
 
