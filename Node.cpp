@@ -1,6 +1,7 @@
 #include "Node.h"
 
 Node::Node(void){}
+
 Node::Node(bool _isADepot, unsigned int _idx, unsigned  int _day, bool _isPresent, Node * _next , Node * _prev, Route * _route) 
 : isADepot(_isADepot),idx(_idx),day(_day), isPresent(_isPresent), next(_next), prev(_prev), route(_route)
 {
@@ -8,14 +9,14 @@ Node::Node(bool _isADepot, unsigned int _idx, unsigned  int _day, bool _isPresen
 	place = -1 ;
 }
 
-bool mySort (Insertion i, Insertion j) 
-{ 
+bool mySort (Insertion i, Insertion j) { 
 	if (i.detour < j.detour) return true ;
 	else if (i.detour > j.detour) return false ;
 	else return (i.load > j.load) ;
 }
 void Node::removeDominatedInsertions(double penalityCapa)
 {
+	//TO CHECK
 	if (false) std::cout << penalityCapa << std::endl;
 	// First order the elements by increasing detour
 	std::sort (allInsertions.begin(), allInsertions.end(), mySort);
