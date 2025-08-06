@@ -34,7 +34,7 @@ if __name__ == "__main__":
         args = parser.parse_args()
 
         expe_id = args.expe_id
-        nbScenario = 15
+        nbScenario = 25
         nbVehicle = 1
         seed = 42
         nbCores = 16
