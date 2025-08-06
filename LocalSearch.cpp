@@ -44,7 +44,7 @@ void LocalSearch::updateMoves() {
     }
   }
 
-  params->shuffleProches();
+  // params->shuffleProches();
   melangeParcours();
 }
 
