@@ -204,8 +204,8 @@ void LocalSearch::printInventoryLevels(std::ostream& file,bool add, std::vector<
   // Summing distance and load penalty
 
   for (unsigned int r = 0; r < params->nombreVehicules[1]; r++) {
-    routeCosts += routes[1][r]->temps; // temps: total travel time
-    if(!add)  file << "route["<<r<<"]: travel time = " << routes[1][r]->temps << "; capacity = " << routes[1][r]->capacity  << "; charge = " << std::accumulate(deliveries.begin(), deliveries.end(), 0.0) << "; depot = " << routes[1][r]->depot->idx << endl;
+    routeCosts += routes[1][r]->time; // temps: total travel time
+    if(!add)  file << "route["<<r<<"]: travel time = " << routes[1][r]->time << "; capacity = " << routes[1][r]->capacity  << "; charge = " << std::accumulate(deliveries.begin(), deliveries.end(), 0.0) << "; depot = " << routes[1][r]->depot->idx << endl;
     routes[1][r]->printRoute(file);
   }
   

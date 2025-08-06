@@ -24,24 +24,24 @@ class Vehicle;
 class Node;
 
 // needed structure for a few places in the code (easily accessible from here)
-struct Insertion
-{
+struct Insertion {
+       // the detour cost of this insertion
        double detour;
-       //the remain load of this route
+
+       //the remain load of the route where we want to insert
        double load;
 
+       // the place of this insertion in this route
        Node *place;
 
-       Insertion()
-       {
+       Insertion() {
               detour = 1.e30;
               load = -1.e30;
               place = NULL;
        }
        Insertion(double _detour, double _load, Node *_place)
            : detour(_detour), load(_load), place(_place) {}
-       void print()
-       {
+       void print() {
               cout << "(detour: " << detour << " possible_load:" << load << ") ";
               cout << endl;
        }
