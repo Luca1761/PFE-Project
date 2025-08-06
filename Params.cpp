@@ -35,6 +35,7 @@ double calculateStandardDeviation(const std::vector<double>& data, bool isSample
 Params::Params(string nomInstance, int seedRNG, unsigned int nbCore, unsigned int nbScenario, unsigned int nbVeh, bool trace) : 
 	seed(seedRNG), nbCores(nbCore), nbScenarios(nbScenario), nbVehiculesPerDep(nbVeh), traces(trace)
 {
+	trueDemands = false;
 	if (seed == 0)
 		rng = new Rng((unsigned long long)time(NULL));
 	else
@@ -80,7 +81,7 @@ void Params::adjustDemands() {
 				double x = normDist(gen);        // x ~ N(0,1)
 				x = max<double>(0.0, x);   
 				x = min<double>(x, cli[i].maxInventory);
-				if (false) cli[i].dailyDemand[scenario][day] = cli[i].testDemand[jVal + day - 1];
+				if (trueDemands) cli[i].dailyDemand[scenario][day] = cli[i].testDemand[jVal + day - 1];
 				else cli[i].dailyDemand[scenario][day] = (double) round(x);
 				if (traces) std::cout << cli[i].dailyDemand[scenario][day] << " ";
         	}
@@ -190,7 +191,7 @@ void Params::calculeStructures() {
 	for (unsigned int i = 0; i < nbClients + nbDepots; i++)
 	{
 		cli[i].proximityOrder.clear();
-		cli[i].sommetsVoisins.clear();
+		cli[i].neighbors.clear();
 	}
 
 	// on remplit la liste des plus proches pour chaque client
@@ -208,7 +209,7 @@ void Params::calculeStructures() {
 
 		// on remplit les x% plus proches
 		for (unsigned int j = 0; j < (prox * (unsigned int) cli[i].proximityOrder.size()) / 100 && j < proxCst; j++) {
-			cli[i].sommetsVoisins.push_back(cli[i].proximityOrder[j]);
+			cli[i].neighbors.push_back(cli[i].proximityOrder[j]);
 			isCorrelated1[i][cli[i].proximityOrder[j]] = true;
 		}
 	}
@@ -263,9 +264,9 @@ void Params::shuffleProches() {
 	// on introduit du desordre dans la liste des plus proches pour chaque client
 	for (unsigned int i = nbDepots; i < nbClients + nbDepots; i++) {
 		// on introduit du desordre
-		for (unsigned int a1 = 1; a1 < cli[i].sommetsVoisins.size(); a1++) {
-			unsigned int temp = a1 - 1 + (unsigned int) (rng->genrand64_int64() % (cli[i].sommetsVoisins.size() - a1 + 1));
-			std::swap(cli[i].sommetsVoisins[a1], cli[i].sommetsVoisins[temp]);
+		for (unsigned int a1 = 1; a1 < cli[i].neighbors.size(); a1++) {
+			unsigned int temp = a1 - 1 + (unsigned int) (rng->genrand64_int64() % (cli[i].neighbors.size() - a1 + 1));
+			std::swap(cli[i].neighbors[a1], cli[i].neighbors[temp]);
 		}
 	}
 }

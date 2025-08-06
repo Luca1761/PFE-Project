@@ -704,22 +704,9 @@ void Individu::localSearchRunSearch_scenario() {
 	const unsigned int GROUP_SIZE = 1 + nbScenario / params->nbCores;
 	
 	// Local search moves (mutation1-mutation9)
-	params->shuffleProches();
-	vector<thread> threads;
-	for (unsigned int i = 0; i < nbScenario; i += GROUP_SIZE) {
-		unsigned int end = min(i + GROUP_SIZE, nbScenario);
-		threads.emplace_back([this, i, end]() {
-			for (unsigned int scenario = i; scenario < end; scenario++) {
-				localSearchList[scenario]->runSearchSameDay();
-			}
-		});
+	for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
+		localSearchList[scenario]->runSearchSameDay();
 	}
-	for (auto& t : threads) {
-		t.join();
-	}
-	// for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
-	// 	localSearchList[scenario]->runSearchSameDay();
-	// }
 
 	// mutation1-mutation9 for day 1 (average cost reduction)
 	runSearchDay1();
@@ -728,23 +715,9 @@ void Individu::localSearchRunSearch_scenario() {
 	muterDifferentScenarioDP();
 	
 	// We repeat the process after dynamic programming
-	params->shuffleProches();
-	vector<thread> threads2;
-	for (unsigned int i = 0; i < nbScenario; i += GROUP_SIZE) {
-		unsigned int end = min(i + GROUP_SIZE, nbScenario);
-		threads2.emplace_back([this, i, end]() {
-			for (unsigned int scenario = i; scenario < end; scenario++) {
-				localSearchList[scenario]->runSearchSameDay();
-			}
-		});
+	for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
+		localSearchList[scenario]->runSearchSameDay();
 	}
-	
-	for (auto& t : threads2) {
-		t.join();
-	}
-	// for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
-	// 	localSearchList[scenario]->runSearchSameDay();
-	// }
 	runSearchDay1();
 }
 
@@ -752,7 +725,6 @@ void Individu::runSearchDay1() {
 	int nbMoves = 1;
 	int nbPhases = 0;
 	while (nbMoves > 0 && nbPhases < 1000) {
-		params->shuffleProches();
 		localSearchList[0]->updateMoves();
 		nbMoves = 0;
 		nbMoves += mutationSameDay1();

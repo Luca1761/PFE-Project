@@ -34,17 +34,17 @@ void LocalSearch::updateMoves() {
     for (unsigned int i = 0; i < ordreParcours[k].size(); i++) {
       client = ordreParcours[k][i];
       clients[k][client]->moves.clear();
-      size = (unsigned int) params->cli[client].sommetsVoisins.size();
+      size = (unsigned int) params->cli[client].neighbors.size();
 
       for (unsigned int a1 = 0; a1 < size; a1++) {
-        client2 = params->cli[client].sommetsVoisins[a1];
+        client2 = params->cli[client].neighbors[a1];
         if (client2 >= params->nbDepots && clients[k][client2]->isPresent)
           clients[k][client]->moves.push_back(client2);
       }
     }
   }
 
-  // params->shuffleProches();
+  params->shuffleProches();
   melangeParcours();
 }
 

@@ -48,8 +48,8 @@ public:
 	// customer and depot sorted by proximity
 	vector<unsigned int> proximityOrder ;
 
-	// les sommets les plus proches selon le critere de proximite
-	vector<unsigned int> sommetsVoisins ;
+	// client's neighbors, according to proximity criteria
+	vector<unsigned int> neighbors ;
 
 	Client(void);
 

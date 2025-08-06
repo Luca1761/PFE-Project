@@ -112,7 +112,9 @@ class Params {
   // fraction de la population conserv�e lors de la diversification
   double rho;
 
-   std::vector<std::vector<double>> oldDemands;
+  std::vector<std::vector<double>> oldDemands;
+
+  bool trueDemands;
 
   std::vector<double> meanDemands;
 
