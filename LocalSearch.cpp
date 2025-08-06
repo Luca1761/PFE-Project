@@ -215,7 +215,7 @@ void LocalSearch::printInventoryLevels(std::ostream& file,bool add, std::vector<
   double inventoryClient;
   for (unsigned int i = params->nbDepots; i < params->nbDepots + params->nbClients; i++) {
     inventoryClient = params->cli[i].startingInventory;
-    if(!add) file  << "CUSTOMER " << i << " bounds (" << params->cli[i].minInventory
+    if(!add) file  << "CUSTOMER " << i << " bounds (" << "0"
           << "," << params->cli[i].maxInventory << ") " << " " << params->meanDemands[i - params->nbDepots] << " " << params->stdDemands[i - params->nbDepots] << " " << params->cli[i].testDemand[params->jVal] << " " ; 
 
     // print the level in the morning

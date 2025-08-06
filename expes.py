@@ -5,7 +5,7 @@ import argparse
 if __name__ == "__main__":
     chemin_dossier = "dsirp/standard/"
     listInstance = []
-    for nbClients in [5,10,15,25,50,75,100,150,200]:
+    for nbClients in [5,10,15,25,50,75,100,125,150,200]:
         for p in [5,10,20]:
             for i in [1,2,3,4,5]:
                 listInstance.append("dirp-" + str(nbClients) + "-" + str(p) + "-" + str(i) + ".dat")
@@ -30,16 +30,16 @@ if __name__ == "__main__":
 
     else:
         parser = argparse.ArgumentParser(description = 'Launch experiences')
-        parser.add_argument('--expe_id', type = int, default = 134)
+        parser.add_argument('--expe_id', type = int, default = 0)
         args = parser.parse_args()
 
         expe_id = args.expe_id
-        nbScenario = 10
+        nbScenario = 15
         nbVehicle = 1
         seed = 42
         maxIter = 20000
         maxIterNonProd = 20000
-        maxTime = 600
+        maxTime = 1000
         chemin_element = os.path.join(chemin_dossier, listInstance[expe_id])
 
         if os.path.isfile(chemin_element):

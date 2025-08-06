@@ -189,7 +189,7 @@ void Params::calculeStructures() {
 
 	for (unsigned int i = 0; i < nbClients + nbDepots; i++)
 	{
-		cli[i].ordreProximite.clear();
+		cli[i].proximityOrder.clear();
 		cli[i].sommetsVoisins.clear();
 	}
 
@@ -197,19 +197,19 @@ void Params::calculeStructures() {
 	for (unsigned int i = nbDepots; i < nbClients + nbDepots; i++) {
 		for (unsigned int j = 0; j < nbClients + nbDepots; j++)
 			if (i != j)
-				cli[i].ordreProximite.push_back(j); 
+				cli[i].proximityOrder.push_back(j); 
 
 		// et on la classe
 		for (unsigned int a1 = 0; a1 < nbClients + nbDepots - 1; a1++)
 			for (unsigned int a2 = 0; a2 < nbClients + nbDepots - a1 - 2; a2++)
-				if (timeCost[i][cli[i].ordreProximite[a2]] > timeCost[i][cli[i].ordreProximite[a2 + 1]]) {
-					std::swap(cli[i].ordreProximite[a2 + 1], cli[i].ordreProximite[a2]);
+				if (timeCost[i][cli[i].proximityOrder[a2]] > timeCost[i][cli[i].proximityOrder[a2 + 1]]) {
+					std::swap(cli[i].proximityOrder[a2 + 1], cli[i].proximityOrder[a2]);
 				}
 
 		// on remplit les x% plus proches
-		for (unsigned int j = 0; j < (prox * (unsigned int) cli[i].ordreProximite.size()) / 100 && j < proxCst; j++) {
-			cli[i].sommetsVoisins.push_back(cli[i].ordreProximite[j]);
-			isCorrelated1[i][cli[i].ordreProximite[j]] = true;
+		for (unsigned int j = 0; j < (prox * (unsigned int) cli[i].proximityOrder.size()) / 100 && j < proxCst; j++) {
+			cli[i].sommetsVoisins.push_back(cli[i].proximityOrder[j]);
+			isCorrelated1[i][cli[i].proximityOrder[j]] = true;
 		}
 	}
 
@@ -240,7 +240,6 @@ Client Params::getClientDSIRP()
 		std::vector<double> oldDemand = vector<double>(50, 0.);
 		client.testDemand = vector<double>(pHorizon + 1, 0.0);
 		fichier >> client.startingInventory;
-		client.minInventory = 0.0;
 		for (unsigned int i = 0; i < 50; i++) {
 			fichier >> oldDemand[i];
 		}

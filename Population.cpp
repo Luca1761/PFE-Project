@@ -37,7 +37,7 @@ Population::Population(Params* _params) : params(_params)
 		education_scenario(randomIndiv);
 		if (compter) updateNbValides(randomIndiv);
 		if (addIndividu(randomIndiv) == 0 && randomIndiv->estValide) {
-			std::cout << "NEW BEST FEASIBLE FROM INITIALIZATION" << std::endl;
+			if (params->traces) std::cout << "NEW BEST FEASIBLE FROM INITIALIZATION" << std::endl;
 		}
 		delete randomIndiv;
 	}
@@ -143,7 +143,7 @@ void Population::diversify() {
 		Individu *random = new Individu(params);
 		education_scenario(random);
 		if (addIndividu(random) == 0 && random->estValide) {
-			std::cout << "NEW BEST FEASIBLE FROM DIVERSIFY" << std::endl;
+			if (params->traces) std::cout << "NEW BEST FEASIBLE FROM DIVERSIFY" << std::endl;
 		}
 		delete random;
 	}

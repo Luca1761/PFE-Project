@@ -15,31 +15,28 @@ struct couple {
 	double y;
 };
 
-class Client
+class Client // can be a customer or a supplier
 {
 public:
 
-	// customer number
-    int custIdx ;
+	// client index
+    int custIdx;
 
-    // coordonnees des points
-    couple coord ;
+    // client coordinates
+    couple coord;
 
 	// DATA STRUCTURES USED FOR THE IRP //
 	
 	// starting inventory level
-	double startingInventory ;
+	double startingInventory;
 
-	// bounds for the inventory (generally 0)
-	double minInventory;
+	// bound for the inventory
+	double maxInventory;
 
-	// bounds for the inventory
-	double maxInventory ;
+	// daily demand of the customer (scenario based) dailyDemand[scenario][t] -> demand on day t for scenario
+	vector<vector<double>> dailyDemand; 
 
-	// daily demand of the customer (scenario based)
-	vector<vector<double>> dailyDemand ;
-
-	// real demand of the customer (only for test)
+	// true demand of the customer on full horizon (only for test)
 	vector<double> testDemand ;
 
 	// daily inventory cost of the customer
@@ -48,8 +45,8 @@ public:
 	// daily stockout cost of the customer
 	double stockoutCost;
 
-	// ordre des sommets et depots, par proximit�
-	vector<unsigned int> ordreProximite ;
+	// customer and depot sorted by proximity
+	vector<unsigned int> proximityOrder ;
 
 	// les sommets les plus proches selon le critere de proximite
 	vector<unsigned int> sommetsVoisins ;
