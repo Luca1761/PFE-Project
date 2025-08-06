@@ -24,6 +24,7 @@ int main(int argc, char *argv[]) {
   Params* params = new Params(
     command.get_path_to_instance(), 
     command.get_seed(),
+    command.get_nb_cores(),
     command.get_nb_scenarios(),
     command.get_nbVeh(),
     command.get_trace()

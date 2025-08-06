@@ -32,8 +32,8 @@ double calculateStandardDeviation(const std::vector<double>& data, bool isSample
 
 
 // creating the parameters from the instance file
-Params::Params(string nomInstance, int seedRNG, unsigned int nbScenario, unsigned int nbVeh, bool trace) : 
-	seed(seedRNG), nbScenarios(nbScenario), nbVehiculesPerDep(nbVeh), traces(trace)
+Params::Params(string nomInstance, int seedRNG, unsigned int nbCore, unsigned int nbScenario, unsigned int nbVeh, bool trace) : 
+	seed(seedRNG), nbCores(nbCore), nbScenarios(nbScenario), nbVehiculesPerDep(nbVeh), traces(trace)
 {
 	if (seed == 0)
 		rng = new Rng((unsigned long long)time(NULL));

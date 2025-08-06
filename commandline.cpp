@@ -42,6 +42,7 @@ commandline::commandline(int argc, char *argv[])
     set_instance_name(string(argv[1]));
 
     seed = 0;
+    nb_cores = 1;
     nbVeh = 1; // unknown
     maxTime = 10;
     maxIter = 100;
@@ -57,6 +58,8 @@ commandline::commandline(int argc, char *argv[])
         hasSolName = true;
       } else if (string(argv[i]) == "-seed")
         seed = atoi(argv[i + 1]);
+      else if (string(argv[i]) == "-cores")
+        nb_cores = (unsigned int) atoi(argv[i+1]);
       else if (string(argv[i]) == "-traces")
         traces = (atoi(argv[i + 1]) == 1);
       else if (string(argv[i]) == "-time")
@@ -115,6 +118,9 @@ unsigned int commandline::get_nbVeh() { return nbVeh; }
 
 // renvoie la seed
 int commandline::get_seed() { return seed; }
+
+// renvoie la seed
+unsigned int commandline::get_nb_cores() { return nb_cores; }
 
 // max iterations
 unsigned int commandline::get_maxIter(){ return  maxIter;}

@@ -507,7 +507,7 @@ bool LotSizingSolver::solveStockoutBackward() {
       C[scenario][i] = std::make_shared<PLFunction>(params); // a piecewise linear function in each period
     }
   }
-  const unsigned int GROUP_SIZE_2 = nbScenario / 4 + 1;
+  const unsigned int GROUP_SIZE_2 = nbScenario / params->nbCores + 1;
 	vector<thread> threads;
 	for (unsigned int scenario = 0; scenario < nbScenario; scenario += GROUP_SIZE_2) {
 		unsigned int end = std::min(scenario + GROUP_SIZE_2, nbScenario);

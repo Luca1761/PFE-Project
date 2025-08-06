@@ -14,6 +14,8 @@ private:
     // seed
     int seed;
 
+    unsigned int nb_cores;
+
     // number of scenarios
     unsigned int nb_scenarios;
 
@@ -70,6 +72,8 @@ public:
 
     // seed
     int get_seed();
+
+    unsigned int get_nb_cores();
 
     // max iterations
     unsigned int get_maxIter();

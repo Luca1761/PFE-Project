@@ -19,7 +19,7 @@ if __name__ == "__main__":
             chemin_element = os.path.join(chemin_dossier, nom_element)
             if os.path.isfile(chemin_element):
                 print(chemin_element)
-                result = subprocess.Popen(['./irp.exe', chemin_element, '-veh', '1',  '-seed',  '55',  '-scenarios', '1', '-iter', '10000', "-iterNonProd", '10000', '-time', '3', '-traces', '0'], stdout=subprocess.PIPE, text=True, stderr=subprocess.PIPE)
+                result = subprocess.Popen(['./irp.exe', chemin_element, '-veh', '1',  '-seed',  '55',  '-scenarios', '1', '-iter', '10000', "-iterNonProd", '10000', '-time', '3', '-traces', '0', '-cores', '4'], stdout=subprocess.PIPE, text=True, stderr=subprocess.PIPE)
                 for res in result.stdout:
                     average += float(res)
                     print(res)
@@ -37,13 +37,14 @@ if __name__ == "__main__":
         nbScenario = 15
         nbVehicle = 1
         seed = 42
+        nbCores = 16
         maxIter = 20000
         maxIterNonProd = 20000
         maxTime = 1000
         chemin_element = os.path.join(chemin_dossier, listInstance[expe_id])
 
         if os.path.isfile(chemin_element):
-            result = subprocess.Popen(['./irp', chemin_element, '-veh', str(nbVehicle), '-seed', str(seed), '-scenarios', str(nbScenario), '-iter', str(maxIter), "-iterNonProd", str(maxIterNonProd), '-time', str(maxTime), '-traces', '0'], stdout=subprocess.PIPE, text=True, stderr=subprocess.PIPE)
+            result = subprocess.Popen(['./irp', chemin_element, '-veh', str(nbVehicle), '-seed', str(seed), '-scenarios', str(nbScenario), '-iter', str(maxIter), "-iterNonProd", str(maxIterNonProd), '-time', str(maxTime), '-traces', '0', '-cores', str(nbCores)], stdout=subprocess.PIPE, text=True, stderr=subprocess.PIPE)
             for res in result.stdout:
                 # average += float(res)
                 print(res)
