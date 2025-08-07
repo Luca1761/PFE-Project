@@ -37,7 +37,7 @@ public:
 	vector<vector<double>> dailyDemand; 
 
 	// true demand of the customer on full horizon (only for test)
-	vector<double> testDemand ;
+	vector<double> trueDemand ;
 
 	// daily inventory cost of the customer
 	double inventoryCost ;
@@ -51,8 +51,10 @@ public:
 	// client's neighbors, according to proximity criteria
 	vector<unsigned int> neighbors ;
 
+	// constructor
 	Client(void);
 
+	// destructor
 	~Client(void);
 };
 

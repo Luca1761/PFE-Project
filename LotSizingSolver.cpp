@@ -477,7 +477,7 @@ bool LotSizingSolver::backtrackingStockoutBackward(unsigned int scenario, unsign
 }
 
 void LotSizingSolver::Lastday(vector<std::shared_ptr<PLFunction>> &Cf, unsigned int scenario){//for the last day
-  double maxInventory = (params->endDayInventories) ? params->cli[client].maxInventory : params->cli[client].maxInventory - params->cli[client].dailyDemand[scenario][horizon];
+  double maxInventory = (params->endDayInventories) ? params->cli[client].maxInventory : std::max(0.0, params->cli[client].maxInventory - params->cli[client].dailyDemand[scenario][horizon]);
   Cf[horizon]->nbPieces = 0;
   Cf[horizon]->pieces = vector<shared_ptr<LinearPiece>>();
   std::shared_ptr<LinearPiece> tmp = std::make_shared<LinearPiece>(0, 0, maxInventory, 0);
@@ -547,7 +547,8 @@ void LotSizingSolver::solveOneScenario(unsigned int scenario) {
     Lastday(C[scenario], scenario);
 
     for (unsigned int t = horizon; t >= 2; t--) {
-      if (neq(C[scenario][t]->pieces[0]->p1->x,0)) {
+      if (neq(C[scenario][t]->pieces[0]->p1->x, 0)) {
+        std::cout << "Ct(0) doesn't exist!!!: " << C[scenario][t]->pieces[0]->p1->x << std::endl;
         throw string("Ct(0) doesn't exist!!!");
       }
       //picewise linear functions
@@ -559,7 +560,7 @@ void LotSizingSolver::solveOneScenario(unsigned int scenario) {
       std::shared_ptr<PLFunction>  fromF2;
       std::shared_ptr<PLFunction>  fromC1;
       std::shared_ptr<PLFunction>  fromC2;
-      maxInventory = (params->endDayInventories) ? params->cli[client].maxInventory : params->cli[client].maxInventory - params->cli[client].dailyDemand[scenario][t - 1];
+      maxInventory = (params->endDayInventories) ? params->cli[client].maxInventory : std::max(0.0, params->cli[client].maxInventory - params->cli[client].dailyDemand[scenario][t - 1]);
       maxDeliverable = (params->endDayInventories) ? params->cli[client].maxInventory + params->cli[client].dailyDemand[scenario][t] : params->cli[client].maxInventory;
       
       //(1). First case: no delivery and no stockout
@@ -591,7 +592,6 @@ void LotSizingSolver::solveOneScenario(unsigned int scenario) {
         f2->pieces[i]->fromInst = nullptr;
       }
       f2->moveUp(C[scenario][t]->pieces[0]->p1->y); //f2(x) = C_t(0) + stockoutCost * (daily - x), x < d_i^t
-      
       f2 = f2->getInBound(0, maxInventory);
       f2 = f2->getInBound(0, params->cli[client].dailyDemand[scenario][t]); //x < d_i^t
 

@@ -65,10 +65,7 @@ class Params {
   // number of days
   unsigned int nbDays;
 
-  void setJval(unsigned int _jVal) {
-       jVal = _jVal;
-       nbDays = pHorizon - jVal + 1;
-  }
+  void setJval(unsigned int _jVal);
 
   // in the rolling horizon, update every variable according to what happened the previous day
   void updateToDay(unsigned int j, std::vector<double> deliveries);
@@ -131,7 +128,7 @@ class Params {
   
   // constant value in the objective
   double objectiveConstant;
-  void computeConstant();
+  void computeObjectiveConstant();
   
   // number of clients
   unsigned int nbClients;
@@ -152,7 +149,7 @@ class Params {
   std::vector<double> stdDemands;
 
   // compute the demands for every client (according to mean and std or to true demand)
-  void adjustDemands();
+  void computeScenarios();
 
   // if true, the true demand is used (only one scenario)
   bool deterministic;
@@ -208,10 +205,10 @@ class Params {
   void computeStructures();
 
   // randomly shuffle proximity arrays
-  void shuffleProches();
+  void shuffleNeighbors();
   
   // constructor
-  Params(string nomInstance, int seedRNG, unsigned int nbCores, unsigned int nbScenario, unsigned int nbVeh, bool trace, bool trueDemand);
+  Params(string nomInstance, int seedRNG, unsigned int nbCore, unsigned int nbScenario, unsigned int nbVeh, bool endInventories, bool trace, bool determinist, bool trueDemand1);
 
   // destructor
   ~Params(void);

@@ -1,4 +1,4 @@
-The instances come from http://www.leandro-coelho.com/instances/inventory-routing/.
+The instances come from http://www.leandro-coelho.com/instances/stochastic-and-dynamic-inventory-routing/.
 There is the description of the format of these instances:
 
 - First line:

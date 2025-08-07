@@ -44,7 +44,7 @@ void LocalSearch::updateMoves() {
     }
   }
 
-  params->shuffleProches();
+  params->shuffleNeighbors();
   melangeParcours();
 }
 
@@ -216,7 +216,7 @@ void LocalSearch::printInventoryLevels(std::ostream& file,bool add, std::vector<
   for (unsigned int i = params->nbDepots; i < params->nbDepots + params->nbClients; i++) {
     inventoryClient = params->cli[i].startingInventory;
     if(!add) file  << "CUSTOMER " << i << " bounds (" << "0"
-          << "," << params->cli[i].maxInventory << ") " << " " << params->meanDemands[i - params->nbDepots] << " " << params->stdDemands[i - params->nbDepots] << " " << params->cli[i].testDemand[params->jVal] << " " ; 
+          << "," << params->cli[i].maxInventory << ") " << " " << params->meanDemands[i - params->nbDepots] << " " << params->stdDemands[i - params->nbDepots] << " " << params->cli[i].trueDemand[params->jVal] << " " ; 
 
     // print the level in the morning
     if(!add) file << "[morning: " << inventoryClient;
@@ -224,8 +224,8 @@ void LocalSearch::printInventoryLevels(std::ostream& file,bool add, std::vector<
     inventoryClient += deliveries[i - params->nbDepots];
     if(!add) file  << ", replenishment: " << deliveries[i - params->nbDepots];
     // print the level after consumption
-    double stock = std::max<double>(0,params->cli[i].testDemand[params->jVal]-inventoryClient);
-    inventoryClient = std::max<double>(0,inventoryClient-params->cli[i].testDemand[params->jVal]);
+    double stock = std::max<double>(0,params->cli[i].trueDemand[params->jVal]-inventoryClient);
+    inventoryClient = std::max<double>(0,inventoryClient-params->cli[i].trueDemand[params->jVal]);
     
     if(!add) file  << ", evening: " << inventoryClient << "] ";
 

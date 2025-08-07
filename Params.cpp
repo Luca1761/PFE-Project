@@ -1,40 +1,30 @@
 #include "Params.h"
 
-double calculateMean(const std::vector<double>& data) {
+double computeMean(const std::vector<double>& data) {
     if (data.empty()) {
-        return 0.0; // Or handle error for empty data
+        return 0.0;
     }
     double sum = std::accumulate(data.begin(), data.end(), 0.0);
     return sum / (double) data.size();
 }
 
-double calculateStandardDeviation(const std::vector<double>& data, bool isSample = true) {
+double computeStd(const std::vector<double>& data) {
     if (data.empty()) {
-        return 0.0; // Or handle error for empty data
+        return 0.0; 
     }
-
-    double mean = calculateMean(data); // Reusing the mean function
-
+    double mean = computeMean(data); // Reusing the mean function
     double sumSquaredDifferences = 0.0;
     for (double value : data) {
         sumSquaredDifferences += std::pow(value - mean, 2);
     }
+    return std::sqrt(sumSquaredDifferences / (double) data.size()); // Population standard deviation
 
-    if (isSample && data.size() > 1) {
-        return std::sqrt(sumSquaredDifferences / ((double)data.size() - 1.0)); // Sample standard deviation
-    } else if (!isSample) {
-        return std::sqrt(sumSquaredDifferences / (double) data.size()); // Population standard deviation
-    } else {
-        return 0.0; // Handle case of single element for sample std dev
-    }
 }
 
-// creating the parameters from the instance file
-Params::Params(string nomInstance, int seedRNG, unsigned int nbCore, unsigned int nbScenario, unsigned int nbVeh, bool trace, bool trueDemand1) : 
-	seed(seedRNG), nbCores(nbCore), nbScenarios(nbScenario), nbVehiculesPerDep(nbVeh), traces(trace), trueDemandDay1(trueDemand1)
+Params::Params(string nomInstance, int seedRNG, unsigned int nbCore, unsigned int nbScenario, unsigned int nbVeh, bool endInventories, bool trace, bool determinist, bool trueDemand1) : 
+	seed(seedRNG), nbCores(nbCore), nbScenarios(nbScenario), nbVehiculesPerDep(nbVeh), endDayInventories(endInventories), traces(trace), deterministic(determinist), trueDemandDay1(trueDemand1)
 {
-	endDayInventories = false;
-
+	jVal = 1; // initial value for jVal
 	if (seed == 0)
 		rng = new Rng((unsigned long long)time(NULL));
 	else
@@ -44,8 +34,7 @@ Params::Params(string nomInstance, int seedRNG, unsigned int nbCore, unsigned in
 
 	if (file.is_open())
 		collectData();	
-	else
-	{
+	else {
 		cout << "Unable to open file : " << nomInstance << endl;
 		throw string(" Unable to open file ");
 	}
@@ -53,35 +42,39 @@ Params::Params(string nomInstance, int seedRNG, unsigned int nbCore, unsigned in
 	computeDistancesFromCoords();
 }
 
-void Params::adjustDemands() {
+void Params::computeScenarios() {
+	// clean the demand and supply
 	for (unsigned int i = nbDepots; i < nbClients + nbDepots; i++) {
 		cli[i].dailyDemand = vector<vector<double>>(nbScenarios, vector<double>(nbDays + 1, 0.0));
 	}
 	availableSupply = vector<double>(nbDays + 1 + 1, 0.);
-	for (unsigned int t = 1; t <= nbDays; t++) {
-		availableSupply[t] = allSupply[jVal + t - 1];
-	}
-	availableSupply[1] += cli[0].startingInventory;
 
-	for (unsigned int d = 0; d < nbDepots; d++) {
-		if (traces) std::cout << "Depot " << d << ": " << std::endl;
-		for (unsigned int k = 1; k <= nbDays; k++) {
-			if (traces) std::cout << availableSupply[k] << " ";
-		}
-		if (traces) std::cout << std::endl;
+	// supply is deterministic and availableSupply[1] depends on jVal (allSupply contains supply for the whole horizon)
+	for (unsigned int day = 1; day <= nbDays; day++) {
+		availableSupply[day] = allSupply[jVal + day - 1];
 	}
+	availableSupply[1] += cli[0].startingInventory; // at day 1, we add the initial inventory
+
+	if (traces) {
+		std::cout << "Depot supply: " << std::endl;
+		for (unsigned int day = 1; day <= nbDays; day++) {
+			std::cout << availableSupply[day] << " ";
+		}
+		std::cout << std::endl;
+		std::cout << std::endl;
+	}
+
+	if (traces) std::cout << "Scenarios for customers demands: " << std::endl;
 	mt19937 gen((unsigned int) seed + jVal); 
 	for (unsigned int scenario = 0; scenario < nbScenarios; scenario++) {
 		if (traces) std::cout << "Scenario " << scenario + 1 << " :" << std::endl;
 		for (unsigned int i = nbDepots; i < nbClients + nbDepots; i++) {	
 			if (traces) std::cout << "Client " << i << ": ";
-			normal_distribution<double> normDist((int) meanDemands[i - nbDepots], (int) stdDemands[i - nbDepots]);    
+			normal_distribution<double> normDist(meanDemands[i - nbDepots], stdDemands[i - nbDepots]); // normal distribution with mean and std 
 			for (unsigned int day = 1; day <= nbDays; day++) {
-				double x = normDist(gen);        // x ~ N(0,1)
-				x = max<double>(0.0, x);   
-				// x = min<double>(x, cli[i].maxInventory);
-				if ((trueDemandDay1 && day == 1) || deterministic) cli[i].dailyDemand[scenario][day] = cli[i].testDemand[jVal + day - 1];
-				else cli[i].dailyDemand[scenario][day] = (double) round(x);
+				double x = max<double>(0.0, normDist(gen)); // make sure the demand is >= 0
+				if ((trueDemandDay1 && day == 1) || deterministic) cli[i].dailyDemand[scenario][day] = cli[i].trueDemand[jVal + day - 1]; // use the true demand (for deterministic or for day 1)
+				else cli[i].dailyDemand[scenario][day] = (double) round(x); 
 				if (traces) std::cout << cli[i].dailyDemand[scenario][day] << " ";
         	}
 			if (traces) std::cout << std::endl;
@@ -91,31 +84,31 @@ void Params::adjustDemands() {
 }
 
 void Params::computeDistancesFromCoords() {
-	double d;
+	double cij;
 	vector<double> distances;
 
-	// on remplit les distances dans timeCost
+	// fille timeCost distances
 	for (unsigned int i = 0; i < nbClients + nbDepots; i++) {
 		distances.clear();
 		for (unsigned int j = 0; j < nbClients + nbDepots; j++) {
-			d = sqrt((cli[i].coord.x - cli[j].coord.x) * (cli[i].coord.x - cli[j].coord.x) +
+			cij = sqrt((cli[i].coord.x - cli[j].coord.x) * (cli[i].coord.x - cli[j].coord.x) +
 					 (cli[i].coord.y - cli[j].coord.y) * (cli[i].coord.y - cli[j].coord.y));
 
 			// integer rounding
-			if (isRoundingInteger) // to be able to deal with other rounding conventions
+			if (isRoundingInteger) // to be able to deal with other rounding conventions (as in coelho instances)
 			{
-				d += 0.5;
-				d = (double)(int)d;
+				cij += 0.5;				 // even if I'm pretty sure it doesn't respect triangular inequality
+				cij = (double)(int)cij;
 			}
 			else if (isRoundingTwoDigits)
 			{
-				d = d * 100.0;
-				d += 0.5;
-				d = (double)(int)d;
-				d = d * 0.01;
+				cij = cij * 100.0;
+				cij += 0.5;
+				cij = (double)(int)cij;
+				cij = cij * 0.01;
 			}
 
-			distances.push_back((double) d);
+			distances.push_back((double) cij);
 		}
 		timeCost.push_back(distances);
 	}
@@ -124,7 +117,7 @@ void Params::computeDistancesFromCoords() {
 void Params::setMethodParams()
 {
 	// parameters related to how the problem is treated
-	isRoundingInteger = true; // using the rounding (for now set to true, because currently testing on the instances of Uchoa)
+	isRoundingInteger = true; // using the rounding (for now set to true, because currently testing on the instances of Coelho)
 	isRoundingTwoDigits = false;
 
 	// parameters of the population
@@ -148,128 +141,117 @@ void Params::setMethodParams()
 	splitBounds = std::vector<double> (nbScenarios, 1.0);	// Split parameter (how far to search beyond the capacity limit) // o
 }
 
-Params::~Params(void) {}
 
-// effectue le prelevement des donnees du fichier
 void Params::collectData() {	
-	jVal = 1;
-	// variables temporaires utilisees dans la fonction
+	// temporary variables
 	vector<Vehicle> tempI;
-	double capacity;
-	//C. Archetti, L. Bertazzi, G. Laporte, and M.G. Speranza. A branch-and-cut algorithm for a vendor-managed inventory-routing problem. Transportation Science, 41:382-391, 2007 Instances
-	// IRP format of Archetti http://or-brescia.unibs.it/instances 
+	double vehicleCapacity;
 	if (nbVehiculesPerDep == 0) {
 		cout << "ERROR : Need to specify fleet size" << endl;
 		throw string("ERROR : Need to specify fleet size");
 	}
-	file >> nbClients >> pHorizon >> capacity;
-
-	nbDepots = 1;
-
-	vehicleOrder.push_back(tempI);
+	
+	file >> nbClients >> pHorizon >> vehicleCapacity;
+	nbDepots = 1; // in the IRP, only one depot
+	
+	vehicleOrder.push_back(tempI); // (vehicleOrder[0] and vehicleNumber[0] are not used)
 	vehicleNumber.push_back(0);
+	
 	for (unsigned int kk = 1; kk <= pHorizon; kk++) {
 		vehicleOrder.push_back(tempI);
 		vehicleNumber.push_back(nbDepots * nbVehiculesPerDep);
 		for (unsigned int i = 0; i < nbDepots; i++)
 			for (unsigned int j = 0; j < nbVehiculesPerDep; j++)
-				vehicleOrder[kk].push_back(Vehicle(i, capacity));
+				vehicleOrder[kk].push_back(Vehicle(i, vehicleCapacity));
 	}
-	// Liste des clients
-	for (unsigned int i = 0; i < nbClients + nbDepots; i++) {
+	// get client (and supplier) information
+	for (unsigned int i = 0; i < nbClients + nbDepots; i++)
 		cli.push_back(getNextClient());
-	}
 }
 
-// calcule les autres structures du programme
 void Params::computeStructures() {
 	// initializing the correlation matrix
 	isCorrelated = vector<vector<bool>>(nbClients + nbDepots, vector<bool>(nbClients + nbDepots, false));
-
-	for (unsigned int i = 0; i < nbClients + nbDepots; i++)
-	{
+	
+	// clean the old structures (in case of rolling horizon, proximity order is still the same but not neighbors because we shuffle it at the beginning)
+	for (unsigned int i = 0; i < nbClients + nbDepots; i++) {
 		cli[i].proximityOrder.clear();
 		cli[i].neighbors.clear();
 	}
-
-	// on remplit la liste des plus proches pour chaque client
+	
 	for (unsigned int i = nbDepots; i < nbClients + nbDepots; i++) {
+		// we fill the vector of nearest for every client
 		for (unsigned int j = 0; j < nbClients + nbDepots; j++)
-			if (i != j)
-				cli[i].proximityOrder.push_back(j); 
+			if (i != j) cli[i].proximityOrder.push_back(j); 
 
-		// et on la classe
+		// then we sort them
 		for (unsigned int a1 = 0; a1 < nbClients + nbDepots - 1; a1++)
 			for (unsigned int a2 = 0; a2 < nbClients + nbDepots - a1 - 2; a2++)
 				if (timeCost[i][cli[i].proximityOrder[a2]] > timeCost[i][cli[i].proximityOrder[a2 + 1]]) {
 					std::swap(cli[i].proximityOrder[a2 + 1], cli[i].proximityOrder[a2]);
 				}
-
-		// on remplit les x% plus proches
+		
+		// we only keep the prox% nearest neighbors
 		for (unsigned int j = 0; j < (prox * (unsigned int) cli[i].proximityOrder.size()) / 100 && j < proxCst; j++) {
 			cli[i].neighbors.push_back(cli[i].proximityOrder[j]);
 			isCorrelated[i][cli[i].proximityOrder[j]] = true;
 		}
 	}
-
-	// on melange les proches
-	shuffleProches();
+		
+	// we shuffle these neighbors
+	shuffleNeighbors();
 }
-
-Client Params::getNextClient()
-{
+	
+Client Params::getNextClient() {
 	struct couple coordonnees;
 	Client client;
-
-	// file format of Cordeau et al.
+	
+	// file format of Coelho et al.
 	file >> client.custIdx;
 	file >> coordonnees.x >> coordonnees.y;
 	client.coord = coordonnees;
-
+	
 	if (client.custIdx == 0) // information of the supplier
 	{
 		file >> client.startingInventory;
-		allSupply = vector<double>(pHorizon + 1 + 1, 0.);
+		allSupply = vector<double>(pHorizon + 1, 0.);
 		for (unsigned int t = 1; t <= pHorizon; t++) {
 			file >> allSupply[t];
 		}
 		file >> inventoryCostSupplier;
 	} else //information of each customer
 	{
-		std::vector<double> oldDemand = vector<double>(50, 0.);
-		client.testDemand = vector<double>(pHorizon + 1, 0.0);
 		file >> client.startingInventory;
-		for (unsigned int i = 0; i < 50; i++) {
-			file >> oldDemand[i];
-		}
-		for (unsigned int t = 1; t <= pHorizon; t++) {
-			file >> client.testDemand[t];
-		}
-		file >> client.maxInventory;
-		file >> client.inventoryCost;
-		file >> client.stockoutCost;
-		// TO CHECK
-		meanDemands.push_back(calculateMean(oldDemand));
-		stdDemands.push_back(calculateStandardDeviation(oldDemand));
-		oldDemands.push_back(oldDemand);
-		
-	}
 
+		std::vector<double> historicalDemands = vector<double>(50, 0.);
+		for (unsigned int i = 0; i < 50; i++) {
+			file >> historicalDemands[i];
+		}
+		meanDemands.push_back(computeMean(historicalDemands));
+		stdDemands.push_back(computeStd(historicalDemands));
+		oldDemands.push_back(historicalDemands);
+
+		client.trueDemand = vector<double>(pHorizon + 1, 0.0);
+		for (unsigned int t = 1; t <= pHorizon; t++) {
+			file >> client.trueDemand[t];
+		}
+
+		file >> client.maxInventory >> client.inventoryCost >> client.stockoutCost;
+	}
 	return client;
 }
-
-void Params::shuffleProches() {
-	// on introduit du desordre dans la liste des plus proches pour chaque client
+		
+void Params::shuffleNeighbors() {
+	// we shuffle the nearest neighbors vector of each client
 	for (unsigned int i = nbDepots; i < nbClients + nbDepots; i++) {
-		// on introduit du desordre
 		for (unsigned int a1 = 1; a1 < cli[i].neighbors.size(); a1++) {
 			unsigned int temp = a1 - 1 + (unsigned int) (rng->genrand64_int64() % (cli[i].neighbors.size() - a1 + 1));
 			std::swap(cli[i].neighbors[a1], cli[i].neighbors[temp]);
 		}
 	}
 }
-
-void Params::computeConstant() {
+		
+void Params::computeObjectiveConstant() {
 	objectiveConstant = 0.;
 	// Adding the total cost for supplier inventory over the planning horizon (CONSTANT IN OBJECTIVE)
 	for (unsigned int k = 1; k <= nbDays; k++) {
@@ -277,28 +259,35 @@ void Params::computeConstant() {
 	}
 }
 
+void Params::setJval(unsigned int _jVal) {
+	jVal = _jVal;
+	nbDays = pHorizon - jVal + 1;
+}
+
 void Params::updateToDay(unsigned int j, std::vector<double> deliveries) {
-    setJval(j);
-	delete rng;
-	rng = new Rng((unsigned long long)(seed + jVal));	
-	if (j != 1) cli[0].startingInventory = availableSupply[1] - std::accumulate(deliveries.begin(), deliveries.end(), 0.0);
-	if (traces) std::cout << "Init | MAX | Previous delivery | True demand" << std::endl;
+	setJval(j); // set jVal to the actual day of the rolling horizon
+	if (rng != nullptr) delete rng;
+	rng = new Rng((unsigned long long)(seed + jVal));  // new rng to compute scenarios, etc.
+	if (j != 1) cli[0].startingInventory = availableSupply[1] - std::accumulate(deliveries.begin(), deliveries.end(), 0.0); // if not first day of rolling horizon, actualize starting inventory of supplier
+	if (traces) std::cout << " Client | Init | MAX | Previous delivery | True demand" << std::endl;
     for (unsigned int c = nbDepots; c < nbDepots + nbClients; c++) {  
-      double deliver = (j == 1) ? -1 : deliveries[c - nbDepots];
-      if (j != 1) cli[c].startingInventory = std::max(0.0, cli[c].startingInventory + (deliveries[c - nbDepots] - cli[c].testDemand[j - 1]));
-      if (traces) std::cout << "Client " << c << ": " <<  cli[c].startingInventory << " " << cli[c].maxInventory << " " << deliver << " "  << cli[c].testDemand[j] << std::endl;
+		string deliver = (j == 1) ? "?" : to_string(deliveries[c - nbDepots]);
+		if (j != 1) cli[c].startingInventory = std::max(0.0, cli[c].startingInventory + deliveries[c - nbDepots] - cli[c].trueDemand[j - 1]); // same for customers
+      if (traces) std::cout << "Client " << c << ": " <<  cli[c].startingInventory << " " << cli[c].maxInventory << " " << deliver << " "  << cli[c].trueDemand[j] << std::endl;
     }
 	if (traces) std::cout << std::endl;
 	if (j != 1) {
 		for (unsigned int i = nbDepots; i < nbClients + nbDepots; i++) {
-			oldDemands[i - nbDepots].push_back(cli[i].testDemand[j - 1]);
-			meanDemands[i - nbDepots] = calculateMean(oldDemands[i - nbDepots]);
-			stdDemands[i - nbDepots] = calculateStandardDeviation(oldDemands[i - nbDepots]);
+			oldDemands[i - nbDepots].push_back(cli[i].trueDemand[j - 1]); // we add the previous demand to historical data and compute again means and std
+			meanDemands[i - nbDepots] = computeMean(oldDemands[i - nbDepots]);
+			stdDemands[i - nbDepots] = computeStd(oldDemands[i - nbDepots]);
 		}
 	}
     
-    adjustDemands();
-    setMethodParams();
-    computeStructures();	
-    computeConstant();
+    computeScenarios(); // compute new scenarios (and actualize available supply)
+    setMethodParams(); // reset method params (especially borneSplit and penalityCapa)
+    computeStructures();  // re compute structures, especially neighbors, randomly shuffled again
+    computeObjectiveConstant(); // compute the new objective constant, related to new available supply 
 }
+
+Params::~Params(void) {}
