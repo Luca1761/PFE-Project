@@ -124,7 +124,7 @@ int LocalSearch::mutationSameDay(unsigned int day) {
 
   // c'est un depot on tente l'insertion derriere le depot de ce jour
       // si il ya correlation
-      if (params->isCorrelated1[noeudU->idx][depots[day][0]->idx] &&
+      if (params->isCorrelated[noeudU->idx][depots[day][0]->idx] &&
           moveEffectue != 1)
         for (unsigned int route = 0; route < depots[day].size(); route++) {
           noeudV = depots[day][route];
@@ -203,7 +203,7 @@ void LocalSearch::printInventoryLevels(std::ostream& file,bool add, std::vector<
 
   // Summing distance and load penalty
 
-  for (unsigned int r = 0; r < params->nombreVehicules[1]; r++) {
+  for (unsigned int r = 0; r < params->vehicleNumber[1]; r++) {
     routeCosts += routes[1][r]->time; // temps: total travel time
     if(!add)  file << "route["<<r<<"]: travel time = " << routes[1][r]->time << "; capacity = " << routes[1][r]->capacity  << "; charge = " << std::accumulate(deliveries.begin(), deliveries.end(), 0.0) << "; depot = " << routes[1][r]->depot->idx << endl;
     routes[1][r]->printRoute(file);
@@ -402,10 +402,10 @@ LocalSearch::LocalSearch(Individu *_individu, Params *_params, unsigned int _idx
     }
         
     // dimensionnement du champ depots et routes a la bonne taille       
-    for (unsigned int i = 0; i < params->nombreVehicules[day]; i++) {
-      myDepot = new Node(true, params->ordreVehicules[day][i].depotNumber, day, false, NULL, NULL, NULL);
-      myDepotFin = new Node(true, params->ordreVehicules[day][i].depotNumber, day, false, NULL, NULL, NULL);
-      myRoute = new Route(params, this, i, day, myDepot, 0, 0, params->ordreVehicules[day][i].capacity);
+    for (unsigned int i = 0; i < params->vehicleNumber[day]; i++) {
+      myDepot = new Node(true, params->vehicleOrder[day][i].depotNumber, day, false, NULL, NULL, NULL);
+      myDepotFin = new Node(true, params->vehicleOrder[day][i].depotNumber, day, false, NULL, NULL, NULL);
+      myRoute = new Route(params, this, i, day, myDepot, 0, 0, params->vehicleOrder[day][i].capacity);
       myDepot->route = myRoute;
       myDepotFin->route = myRoute;
       routes[day].push_back(myRoute);

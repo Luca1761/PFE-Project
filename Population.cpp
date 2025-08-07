@@ -457,7 +457,7 @@ void Population::afficheEtat(unsigned int nbIter)
 		cout << "NO-VALID ";
 	}
 
-	cout << " | " << endl;
+	cout << " | ";
 
 	if (getIndividuBestInvalide() != NULL) {
 		cout << getIndividuBestInvalide()->coutSol.evaluation << " Scenarios - ";

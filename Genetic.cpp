@@ -133,15 +133,15 @@ void Genetic::reparer_scenario() {
 void Genetic::gererPenalites_scenario() {
 	double fractionCharge = population->fractionValidesCharge();
 	for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
-		if (fractionCharge < params->minValides && params->penalityCapa[scenario] < 1000)
+		if (fractionCharge < params->minFeasibles && params->penalityCapa[scenario] < 1000)
 			params->penalityCapa[scenario] *= 1.25;
-		else if (fractionCharge > params->maxValides && params->penalityCapa[scenario] > 0.01)
+		else if (fractionCharge > params->maxFeasibles && params->penalityCapa[scenario] > 0.01)
 			params->penalityCapa[scenario] *= 0.8;
 	}
 	population->validatePen();
 }
 
-Genetic::Genetic(Params* _params, clock_t _ticks, Population* _population) : params(_params), ticks(_ticks), population(_population)
+Genetic::Genetic(Params* _params, Population* _population) : params(_params), population(_population)
 {
 	nbScenario = params->nbScenarios;
 	rejeton = new Individu(params);

@@ -17,9 +17,6 @@ using namespace std;
 int main(int argc, char *argv[]) {
   commandline command(argc, argv);
   
-  // Nombre de ticks horloge que le programme est autorise a durer
-  clock_t nb_ticks_allowed = CLOCKS_PER_SEC;
-  
   std::vector<double> deliveries;
   Params* params = new Params(
     command.get_path_to_instance(), 
@@ -44,7 +41,7 @@ int main(int argc, char *argv[]) {
     Population *population = new Population(params);
     
     // we create the solver
-    Genetic solver(params, nb_ticks_allowed, population);
+    Genetic solver(params, population);
 
     //launch evolution
     if (params->traces) std::cout << "Solve day " << j << "..." << std::endl;

@@ -27,9 +27,6 @@ private:
     //global parameters
 	Params* params;
 
-	//on stocke le temps restant
-    clock_t ticks ;
-
 	//population of solutions
 	Population* population ;	
 
@@ -70,7 +67,7 @@ public:
     void evolve(unsigned int maxIter, unsigned int maxIterNonProd, unsigned int maxTime) ;
 
 	// constructeur du solveur genetique
-	Genetic(Params* _params, clock_t _ticks, Population * _population);
+	Genetic(Params* _params, Population * _population);
 
 	// destructeur
 	~Genetic(void);

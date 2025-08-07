@@ -151,8 +151,8 @@ Individu::Individu(Params* _params) : params(_params)
 	}
 
 	// initialisation of the other structures
-	pred = vector<vector<vector<unsigned int>>>(nbScenario * (params->nbDays - 1) + 1 + 1, vector<vector<unsigned int>>(params->nombreVehicules[1] + 1, vector<unsigned int>(params->nbClients + params->nbDepots + 1, 0)));
-	potentiels = vector<vector<double>>(params->nombreVehicules[1] + 1, vector<double>(params->nbClients + params->nbDepots + 1, 1.e30));
+	pred = vector<vector<vector<unsigned int>>>(nbScenario * (params->nbDays - 1) + 1 + 1, vector<vector<unsigned int>>(params->vehicleNumber[1] + 1, vector<unsigned int>(params->nbClients + params->nbDepots + 1, 0)));
+	potentiels = vector<vector<double>>(params->vehicleNumber[1] + 1, vector<double>(params->nbClients + params->nbDepots + 1, 1.e30));
 	potentiels[0][0] = 0;
 
 	localSearchList = vector<LocalSearch*>(nbScenario, nullptr);
@@ -179,7 +179,7 @@ void Individu::generalSplit_scenario() {
 	if (chromT[1].size() > 0) {
 		while (!splitSimpleDay1() && !splitLF_scenario_day1()) {
 			for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
-				params->borneSplit[scenario] *= 1.1;
+				params->splitBounds[scenario] *= 1.1;
 			}
 		}
 	}
@@ -188,13 +188,13 @@ void Individu::generalSplit_scenario() {
 		unsigned int consideredScenario = (k-2) / (params->nbDays - 1);
 		if (chromT[k].size() > 0) {
 			while(!splitSimple_scenario(k, consideredScenario) && !splitLF_scenario(k, consideredScenario)) {
-				params->borneSplit[consideredScenario] *= 1.1;
+				params->splitBounds[consideredScenario] *= 1.1;
 			}
 		}
 	}
 	measureSol_scenario();
 
-	params->borneSplit = std::vector<double> (params->nbScenarios, 1.0);
+	params->splitBounds = std::vector<double> (params->nbScenarios, 1.0);
 }
 
 // function split which does not consider a limit on the number of vehicles
@@ -206,11 +206,11 @@ int Individu::splitSimple_scenario(unsigned int k, unsigned int scenario) {
 	potentiels[1][0] = 0;
 	unsigned int day = k - scenario * (params->nbDays - 1);
 	unsigned int indexL = scenario * (params->nbDays) + day;
-	s0 = params->ordreVehicules[day][0].depotNumber;
+	s0 = params->vehicleOrder[day][0].depotNumber;
 	for (unsigned int i = 0; i < chromT[k].size(); i++) {
 		load = 0;
 		distance = 0;
-		for (unsigned int j = i; j < chromT[k].size() && load <= params->ordreVehicules[day][0].capacity * params->borneSplit[scenario]; j++) {
+		for (unsigned int j = i; j < chromT[k].size() && load <= params->vehicleOrder[day][0].capacity * params->splitBounds[scenario]; j++) {
 			s1 = chromT[k][j];
 			load += chromL[indexL][s1];
 			sb = (i == j) ? s0 : chromT[k][j - 1];
@@ -218,8 +218,8 @@ int Individu::splitSimple_scenario(unsigned int k, unsigned int scenario) {
 
 			// computing the penalized cost
 			cost = distance + params->timeCost[s1][s0];
-			if (load > params->ordreVehicules[day][0].capacity)
-				cost += (load - params->ordreVehicules[day][0].capacity) * params->penalityCapa[scenario];
+			if (load > params->vehicleOrder[day][0].capacity)
+				cost += (load - params->vehicleOrder[day][0].capacity) * params->penalityCapa[scenario];
 
 			if (potentiels[1][i] + cost < potentiels[1][j + 1]) // basic Bellman algorithm
 			{
@@ -232,8 +232,8 @@ int Individu::splitSimple_scenario(unsigned int k, unsigned int scenario) {
 	// testing if le number of vehicles is correct
 	// in addition, the table pred is updated to keep track of everything
 	unsigned int l = (unsigned int) chromT[k].size();
-	for (unsigned int jj = 0; jj < params->nombreVehicules[day]; jj++) {
-		pred[k][params->nombreVehicules[day] - jj][l] = pred[k][1][l];
+	for (unsigned int jj = 0; jj < params->vehicleNumber[day]; jj++) {
+		pred[k][params->vehicleNumber[day] - jj][l] = pred[k][1][l];
 		l = pred[k][1][l];
 	}
 
@@ -248,7 +248,7 @@ bool Individu::splitSimpleDay1() {
 	vector<double> loadScenario;
 	unsigned int s0, s1, sb;
 	potentiels[1][0] = 0;
-	s0 = params->ordreVehicules[1][0].depotNumber;
+	s0 = params->vehicleOrder[1][0].depotNumber;
 	for (unsigned int i = 0; i < chromT[1].size(); i++) {
 		loadScenario = std::vector<double>(nbScenario, 0.0);
 		distance = 0;
@@ -260,9 +260,9 @@ bool Individu::splitSimpleDay1() {
 			averageCost = 0.0;
 			for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
 				loadScenario[scenario] += chromL[1 + scenario * (params->nbDays)][s1];
-				if (loadScenario[scenario] > params->ordreVehicules[1][0].capacity * params->borneSplit[scenario]) isCapacityOk = false;
-				if (loadScenario[scenario] > params->ordreVehicules[1][0].capacity) {
-					averageCost += (loadScenario[scenario] - params->ordreVehicules[1][0].capacity) * params->penalityCapa[scenario];
+				if (loadScenario[scenario] > params->vehicleOrder[1][0].capacity * params->splitBounds[scenario]) isCapacityOk = false;
+				if (loadScenario[scenario] > params->vehicleOrder[1][0].capacity) {
+					averageCost += (loadScenario[scenario] - params->vehicleOrder[1][0].capacity) * params->penalityCapa[scenario];
 				}
 			}
 			averageCost /= (double) nbScenario;
@@ -276,8 +276,8 @@ bool Individu::splitSimpleDay1() {
 		}
 	}
 	unsigned int l = (unsigned int) chromT[1].size();
-	for (unsigned int jj = 0; jj < params->nombreVehicules[1]; jj++) {
-		pred[1][params->nombreVehicules[1] - jj][l] = pred[1][1][l];
+	for (unsigned int jj = 0; jj < params->vehicleNumber[1]; jj++) {
+		pred[1][params->vehicleNumber[1] - jj][l] = pred[1][1][l];
 		l = pred[1][1][l];
 	}
 
@@ -290,8 +290,8 @@ bool Individu::splitLF_scenario_day1() {
 	double distance, averageCost;
 	unsigned int sb, s0, s1;
 
-	for (unsigned int cam = 0; cam < params->nombreVehicules[1]; cam++) {
-		s0 = params->ordreVehicules[1][cam].depotNumber;
+	for (unsigned int cam = 0; cam < params->vehicleNumber[1]; cam++) {
+		s0 = params->vehicleOrder[1][cam].depotNumber;
 		for (unsigned int i = 0; i < chromT[1].size() && potentiels[cam][i] < 1.e29; i++) {
 			if (potentiels[cam][i] < potentiels[cam + 1][i]) {
 				potentiels[cam + 1][i] = potentiels[cam][i];
@@ -310,9 +310,9 @@ bool Individu::splitLF_scenario_day1() {
 				averageCost = 0.0;
 				for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
 					loadScenario[scenario] += chromL[1 + scenario * (params->nbDays)][s1];
-					if (loadScenario[scenario] > params->ordreVehicules[1][cam].capacity * params->borneSplit[scenario]) isCapacityOk = false;
-					if (loadScenario[scenario] > params->ordreVehicules[1][cam].capacity)
-						averageCost += (loadScenario[scenario] - params->ordreVehicules[1][cam].capacity) * params->penalityCapa[scenario];
+					if (loadScenario[scenario] > params->vehicleOrder[1][cam].capacity * params->splitBounds[scenario]) isCapacityOk = false;
+					if (loadScenario[scenario] > params->vehicleOrder[1][cam].capacity)
+						averageCost += (loadScenario[scenario] - params->vehicleOrder[1][cam].capacity) * params->penalityCapa[scenario];
 				}
 				averageCost /= (double)nbScenario;
 				averageCost += distance + params->timeCost[s1][s0];
@@ -327,7 +327,7 @@ bool Individu::splitLF_scenario_day1() {
 	}
 	unsigned int l = (unsigned int) chromT[1].size();
 	bool isEveryonePlaced = false;
-	for (unsigned int cam = 0; cam < params->nombreVehicules[1]; cam++) {
+	for (unsigned int cam = 0; cam < params->vehicleNumber[1]; cam++) {
 		isEveryonePlaced |= (potentiels[cam + 1][l] < 1.e29);
 	}
 
@@ -345,8 +345,8 @@ bool Individu::splitLF_scenario(unsigned int k, unsigned int scenario)
 
 	unsigned int day = k - scenario * (params->nbDays - 1);
 	// pour chaque camion
-	for (unsigned int cam = 0; cam < params->nombreVehicules[day]; cam++) {
-		s0 = params->ordreVehicules[day][cam].depotNumber;
+	for (unsigned int cam = 0; cam < params->vehicleNumber[day]; cam++) {
+		s0 = params->vehicleOrder[day][cam].depotNumber;
 		for (unsigned int i = 0; i < chromT[k].size() && potentiels[cam][i] < 1.e29; i++) {	
 			if (potentiels[cam][i] < potentiels[cam + 1][i]) {
 				potentiels[cam + 1][i] = potentiels[cam][i];
@@ -355,7 +355,7 @@ bool Individu::splitLF_scenario(unsigned int k, unsigned int scenario)
 			load = 0;
 			distance = 0;
 
-			for (unsigned int j = i; j < chromT[k].size() && load <= params->ordreVehicules[day][cam].capacity * params->borneSplit[scenario]; j++) {
+			for (unsigned int j = i; j < chromT[k].size() && load <= params->vehicleOrder[day][cam].capacity * params->splitBounds[scenario]; j++) {
 				s1 = chromT[k][j];
 				load += chromL[k][s1];
 				sb = (i == j) ? s0 : chromT[k][j - 1];
@@ -363,8 +363,8 @@ bool Individu::splitLF_scenario(unsigned int k, unsigned int scenario)
 
 				// computing the penalized cost
 				cost = distance + params->timeCost[s1][s0];
-				if (load > params->ordreVehicules[day][cam].capacity)
-					cost += (load - params->ordreVehicules[day][cam].capacity) * params->penalityCapa[scenario];
+				if (load > params->vehicleOrder[day][cam].capacity)
+					cost += (load - params->vehicleOrder[day][cam].capacity) * params->penalityCapa[scenario];
 
 				if (potentiels[cam][i] + cost < potentiels[cam + 1][j + 1]) // Basic Bellman iteration
 				{
@@ -377,7 +377,7 @@ bool Individu::splitLF_scenario(unsigned int k, unsigned int scenario)
 
 	unsigned int l = (unsigned int) chromT[k].size();
 	bool isEveryonePlaced = false;
-	for (unsigned int cam = 0; cam < params->nombreVehicules[day]; cam++) {
+	for (unsigned int cam = 0; cam < params->vehicleNumber[day]; cam++) {
 		isEveryonePlaced |= (potentiels[cam + 1][l] < 1.e29);
 	}
 	// on nettoie ce que l'on a déplacé
@@ -430,11 +430,11 @@ double Individu::measureSol(std::vector<double> &delivers, unsigned int idxDay) 
 	}
 
 	j = (unsigned int) chromT[1].size();
-	for (unsigned int jj = 0; jj < params->nombreVehicules[1]; jj++) {
-		depot = params->ordreVehicules[1][params->nombreVehicules[1] - jj - 1].depotNumber;
+	for (unsigned int jj = 0; jj < params->vehicleNumber[1]; jj++) {
+		depot = params->vehicleOrder[1][params->vehicleNumber[1] - jj - 1].depotNumber;
 		distance = 0;
 		load = 0;
-		i = pred[1][params->nombreVehicules[1] - jj][j];
+		i = pred[1][params->vehicleNumber[1] - jj][j];
 		
 		if (j == i) {
 			distance = 0;
@@ -466,8 +466,8 @@ double Individu::measureSol(std::vector<double> &delivers, unsigned int idxDay) 
 
 		routeCost += distance;
 
-		if (load > params->ordreVehicules[1][params->nombreVehicules[1] - jj - 1].capacity) {
-			capaViol += load - params->ordreVehicules[1][params->nombreVehicules[1] - jj - 1].capacity;
+		if (load > params->vehicleOrder[1][params->vehicleNumber[1] - jj - 1].capacity) {
+			capaViol += load - params->vehicleOrder[1][params->vehicleNumber[1] - jj - 1].capacity;
 		}
 		j = i;	
 	}
@@ -533,11 +533,11 @@ void Individu::measureSol_scenario() {
 			unsigned int dayL = dayIndexL[kk];
 
 			j = (unsigned int) chromT[dayT].size();
-			for (unsigned int jj = 0; jj < params->nombreVehicules[kk]; jj++) {
-				depot = params->ordreVehicules[kk][params->nombreVehicules[kk] - jj - 1].depotNumber;
+			for (unsigned int jj = 0; jj < params->vehicleNumber[kk]; jj++) {
+				depot = params->vehicleOrder[kk][params->vehicleNumber[kk] - jj - 1].depotNumber;
 				distance = 0;
 				load = 0;
-				i = pred[kk][params->nombreVehicules[kk] - jj][j];
+				i = pred[kk][params->vehicleNumber[kk] - jj][j];
 
 				if (j == i) {
 					distance = 0;
@@ -562,14 +562,14 @@ void Individu::measureSol_scenario() {
 
 				routeCost[scenario] += distance;
 				
-				if (load > params->ordreVehicules[kk][params->nombreVehicules[kk] - jj - 1].capacity) {
-					capaViol[scenario] += load - params->ordreVehicules[kk][params->nombreVehicules[kk] - jj - 1].capacity;
+				if (load > params->vehicleOrder[kk][params->vehicleNumber[kk] - jj - 1].capacity) {
+					capaViol[scenario] += load - params->vehicleOrder[kk][params->vehicleNumber[kk] - jj - 1].capacity;
 				}
 				j = i;	
 			}
 		}
 
-		fitness[scenario] = routeCost[scenario] + inventoryCost[scenario] + params->objectiveConstant_stockout;
+		fitness[scenario] = routeCost[scenario] + inventoryCost[scenario] + params->objectiveConstant;
 	}
 
 	estValide = true;
@@ -596,7 +596,7 @@ void Individu::measureSol_scenario() {
 void Individu::initPot_scenario(unsigned int k, unsigned int scenario)
 {
 	unsigned int day = k - scenario * (params->nbDays - 1);
-	for (unsigned int i = 0; i < params->nombreVehicules[day] + 1; i++) {
+	for (unsigned int i = 0; i < params->vehicleNumber[day] + 1; i++) {
 		for (size_t j = 0; j <= chromT[k].size() + 1; j++) {
 			potentiels[i][j] = 1.e30;
 		}
@@ -638,12 +638,12 @@ void Individu::updateLS_scenario() {
 			unsigned int chromIndex = (kk == 1) ? 1 : startIndexT + kk;
 			j = (unsigned int) chromT[chromIndex].size();
 
-			for (unsigned int jj = 0; jj < params->nombreVehicules[kk]; jj++) {
-				i = pred[kk][params->nombreVehicules[kk] - jj][j];
+			for (unsigned int jj = 0; jj < params->vehicleNumber[kk]; jj++) {
+				i = pred[kk][params->vehicleNumber[kk] - jj][j];
 
-				tempDepot = localSearchList[scenario]->depots[kk][params->nombreVehicules[kk] - jj - 1];
-				tempDepotFin = localSearchList[scenario]->depotsFin[kk][params->nombreVehicules[kk] - jj - 1];
-				tempRoute = localSearchList[scenario]->routes[kk][params->nombreVehicules[kk] - jj - 1];
+				tempDepot = localSearchList[scenario]->depots[kk][params->vehicleNumber[kk] - jj - 1];
+				tempDepotFin = localSearchList[scenario]->depotsFin[kk][params->vehicleNumber[kk] - jj - 1];
+				tempRoute = localSearchList[scenario]->routes[kk][params->vehicleNumber[kk] - jj - 1];
 
 				tempDepot->next = tempDepotFin;
 				tempDepot->prev = tempDepotFin;
@@ -815,7 +815,7 @@ int Individu::mutationSameDay1() {
 			
 			// c'est un depot on tente l'insertion derriere le depot de ce jour
 			// si il ya correlation
-			if (localSearchList[0]->params->isCorrelated1[localSearchList[0]->noeudU->idx][localSearchList[0]->depots[1][0]->idx] &&
+			if (localSearchList[0]->params->isCorrelated[localSearchList[0]->noeudU->idx][localSearchList[0]->depots[1][0]->idx] &&
 				!moveEffectue)
 				for (unsigned int route = 0; route < localSearchList[0]->depots[1].size(); route++)
 				{

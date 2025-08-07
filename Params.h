@@ -18,8 +18,6 @@
 #include "Vehicle.h"
 using namespace std;
 
-const double MAXCOST = 1.e30;
-
 class Vehicle;
 class Node;
 
@@ -49,167 +47,170 @@ struct Insertion {
 
 class Params {
  public:
-  // generateur pseudo-aleatoire
+  // pseudo-random generator
   Rng* rng;
 
-  // graine du generateur
+  // generator's seed
   int seed;
 
+  // number of cores available for multithreading
   unsigned int nbCores;
 
-  unsigned int jVal;
-
-  unsigned int pHorizon;
-
-  normal_distribution<double> dist;
-
-  bool endDayInventories;
-
-  // debut de l'algo
-  clock_t debut;
-
-  // PARAMETRES DE L'ALGORITHME GENETIQUE //
-
-  // constante d'espacement entre les fitness des individus
-  double delta;
-
-  // limite du split
-  vector<double> borneSplit;
-
-  // critere de proximite des individus (RI)
-  unsigned int prox;
-
-  // critere de proximite des individus (RI -- constante)
-  unsigned int proxCst;
-
-  // nombre d'individus pris en compte dans la mesure de distance
-  int nbCountDistMeasure;
-
-  // distance min
-  double distMin;
-
-  // nombre d'individus elite
-  int el;
-
-  // nombre d'individus dans la population
-  unsigned int mu;
-
-  // nombre d'offspring dans une generation
-  unsigned int lambda;
-
+  // number of scenarios
   unsigned int nbScenarios;
 
-  // probabilite de recherche locale totale pour la reparation (PVRP)
-  double pRep;
+  // current day in the rolling horizon
+  unsigned int jVal;
 
-  // coefficient de penalite associe a une violation de capacite
-  vector<double> penalityCapa;
-
-  // limite basse sur les indiv valides
-  double minValides;
-
-  // limite haute sur les indiv valides
-  double maxValides;
-
-  // fraction de la population conserv�e lors de la diversification
-  double rho;
-
-  std::vector<std::vector<double>> oldDemands;
-
-  bool trueDemands;
-
-  std::vector<double> meanDemands;
-
-  std::vector<double> stdDemands;
-
-  // PARAMETRES DE L'INSTANCE //
-
-  // rounding convention
-  bool isRoundingInteger;
-  bool isRoundingTwoDigits;
-
-  // Constant value in the objective
-  double objectiveConstant_stockout;
-  void computeConstant_stockout();
-
-  // nombre de sommets clients
-  unsigned int nbClients;
-
-  // nombre de jours
+  // number of days
   unsigned int nbDays;
-
-  // nombre de vehicules par d�pot
-  unsigned int nbVehiculesPerDep;
-
-  bool traces;
-
-  // nombre de depots (MDVRP)
-  // correspond � l'indice du premier client dans le tableau C
-  unsigned int nbDepots;
-
-  // sequence des vehicules utilisables chaque jour avec les contraintes et
-  // depots associes
-  vector<vector<Vehicle>> ordreVehicules;
-
-  // nombre de vehicules utilisables par jour
-  vector<unsigned int> nombreVehicules;
-
-  // vecteur des depots et clients 客户，depot向量
-  //vector<Client> cli;
-  vector<Client> cli;
-
-  // temps de trajet , calcules lors du parsing
-  vector<vector<double>> timeCost;
-
-  // critere de correlation
-  vector<vector<bool> > isCorrelated1;
-
-  // SPECIFIC DATA FOR THE INVENTORY ROUTING PROBLEM //
-
-  // availableSupply[t] gives the new additional supply at day t.
-  // availableSupply[1] gives the initial supply + production for day 1
-  vector<double> availableSupply;
-  vector<double> allSupply;
-
-  // inventory cost per day at the supplier
-  double inventoryCostSupplier;
-
-  // ROUTINES DE PARSING //
-
-  // flux d'entree du parser
-  ifstream fichier;
-
-  // initializes the parameters of the method
-  void setMethodParams();
-
-  // effectue le prelevement des donnees du fichier
-  void preleveDonnees();
-
-  Client getClientDSIRP();
 
   void setJval(unsigned int _jVal) {
        jVal = _jVal;
        nbDays = pHorizon - jVal + 1;
   }
 
+  // in the rolling horizon, update every variable according to what happened the previous day
   void updateToDay(unsigned int j, std::vector<double> deliveries);
+  
+  // true if inventories are taken at the end of the day
+  bool endDayInventories;
+  
+  // verbosity of the algorithm
+  bool traces;
+
+  /////////////////////////////////////////// GENETIC ALGORITHM PARAMETERS ///////////////////////////////////////////
+
+  // individual fitness difference
+  double delta;
+
+  // split limit (how far to search beyond the capacity limit, one by scenario)
+  vector<double> splitBounds;
+
+  // first proximity criterion for inidividuals (granularity parameter - expressed as a percentage of the problem size)
+  unsigned int prox;
+
+  // second proximity criterion for inidividual (granularity parameter - expressed as a fixed maximum)
+  unsigned int proxCst;
+
+  // number of individuals to take into account in distance measurement
+  int nbCountDistMeasure;
+
+  // distance in terms of objective function under which the solutions are considered to be the same
+  double distMin;
+
+  // number of elite individuals
+  int el;
+
+  // number of individuals in a population
+  unsigned int mu;
+
+  // offspring number of individuals in a population
+  unsigned int lambda;
+
+  // probability to repair
+  double pRep;
+
+  // penality coefficient for a capacity violation (one per scenario)
+  vector<double> penalityCapa;
+
+  // maximal number of feasible solutions
+  double minFeasibles;
+
+  // maximal number of feasible solutions
+  double maxFeasibles;
+
+  // population fraction we keep during diversification
+  double rho;
+
+  /////////////////////////////////////////// INSTANCE PARAMETERS ///////////////////////////////////////////
+  
+  // rounding convention
+  bool isRoundingInteger;
+  bool isRoundingTwoDigits;
+  
+  // constant value in the objective
+  double objectiveConstant;
+  void computeConstant();
+  
+  // number of clients
+  unsigned int nbClients;
+
+  // rolling horizon
+  unsigned int pHorizon;
+  
+  // number of vehicles per depot
+  unsigned int nbVehiculesPerDep;
+  
+  // historical demand data (50 + jVal days in our instances) for each client
+  std::vector<std::vector<double>> oldDemands;
+
+  // mean demand from historical data for each client
+  std::vector<double> meanDemands;
+
+  // std demand from historical data for each client
+  std::vector<double> stdDemands;
+
+  // compute the demands for every client (according to mean and std or to true demand)
+  void adjustDemands();
+
+  // if true, the true demand is used (no scenarios)
+  bool trueDemands;
+
+  // number of depots (1 in this work) | index 0 
+  unsigned int nbDepots;
+
+  // sequence des vehicules utilisables chaque jour avec les contraintes et
+  // depots associes
+  vector<vector<Vehicle>> vehicleOrder;
+
+  // nombre de vehicules utilisables par jour
+  vector<unsigned int> vehicleNumber;
+
+  // depot and customers vector
+  vector<Client> cli;
+
+  // travel times, computed during parsing
+  vector<vector<double>> timeCost;
+
+  // correlation criterion
+  vector<vector<bool>> isCorrelated;
+
+  // availableSupply[t] gives the new additional supply at day t.
+  // availableSupply[1] gives the initial supply + production for day 1 (starting at jVal)
+  vector<double> availableSupply; 
+  vector<double> allSupply; // additional supply on the whole rolling horizon
+
+  // inventory cost per day at the supplier
+  double inventoryCostSupplier;
+
+  /////////////////////////////////////////// PARSING ///////////////////////////////////////////
+
+  // file to parse
+  ifstream file;
+
+  // initializes the parameters of the method
+  void setMethodParams();
+
+  // collect all the data from the file
+  void collectData();
+
+  // get the next client from the file
+  Client getNextClient();
 
   // computes the distance matrix
-  void computeDistancierFromCoords();
+  void computeDistancesFromCoords();
 
-  // calcule les autres structures du programme
-  void calculeStructures();
+  // compute the other structures for the algorithm
+  void computeStructures();
 
-  // modifie al�atoirement les tableaux de proximit� des clients
+  // randomly shuffle proximity arrays
   void shuffleProches();
-
-  void adjustDemands();
-  // constructeur de Params qui remplit les structures en les pr�levant dans le
-  // fichier
+  
+  // constructor
   Params(string nomInstance, int seedRNG, unsigned int nbCores, unsigned int nbScenario, unsigned int nbVeh, bool trace, bool trueDemand);
 
-
-  // destructeur de Params
+  // destructor
   ~Params(void);
 };
 #endif
