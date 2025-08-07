@@ -15,14 +15,14 @@
 #include <stdlib.h>
 #include <list>
 #include <vector>
-#include "Individu.h"
+#include "Individual.h"
 #include "LotSizingSolver.h"
 #include "Node.h"
 #include "Route.h"
 
 using namespace std;
 
-class Individu;
+class Individual;
 
 struct paireJours
 {
@@ -33,7 +33,7 @@ struct paireJours
 class LocalSearch
 {
 private:
-Individu *individu;
+Individual *individu;
 
 public:
   Params *params;
@@ -181,7 +181,7 @@ public:
 
   // constructeur, cree les structures de noeuds
   // n'initialise pas pas la pile ni les routes
-  LocalSearch(Individu* _individu, Params* _params, unsigned int _idxScenario);
+  LocalSearch(Individual* _individu, Params* _params, unsigned int _idxScenario);
 
   ~LocalSearch(void);
 };

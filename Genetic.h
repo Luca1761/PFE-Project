@@ -11,7 +11,7 @@
 
 #include "Population.h"
 #include "Params.h"
-#include "Individu.h"
+#include "Individual.h"
 #include "time.h"
 #include <stdlib.h>
 #include <stdio.h> 
@@ -40,10 +40,10 @@ private:
 	unsigned int nbScenario;
 
 	// First individual to be used as input for the crossover
-	Individu* rejeton ; 
+	Individual* rejeton ; 
 
 	// Second individual to be used as input for the crossover
-	Individu* rejeton2 ;
+	Individual* rejeton2 ;
 
 	// effectue la mutation
 	void muter_scenario();

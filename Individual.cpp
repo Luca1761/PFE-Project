@@ -1,8 +1,8 @@
-#include "Individu.h"
+#include "Individual.h"
 
 // constructeur d'un Individu comme simple conteneur
 
-Individu::Individu(Params* _params) : params(_params)
+Individual::Individual(Params* _params) : params(_params)
 {
 	nbScenario = params->nbScenarios;
 	coutSol.evaluation = 0;
@@ -162,7 +162,7 @@ Individu::Individu(Params* _params) : params(_params)
 }
 
 // destructeur
-Individu::~Individu() {
+Individual::~Individual() {
 	for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
 		if (localSearchList[scenario] != NULL) {
 			delete localSearchList[scenario];
@@ -173,7 +173,7 @@ Individu::~Individu() {
 // The Split is done as follows, we test if it's possible to split without setting a fixed limit on the number of vehicles
 // If the resulting solution satisfies the number of vehicle, it's perfectly fine, we return it
 // Otherwise we call the Split version with limited fleet (which is a bit slower).
-void Individu::generalSplit_scenario() {
+void Individual::generalSplit_scenario() {
 	// lancement de la procedure split pour chaque jour
 	// on essaye deja le split simple, si c'est sans succes , le split LF
 	if (chromT[1].size() > 0) {
@@ -199,7 +199,7 @@ void Individu::generalSplit_scenario() {
 
 // function split which does not consider a limit on the number of vehicles
 // just uses the line "1" of the "potentiels" table.
-int Individu::splitSimple_scenario(unsigned int k, unsigned int scenario) {
+int Individual::splitSimple_scenario(unsigned int k, unsigned int scenario) {
 	// on va utiliser la ligne 1 des potentiels et structures pred
 	double load, distance, cost;
 	unsigned int s0, s1, sb;
@@ -242,7 +242,7 @@ int Individu::splitSimple_scenario(unsigned int k, unsigned int scenario) {
 	return (l == 0);
 }
 
-bool Individu::splitSimpleDay1() {
+bool Individual::splitSimpleDay1() {
 	// on va utiliser la ligne 1 des potentiels et structures pred
 	double distance, averageCost;
 	vector<double> loadScenario;
@@ -286,7 +286,7 @@ bool Individu::splitSimpleDay1() {
 	return (l == 0);
 }
 
-bool Individu::splitLF_scenario_day1() {
+bool Individual::splitLF_scenario_day1() {
 	double distance, averageCost;
 	unsigned int sb, s0, s1;
 
@@ -338,7 +338,7 @@ bool Individu::splitLF_scenario_day1() {
 }
 
 // fonction split pour probl�mes � flotte limit�e
-bool Individu::splitLF_scenario(unsigned int k, unsigned int scenario)
+bool Individual::splitLF_scenario(unsigned int k, unsigned int scenario)
 {
 	double load, distance, cost;
 	unsigned int sb, s0, s1;
@@ -386,7 +386,7 @@ bool Individu::splitLF_scenario(unsigned int k, unsigned int scenario)
 }
 
 //TO CHECK
-double Individu::measureSol(std::vector<double> &delivers, unsigned int idxDay) {
+double Individual::measureSol(std::vector<double> &delivers, unsigned int idxDay) {
 	delivers.clear();
 	unsigned int depot;
 	unsigned int i, j;
@@ -493,7 +493,7 @@ double Individu::measureSol(std::vector<double> &delivers, unsigned int idxDay) 
 	return fitness;
 }
 
-void Individu::measureSol_scenario() {
+void Individual::measureSol_scenario() {
 	unsigned int depot;
 	unsigned int i, j;
 	double distance, load;
@@ -601,7 +601,7 @@ void Individu::measureSol_scenario() {
 }
 
 // initialisation du vecteur potentiels
-void Individu::initPot_scenario(unsigned int k, unsigned int scenario)
+void Individual::initPot_scenario(unsigned int k, unsigned int scenario)
 {
 	unsigned int day = k - scenario * (params->nbDays - 1);
 	for (unsigned int i = 0; i < params->vehicleNumber[day] + 1; i++) {
@@ -613,7 +613,7 @@ void Individu::initPot_scenario(unsigned int k, unsigned int scenario)
 	potentiels[1][0] = 0;
 }
 
-void Individu::updateLS_scenario() {
+void Individual::updateLS_scenario() {
 	unsigned int i, j;
 	vector<Node*> myDepot(nbScenario);
 	vector<Node*> myDepotFin(nbScenario);
@@ -708,7 +708,7 @@ void Individu::updateLS_scenario() {
 	}
 }
 
-void Individu::localSearchRunSearch_scenario() {
+void Individual::localSearchRunSearch_scenario() {
 	const unsigned int GROUP_SIZE = 1 + nbScenario / params->nbCores;
 	
 	// Local search moves (mutation1-mutation9)
@@ -729,7 +729,7 @@ void Individu::localSearchRunSearch_scenario() {
 	runSearchDay1();
 }
 
-void Individu::runSearchDay1() {
+void Individual::runSearchDay1() {
 	int nbMoves = 1;
 	int nbPhases = 0;
 	while (nbMoves > 0 && nbPhases < 1000) {
@@ -740,7 +740,7 @@ void Individu::runSearchDay1() {
 	}
 }
 
-int Individu::mutationSameDay1() {
+int Individual::mutationSameDay1() {
 	localSearchList[0]->dayCour = 1;
 	unsigned int size = (unsigned int) localSearchList[0]->ordreParcours[1].size();
 	unsigned int size2;
@@ -874,7 +874,7 @@ int Individu::mutationSameDay1() {
 	return nbMoves;
 }
 
-void Individu::muterDifferentScenarioDP() {
+void Individual::muterDifferentScenarioDP() {
 	vector<unsigned int> randomClients;
 
 	for (unsigned int client = params->nbDepots; client < params->nbClients + params->nbDepots; client++) {
@@ -896,7 +896,7 @@ void Individu::muterDifferentScenarioDP() {
 	}
 }
 
-int Individu::mutationDP(unsigned int client, bool &rechercheTerminee) {
+int Individual::mutationDP(unsigned int client, bool &rechercheTerminee) {
 	Node *noeudTravail;
 	double currentCost = 0.0;
 	// First, make sure all insertion costs are computed
@@ -993,7 +993,7 @@ int Individu::mutationDP(unsigned int client, bool &rechercheTerminee) {
 }
 
 // mise a jour du chromT et chromL suite aux modification de localSearch
-void Individu::updateIndiv_scenario() {
+void Individual::updateIndiv_scenario() {
 	for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
 		unsigned int startIndex = scenario * (params->nbDays) + 1;
 		unsigned int endIndex = startIndex + (params->nbDays);
@@ -1020,7 +1020,7 @@ void Individu::updateIndiv_scenario() {
 }
 
 // distance generale
-double Individu::distance(Individu *indiv2) {
+double Individual::distance(Individual *indiv2) {
 	// TO CHECK
 	double note = 0;
 	bool isIdentical;
@@ -1048,7 +1048,7 @@ double Individu::distance(Individu *indiv2) {
 }
 
 // ajoute un element proche dans les structures de proximite
-void Individu::addProche(Individu *indiv) {
+void Individual::addProche(Individual *indiv) {
 	list<proxData>::iterator it;
 	proxData data;
 	data.indiv = indiv;
@@ -1066,7 +1066,7 @@ void Individu::addProche(Individu *indiv) {
 }
 
 // enleve un element dans les structures de proximite
-void Individu::removeProche(Individu *indiv) {
+void Individual::removeProche(Individual *indiv) {
 	list<proxData>::iterator last = plusProches.end();
 	for (list<proxData>::iterator it = plusProches.begin(); it != last;) {
 		if (it->indiv == indiv) {
@@ -1078,7 +1078,7 @@ void Individu::removeProche(Individu *indiv) {
 }
 
 // distance moyenne avec les n individus les plus proches
-double Individu::distPlusProche(int n) {
+double Individual::distPlusProche(int n) {
 	double result = 0;
 	double compte = 0;
 	list<proxData>::iterator it = plusProches.begin();
@@ -1093,7 +1093,7 @@ double Individu::distPlusProche(int n) {
 	return result / compte;
 }
 
-int Individu::mutation1_indiv() {
+int Individual::mutation1_indiv() {
 	double costSuppU = params->timeCost[localSearchList[0]->noeudUPredCour][localSearchList[0]->xCour] 
 	- params->timeCost[localSearchList[0]->noeudUPredCour][localSearchList[0]->noeudUCour]  
 	- params->timeCost[localSearchList[0]->noeudUCour][localSearchList[0]->xCour];
@@ -1127,7 +1127,7 @@ int Individu::mutation1_indiv() {
 	return 1 ;
 }
 
-int Individu::mutation2_indiv() {
+int Individual::mutation2_indiv() {
 	double costSuppU = params->timeCost[localSearchList[0]->noeudUPredCour][localSearchList[0]->xSuivCour] 
 	- params->timeCost[localSearchList[0]->noeudUPredCour][localSearchList[0]->noeudUCour] 
 	- params->timeCost[localSearchList[0]->noeudUCour][localSearchList[0]->xCour] 
@@ -1161,7 +1161,7 @@ int Individu::mutation2_indiv() {
 	return 1 ;
 }
 
-int Individu::mutation3_indiv() {
+int Individual::mutation3_indiv() {
 	double costSuppU = params->timeCost[localSearchList[0]->noeudUPredCour][localSearchList[0]->xSuivCour] 
 	- params->timeCost[localSearchList[0]->noeudUPredCour][localSearchList[0]->noeudUCour] 
 	- params->timeCost[localSearchList[0]->noeudUCour][localSearchList[0]->xCour] 
@@ -1196,7 +1196,7 @@ int Individu::mutation3_indiv() {
 	return 1 ;
 }
 
-int Individu::mutation4_indiv() {
+int Individual::mutation4_indiv() {
 	LocalSearch* local = localSearchList[0];
 	double costSuppU = params->timeCost[local->noeudUPredCour][local->noeudVCour] 
 	+ params->timeCost[local->noeudVCour][local->xCour]
@@ -1231,7 +1231,7 @@ int Individu::mutation4_indiv() {
 	return 1 ;
 }
 
-int Individu::mutation5_indiv() {
+int Individual::mutation5_indiv() {
 	LocalSearch* local = localSearchList[0];
 	double costSuppU = params->timeCost[local->noeudUPredCour][local->noeudVCour] 
 	+ params->timeCost[local->noeudVCour][local->xSuivCour]
@@ -1268,7 +1268,7 @@ int Individu::mutation5_indiv() {
 	return 1 ;
 }
 
-int Individu::mutation6_indiv() {
+int Individual::mutation6_indiv() {
 	LocalSearch* local = localSearchList[0];
 	double costSuppU = params->timeCost[local->noeudUPredCour][local->noeudVCour]  
 	+ params->timeCost[local->noeudVCour][local->yCour]
@@ -1309,7 +1309,7 @@ int Individu::mutation6_indiv() {
 	
 }
 
-int Individu::mutation7_indiv() {
+int Individual::mutation7_indiv() {
 	LocalSearch* local = localSearchList[0];
 	if  ((local->routeU->idx != local->routeV->idx) || local->noeudU->next == local->noeudV || local->noeudU->place > local->noeudV->place ) {  return 0 ; }
 	
@@ -1347,7 +1347,7 @@ int Individu::mutation7_indiv() {
 	
 }
 
-int Individu::mutation8_indiv() {
+int Individual::mutation8_indiv() {
 	LocalSearch* local = localSearchList[0];
 	if  (local->routeU->idx == local->routeV->idx || local->routeU->depot->idx != local->routeV->depot->idx) { return 0 ; }
 	double cost = 0.0;
@@ -1442,7 +1442,7 @@ int Individu::mutation8_indiv() {
 	
 }
 
-int Individu::mutation9_indiv() {
+int Individual::mutation9_indiv() {
 	LocalSearch* local = localSearchList[0];
 	if  (local->routeU->idx == local->routeV->idx || local->routeU->depot->idx != local->routeV->depot->idx) { return 0 ; }
 

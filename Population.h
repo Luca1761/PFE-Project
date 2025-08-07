@@ -12,14 +12,14 @@
 #include <math.h>
 #include <time.h>
 #include "Node.h"
-#include "Individu.h"
+#include "Individual.h"
 
 using namespace std ;
 
 struct SousPop
 {
 	// individus de la sous-population
-	vector<Individu*> individus ;
+	vector<Individual*> individus ;
 
 	// nombre de ces individus
 	unsigned int nbIndiv ;
@@ -38,16 +38,16 @@ class Population
    list<bool> listeValiditeCharge ;
 
    // auxiliary data structure to apply the local search
-   Individu * trainer;
+   Individual * trainer;
 
-   void education_scenario(Individu * indiv);
+   void education_scenario(Individual * indiv);
 
    // fonction booleenne verifiant si le fitness n'existe pas deja
-   bool fitExist(SousPop * pop, Individu * indiv);
+   bool fitExist(SousPop * pop, Individual * indiv);
 
    // place un individu donne dans le tableau
    // retourne une erreur si echec sinon sa position dans la population
-   unsigned int placeIndividu(SousPop * pop, Individu * indiv);
+   unsigned int placeIndividu(SousPop * pop, Individual * indiv);
 
    public:
 
@@ -63,14 +63,14 @@ class Population
    // la population se debrouille pour le placer ou il lui semble bon
    // updateNbValides est mis a true si on veut mettre jour la proportion de valides aussi 
    // retourne une erreur si echec, sinon sa nouvelle position dans la population
-   unsigned int addIndividu (Individu * indiv);
+   unsigned int addIndividu (Individual * indiv);
 
    // enleve un individu de la population en fonction de la replacement policy
    void removeIndividu(SousPop * pop, unsigned int p);
 
    // met a jour les individus les plus proches d'une population
    // en fonction de l'arrivant
-   void updateProximity (SousPop * pop, Individu * indiv);
+   void updateProximity (SousPop * pop, Individual * indiv);
 
    // procede de redemarrage avec remplacement d'une partie de la population
    // modele tres simplifie
@@ -79,7 +79,7 @@ class Population
 
    // recopie un Individu dans un autre
    // ATTENTION !!! ne recopie que le chromT et les attributs du fitness
-   void recopieIndividu (Individu * destination , Individu * source);
+   void recopieIndividu (Individual * destination , Individual * source);
    
    // differents individus valides presents dans la population
    SousPop * valides;
@@ -88,15 +88,15 @@ class Population
    SousPop * invalides;
 
    // getter de 1 individu par binary tournament
-   Individu * getIndividuBinT (double & rangRelatif);
+   Individual * getIndividuBinT (double & rangRelatif);
 
    // getter du meilleur individu valide
    // retourne NULL si il n'y a pas de valides
-   Individu * getIndividuBestValide ();
+   Individual * getIndividuBestValide ();
 
    // getter du meilleur individu invalide
    // retourne NULL si il n'y a pas de invalides
-   Individu * getIndividuBestInvalide ();
+   Individual * getIndividuBestInvalide ();
 
    // compromis entre fitness et diversite
    unsigned int selectCompromis (SousPop * souspop) ;
@@ -107,7 +107,7 @@ class Population
    void validatePen ();
 
    // getter simple d'un individu
-   Individu * getIndividu(unsigned int p);
+   Individual * getIndividu(unsigned int p);
 
    // exporte la meilleure solution
    void ExportPop(string nomFichier, bool add, std::vector<double> deliveries, double &totalCost) ;
@@ -128,7 +128,7 @@ class Population
    void afficheEtat(unsigned int NbIter);
 
    // met a jour le compte des valides
-   void updateNbValides (Individu * indiv);
+   void updateNbValides (Individual * indiv);
 
    void measureAndUpdateQuantities(std::vector<double> &deliveries, double &totalCost, unsigned int j);
 

@@ -19,7 +19,7 @@ OBJS2 = \
 	$(TARGETDIR)/Vehicle.o \
 	$(TARGETDIR)/commandline.o \
 	$(TARGETDIR)/Genetic.o \
-	$(TARGETDIR)/Individu.o \
+	$(TARGETDIR)/Individual.o \
 	$(TARGETDIR)/LocalSearch.o \
 	$(TARGETDIR)/main.o \
 	$(TARGETDIR)/Node.o \
@@ -58,8 +58,8 @@ $(TARGETDIR)/commandline.o: commandline.h commandline.cpp
 $(TARGETDIR)/Genetic.o: Genetic.h Genetic.cpp
 	$(CCC) $(CCFLAGS) $(CPPFLAGS) -c Genetic.cpp -o $(TARGETDIR)/Genetic.o
 
-$(TARGETDIR)/Individu.o: Individu.h Individu.cpp
-	$(CCC) $(CCFLAGS) $(CPPFLAGS) -c Individu.cpp -o $(TARGETDIR)/Individu.o
+$(TARGETDIR)/Individual.o: Individual.h Individual.cpp
+	$(CCC) $(CCFLAGS) $(CPPFLAGS) -c Individual.cpp -o $(TARGETDIR)/Individual.o
 
 $(TARGETDIR)/LocalSearch.o: LocalSearch.h LocalSearch.cpp
 	$(CCC) $(CCFLAGS) $(CPPFLAGS) -c LocalSearch.cpp -o $(TARGETDIR)/LocalSearch.o
@@ -82,7 +82,7 @@ $(TARGETDIR)/Population.o: Population.h Population.cpp
 $(TARGETDIR)/Route.o: Route.h Route.cpp
 	$(CCC) $(CCFLAGS) $(CPPFLAGS) -c Route.cpp -o $(TARGETDIR)/Route.o
 
-$(TARGETDIR)/Mutations.o: LocalSearch.h Mutations.cpp
+$(TARGETDIR)/Mutations.o: Mutations.cpp
 	$(CCC) $(CCFLAGS) $(CPPFLAGS) -c Mutations.cpp -o $(TARGETDIR)/Mutations.o
 
 clean:

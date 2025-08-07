@@ -1,9 +1,9 @@
 /*                       Algorithme - HGSADC                         */
-/*                    Propri�t� de Thibaut VIDAL                     */
+/*                    Propriete de Thibaut VIDAL                     */
 /*                    thibaut.vidal@cirrelt.ca                       */
 
-#ifndef INDIVIDU_H
-#define INDIVIDU_H
+#ifndef INDIVIDUAL_H
+#define INDIVIDUAL_H
 
 /*
 Classe individu : chaque individu est represente par son chromT traduisant la sequence de parcours des sommets, sans inserer la depot nulle part. Le calcul du chemin VRP reel et de son fitness se fait avec la fonction split. 
@@ -35,17 +35,17 @@ struct coutSol {
   double capacityViol ;
 };
 
-class Individu ;
+class Individual ;
 
 struct proxData {
   // individu en question
-  Individu * indiv ;
+  Individual * indiv ;
 
   // sa distance
   double dist ;
 };
 
-class Individu
+class Individual
 {
 
  private:
@@ -97,16 +97,16 @@ class Individu
   bool estValide ;
 
   // distance measure
-  double distance(Individu * indiv2);
+  double distance(Individual * indiv2);
 
   // individus classes par proximite dans la population, pour les politiques de remplacement
   list<proxData> plusProches;
 
   // ajoute un element proche dans les structures de proximite
-  void addProche(Individu * indiv) ;
+  void addProche(Individual * indiv) ;
 
   // enleve un element dans les structures de proximite 
-  void removeProche(Individu * indiv) ;
+  void removeProche(Individual * indiv) ;
 
   // distance moyenne avec les n individus les plus proches
   double distPlusProche(int n) ;
@@ -166,9 +166,9 @@ class Individu
   int mutation9_indiv();
 
 
-  Individu(Params* _params);
+  Individual(Params* _params);
 
   //destructeur
-  ~Individu();
+  ~Individual();
 };
 #endif

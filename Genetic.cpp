@@ -144,8 +144,8 @@ void Genetic::gererPenalites_scenario() {
 Genetic::Genetic(Params* _params, Population* _population) : params(_params), population(_population)
 {
 	nbScenario = params->nbScenarios;
-	rejeton = new Individu(params);
-	rejeton2 = new Individu(params);
+	rejeton = new Individual(params);
+	rejeton2 = new Individual(params);
 }
 
 int Genetic::crossPOX_scenario() {

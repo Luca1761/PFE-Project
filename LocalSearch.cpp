@@ -378,7 +378,7 @@ double LocalSearch::evaluateCurrentCost_stockout(unsigned int client, bool test)
 LocalSearch::LocalSearch(void) {}
 
 // constructeur 2
-LocalSearch::LocalSearch(Individu *_individu, Params *_params, unsigned int _idxScenario)
+LocalSearch::LocalSearch(Individual *_individu, Params *_params, unsigned int _idxScenario)
     : individu(_individu), params(_params), idxScenario(_idxScenario)
 {
   vector<Node*> tempNoeud; 
