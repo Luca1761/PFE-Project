@@ -14,9 +14,14 @@ private:
     // seed
     int seed;
 
+    // nb cores for multithreading in expes
     unsigned int nb_cores;
 
+    // to solve with true demand (if true, nb_scenarios should be 1)
     bool true_demand;
+
+    // if true, constraint is I_i + q_i - d_i < U_i. Else, it is I_i + q_i < U_i (beginning of the day)
+    bool end_day_inventories;
 
     // number of scenarios
     unsigned int nb_scenarios;
@@ -58,13 +63,17 @@ public:
     // destructor
     ~commandline();
 
-    void set_debug_params(string instance);
+    // seed
+    int get_seed();
+    
+    // nb cores for multithreading
+    unsigned int get_nb_cores();
 
-    // instance path
-    string get_path_to_instance();
+    // get information to set true demand or not
+    bool get_true_demand();
 
-    // solution path
-    string get_path_to_solution();
+    // get the information about inventory time
+    bool get_end_day_inventories();
 
     // number of scenarios
     unsigned int get_nb_scenarios(); 
@@ -72,10 +81,11 @@ public:
     // number of vehicles
     unsigned int get_nbVeh();
 
-    // seed
-    int get_seed();
+    // instance path
+    string get_path_to_instance();
 
-    unsigned int get_nb_cores();
+    // solution path
+    string get_path_to_solution();
 
     // max iterations
     unsigned int get_maxIter();
@@ -88,7 +98,5 @@ public:
 
     // get trace
     bool get_trace();
-
-    bool get_true_demand();
 };
 #endif

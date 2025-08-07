@@ -1,14 +1,10 @@
 #include "commandline.h"
 
-void commandline::set_instance_name(string to_parse)
-{
-  instance_name = to_parse;
-}
+void commandline::set_instance_name(string to_parse) { instance_name = to_parse; }
 
 void commandline::set_sortie_name(string to_parse) { sortie_name = to_parse; }
 
-void commandline::set_default_sorties_name(string to_parse)
-{
+void commandline::set_default_sorties_name(string to_parse) {
   char caractere1 = '/';
   char caractere2 = '\\';
   int pos = (int) to_parse.find_last_of(caractere1);
@@ -20,11 +16,13 @@ void commandline::set_default_sorties_name(string to_parse)
     unsigned int position = (unsigned int) pos;
     string directory = "dsirp_results/";
     string filename = to_parse.substr(position + 1, to_parse.length() - position - 1-4);
+    string type = (true_demand) ? "IRPsol-" : "DSIRPsol-";
+    if (end_day_inventories) type += "end-";
 
-    sortie_name = directory + "STsol-" + filename+ "_veh-" + std::to_string(nbVeh);
+    sortie_name = directory + type + filename + "_seed-" + std::to_string(seed) + "_veh-" + std::to_string(nbVeh) + "_scenarios-" + std::to_string(nb_scenarios);
   } else {
-    sortie_name = to_parse.substr(0, 0) + "STsol-" +
-                  to_parse.substr(0, to_parse.length() - 1) +"-seed-"+to_parse.substr((unsigned int) seed)+"-veh-"+to_parse.substr(nbVeh);
+    sortie_name = to_parse.substr(0, 0) + "DSIRPsol-" +
+                  to_parse.substr(0, to_parse.length() - 1) + "-seed-" + to_parse.substr((unsigned int) seed) + "-veh-" + to_parse.substr(nbVeh);
   }
 }
 
@@ -90,51 +88,38 @@ commandline::commandline(int argc, char *argv[])
         throw std::string("Commande non reconnue");
       }
     }
+    if (true_demand) nb_scenarios = 1;
+    if (end_day_inventories) {
+      nb_scenarios = 1;
+      true_demand = true;
+    }
     if (!hasSolName)
       set_default_sorties_name(string(argv[1]));
   }
 }
 
-void commandline::set_debug_params(string instance)
-{
-
-  set_instance_name(instance);
-  set_default_sorties_name(instance);
-
-  seed = 1000;
-  nbVeh = 2;  // unknown
-}
-
-// destructeur
 commandline::~commandline() {}
 
-// renvoie le chemin de l'instance
+int commandline::get_seed() { return seed; }
+
+unsigned int commandline::get_nb_cores() { return nb_cores; }
+
+bool commandline::get_true_demand() {return true_demand;}
+
+bool commandline::get_end_day_inventories() {return end_day_inventories;}
+
+unsigned int commandline::get_nb_scenarios() {return nb_scenarios; }
+
+unsigned int commandline::get_nbVeh() { return nbVeh; }
 
 string commandline::get_path_to_instance() { return instance_name; }
 
 string commandline::get_path_to_solution() { return sortie_name; }
 
-unsigned int commandline::get_nb_scenarios() {return nb_scenarios; }
-
-// renvoie le nombre de v�hicules optimal connu
-unsigned int commandline::get_nbVeh() { return nbVeh; }
-
-// renvoie la seed
-int commandline::get_seed() { return seed; }
-
-// renvoie la seed
-unsigned int commandline::get_nb_cores() { return nb_cores; }
-
-// max iterations
 unsigned int commandline::get_maxIter(){ return  maxIter;}
 
-// max non productive iterations
 unsigned int commandline::get_maxIterNonProd() {return maxIterNonProd;}
 
-// max time
 unsigned int commandline::get_maxTime() {return maxTime;}
 
-// traces
 bool commandline::get_trace() {return traces;}
-
-bool commandline::get_true_demand() {return true_demand;}
