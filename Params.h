@@ -76,10 +76,10 @@ class Params {
   // limite du split
   vector<double> borneSplit;
 
-  // crit�re de proximit� des individus (RI)
+  // critere de proximite des individus (RI)
   unsigned int prox;
 
-  // crit�re de proximit� des individus (RI -- constante)
+  // critere de proximite des individus (RI -- constante)
   unsigned int proxCst;
 
   // nombre d'individus pris en compte dans la mesure de distance

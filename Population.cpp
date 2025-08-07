@@ -449,16 +449,18 @@ void Population::afficheEtat(unsigned int nbIter)
 	cout << "It " << nbIter << " | Sol moy: ";
 
 	if (getIndividuBestValide() != NULL) {
-		cout << getIndividuBestValide()->coutSol.evaluation << " ";
+		cout << getIndividuBestValide()->coutSol.evaluation << " Scenarios - ";
 		for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
-			cout << scenario << ": " << getIndividuBestValide()->coutSol_scenario.evaluation[scenario] << " ";
+			cout << scenario + 1 << ": " << getIndividuBestValide()->coutSol_scenario.evaluation[scenario] << " ";
 		}
 	} else {
 		cout << "NO-VALID ";
 	}
 
+	cout << " | " << endl;
+
 	if (getIndividuBestInvalide() != NULL) {
-		cout << getIndividuBestInvalide()->coutSol.evaluation << " ";
+		cout << getIndividuBestInvalide()->coutSol.evaluation << " Scenarios - ";
 		for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
 			cout << scenario << ": " << getIndividuBestInvalide()->coutSol_scenario.evaluation[scenario] << " ";
 		}

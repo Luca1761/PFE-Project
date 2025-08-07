@@ -14,7 +14,7 @@ void commandline::set_default_sorties_name(string to_parse) {
 
   if (pos != -1) {
     unsigned int position = (unsigned int) pos;
-    string directory = "dsirp_results/";
+    string directory = (true_demand) ? "irp_results/" : "dsirp_results/";
     string filename = to_parse.substr(position + 1, to_parse.length() - position - 1-4);
     string type = (true_demand) ? "IRPsol-" : "DSIRPsol-";
     if (end_day_inventories) type += "end-";
@@ -47,6 +47,7 @@ commandline::commandline(int argc, char *argv[])
     maxIterNonProd = 100;
     traces = true;
     true_demand = false;
+    end_day_inventories = false;
     bool hasSolName = false;
 
     // parameters
@@ -58,7 +59,9 @@ commandline::commandline(int argc, char *argv[])
       } else if (string(argv[i]) == "-seed")
         seed = atoi(argv[i + 1]);
       else if (string(argv[i]) == "-cores")
-        nb_cores = (unsigned int) atoi(argv[i+1]);
+        nb_cores = (unsigned int) atoi(argv[i + 1]);
+      else if (string(argv[i]) == "-endDay")
+        end_day_inventories = (atoi(argv[i + 1]) == 1);
       else if (string(argv[i]) == "-trueDemand")
         true_demand = (atoi(argv[i + 1]) == 1);
       else if (string(argv[i]) == "-traces")
