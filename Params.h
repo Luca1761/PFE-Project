@@ -63,6 +63,8 @@ class Params {
 
   normal_distribution<double> dist;
 
+  bool endDayInventories;
+
   // debut de l'algo
   clock_t debut;
 

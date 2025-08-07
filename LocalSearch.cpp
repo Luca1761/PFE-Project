@@ -352,7 +352,8 @@ double LocalSearch::evaluateCurrentCost_stockout(unsigned int client, bool test)
                   noeudClient->route->capacity - deliveryPerDay[k][client];
         if(eq(x2, 0)) x2 = 0;
         myCost += params->penalityCapa[idxScenario] *(std::max<double>(0., x1) - std::max<double>(0., x2));
-        myCost += 1000000*std::max<double> (0., I + deliveryPerDay[k][client]- params->cli[client].maxInventory);
+        double maxDeliverable = (params->endDayInventories) ? params->cli[client].dailyDemand[idxScenario][k] + params->cli[client].maxInventory : params->cli[client].maxInventory;
+        myCost += 1000000*std::max<double> (0., I + deliveryPerDay[k][client] - maxDeliverable);
 
         I = std::max<double> (0., I + deliveryPerDay[k][client] - params->cli[client].dailyDemand[idxScenario][k]);
       }

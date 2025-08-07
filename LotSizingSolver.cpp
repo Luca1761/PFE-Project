@@ -477,7 +477,7 @@ bool LotSizingSolver::backtrackingStockoutBackward(unsigned int scenario, unsign
 }
 
 void LotSizingSolver::Lastday(vector<std::shared_ptr<PLFunction>> &Cf, unsigned int scenario){//for the last day
-  double maxInventory = params->cli[client].maxInventory - params->cli[client].dailyDemand[scenario][horizon];
+  double maxInventory = (params->endDayInventories) ? params->cli[client].maxInventory : params->cli[client].maxInventory - params->cli[client].dailyDemand[scenario][horizon];
   Cf[horizon]->nbPieces = 0;
   Cf[horizon]->pieces = vector<shared_ptr<LinearPiece>>();
   std::shared_ptr<LinearPiece> tmp = std::make_shared<LinearPiece>(0, 0, maxInventory, 0);
@@ -543,6 +543,7 @@ bool LotSizingSolver::solveStockoutBackward() {
 
 void LotSizingSolver::solveOneScenario(unsigned int scenario) {
     double maxInventory;
+    double maxDeliverable;
     Lastday(C[scenario], scenario);
 
     for (unsigned int t = horizon; t >= 2; t--) {
@@ -558,14 +559,15 @@ void LotSizingSolver::solveOneScenario(unsigned int scenario) {
       std::shared_ptr<PLFunction>  fromF2;
       std::shared_ptr<PLFunction>  fromC1;
       std::shared_ptr<PLFunction>  fromC2;
-      maxInventory = params->cli[client].maxInventory - params->cli[client].dailyDemand[scenario][t - 1];
+      maxInventory = (params->endDayInventories) ? params->cli[client].maxInventory : params->cli[client].maxInventory - params->cli[client].dailyDemand[scenario][t - 1];
+      maxDeliverable = (params->endDayInventories) ? params->cli[client].maxInventory + params->cli[client].dailyDemand[scenario][t] : params->cli[client].maxInventory;
       
       //(1). First case: no delivery and no stockout
       //q(t) = 0 and  I(t-1) > daily[t] ==> I(t) > 0 
       //dp <--- C(t)(I(t-1) - daily(t)) + inventoryCost * (I(t-1) - daily(t))
       f1 = copyPLFunction(C[scenario][t]); //f1(x) = Ct(x)
-      f1->addHoldingf(params->cli[client].inventoryCost); //f1(x) = Ct(x) + hi*x
-      f1->shiftRight(params->cli[client].dailyDemand[scenario][t]); //f1(x) = Ct(x-d_i^t) + hi*(x-d_i^t)
+      f1->addHoldingf(params->cli[client].inventoryCost); //f1(x) = Ct(x) + hi * x
+      f1->shiftRight(params->cli[client].dailyDemand[scenario][t]); //f1(x) = Ct(x - d_i^t) + hi * (x - d_i^t)
 
       for (unsigned int i = 0; i < f1->nbPieces; i++) {
         f1->pieces[i]->fromC_pre = C[scenario][t]->pieces[i]->clone();
@@ -590,13 +592,14 @@ void LotSizingSolver::solveOneScenario(unsigned int scenario) {
       }
       f2->moveUp(C[scenario][t]->pieces[0]->p1->y); //f2(x) = C_t(0) + stockoutCost * (daily - x), x < d_i^t
       
+      f2 = f2->getInBound(0, maxInventory);
       f2 = f2->getInBound(0, params->cli[client].dailyDemand[scenario][t]); //x < d_i^t
 
       // q != 0, I(t-1)+q-daily > 0     ==> I(t)>0
       // C(t-1)(I(t-1)) <----- C(t)(I(t-1) + q - daily(t)) + holdingCost * (I(t-1) + q - daily(t)) + F_t^2(q)
       f3 = std::make_shared<PLFunction>(params);
       fromF2 = copyPLFunction(F[scenario][t-1]);  //fromF2(q) = F2(q)
-      fromF2 = fromF2->getInBound(-params->cli[client].maxInventory,-1); //q < maxInventory
+      fromF2 = fromF2->getInBound(-maxDeliverable, -1); //q < maxInventory
       
       fromC1 = copyPLFunction(C[scenario][t]); //fromC1(x) = C_t(x)
       fromC1->addHoldingf(params->cli[client].inventoryCost); //fromC1(x) = C_t(x) + hi*x
@@ -605,14 +608,14 @@ void LotSizingSolver::solveOneScenario(unsigned int scenario) {
       for (unsigned int i = 0; i < fromC1->nbPieces; i++){
         fromC1->pieces[i]->fromC_pre = C[scenario][t]->pieces[i]->clone();
       }
-      fromC1 = fromC1->getInBound(params->cli[client].dailyDemand[scenario][t], params->cli[client].maxInventory);
+      fromC1 = fromC1->getInBound(params->cli[client].dailyDemand[scenario][t], maxDeliverable);
 
       f3 = supperposition(fromC1, fromF2); //f3(x) = min_q (fromC1(x-q) + fromF2(q)) (q<0)
       for (unsigned int i = 0; i < f3->nbPieces; i++){
         f3->pieces[i]->replenishment_loss = -1; 
         f3->pieces[i]->fromC_pre = f3->pieces[i]->fromC->fromC_pre;
       } 
-      f3 = f3->getInBound(0,maxInventory);
+      f3 = f3->getInBound(0, maxInventory);
 
       // q != 0, I(t-1)+q-daily < 0     ==> I(t)=0
       // C(t-1)(I(t-1)) <----- C(t)(0) + stockoutCost * (d_i^t-q-I(t-1)) + F_t^1(q)
@@ -624,9 +627,10 @@ void LotSizingSolver::solveOneScenario(unsigned int scenario) {
 
       fromC2->append(tmpDelivery); //fromC2(x) = stockoutCost * (d_i^t-x)
       fromC2->moveUp(C[scenario][t]->pieces[0]->p1->y); //add C_t(0)
+      fromC2 = fromC2->getInBound(0, maxDeliverable);
       
       fromF1 = copyPLFunction(F[scenario][t-1]); //fromF1(q) = F_1^t(q)
-      fromF1 = fromF1->getInBound(- std::min(params->cli[client].dailyDemand[scenario][t], params->cli[client].maxInventory),-1); //q < d_i^t
+      fromF1 = fromF1->getInBound(- std::min(params->cli[client].dailyDemand[scenario][t], maxDeliverable), -1); //q < d_i^t
       
       f4 = supperposition(fromC2, fromF1); //f4(x) = min_q (fromC2(x-q) + fromF1(q)) (q<0)
 
@@ -643,6 +647,7 @@ void LotSizingSolver::solveOneScenario(unsigned int scenario) {
 
 void LotSizingSolver::day1(unsigned int scenario) {
   double maxInventory = params->cli[client].startingInventory;
+  double maxDeliverable = (params->endDayInventories) ? params->cli[client].maxInventory + params->cli[client].dailyDemand[scenario][1] : params->cli[client].maxInventory;
 
   for (unsigned int k = 0; k < insertions[scenario][0].size(); k++) {
       //picewise linear functions
@@ -657,7 +662,7 @@ void LotSizingSolver::day1(unsigned int scenario) {
       // C(t-1)(I(t-1)) <----- C(t)(I(t-1) + q - daily(t)) + holdingCost * (I(t-1) + q - daily(t)) + F_t^2(q)
       f3 = std::make_shared<PLFunction>(params);
       fromF2 = copyPLFunction(Gk[scenario][k]);  //fromF2(q) = F2(q)
-      fromF2 = fromF2->getInBound(-params->cli[client].maxInventory,-1); //q < maxInventory
+      fromF2 = fromF2->getInBound(-maxDeliverable, -1); //q < maxInventory
       
       fromC1 = copyPLFunction(C[scenario][1]); //fromC1(x) = C_t(x)
       fromC1->addHoldingf(params->cli[client].inventoryCost); //fromC1(x) = C_t(x) + hi*x
@@ -666,14 +671,14 @@ void LotSizingSolver::day1(unsigned int scenario) {
       for (unsigned int i = 0; i < fromC1->nbPieces; i++){
         fromC1->pieces[i]->fromC_pre = C[scenario][1]->pieces[i]->clone();
       }
-      fromC1 = fromC1->getInBound(params->cli[client].dailyDemand[scenario][1], params->cli[client].maxInventory);
+      fromC1 = fromC1->getInBound(params->cli[client].dailyDemand[scenario][1], maxDeliverable);
 
       f3 = supperposition(fromC1, fromF2); //f3(x) = min_q (fromC1(x-q) + fromF2(q)) (q<0)
       for (unsigned int i = 0; i < f3->nbPieces; i++){
         f3->pieces[i]->replenishment_loss = -1; 
         f3->pieces[i]->fromC_pre = f3->pieces[i]->fromC->fromC_pre;
       } 
-      f3 = f3->getInBound(0,maxInventory);
+      f3 = f3->getInBound(0, maxInventory);
 
       // q != 0, I(t-1)+q-daily < 0     ==> I(t)=0
       // C(t-1)(I(t-1)) <----- C(t)(0) + stockoutCost * (d_i^t-q-I(t-1)) + F_t^1(q)
@@ -685,9 +690,10 @@ void LotSizingSolver::day1(unsigned int scenario) {
 
       fromC2->append(tmpDelivery); //fromC2(x) = stockoutCost * (d_i^t-x)
       fromC2->moveUp(C[scenario][1]->pieces[0]->p1->y); //add C_t(0)
+      fromC2 = fromC2->getInBound(0, maxDeliverable);
       
       fromF1 = copyPLFunction(Gk[scenario][k]); //fromF1(q) = F_1^t(q)
-      fromF1 = fromF1->getInBound(-params->cli[client].dailyDemand[scenario][1],-1); //q < d_i^t
+      fromF1 = fromF1->getInBound(-std::min(params->cli[client].dailyDemand[scenario][1], maxDeliverable),-1); //q < d_i^t
       
       f4 = supperposition(fromC2, fromF1); //f4(x) = min_q (fromC2(x-q) + fromF1(q)) (q<0)
 
@@ -738,8 +744,8 @@ void LotSizingSolver::day1(unsigned int scenario) {
         f2->pieces[i]->fromInst = nullptr;
       }
       f2->moveUp(C[scenario][1]->pieces[0]->p1->y); //f2(x) = C_t(0) + stockoutCost * (daily - x), x < d_i^t
-      
-      f2 = f2->getInBound(0, params->cli[client].dailyDemand[0][1]); //x < d_i^t
+      f2 = f2->getInBound(0, maxInventory);
+      f2 = f2->getInBound(0, params->cli[client].dailyDemand[scenario][1]); //x < d_i^t
       std::shared_ptr<PLFunction> temp = copyPLFunction(min_final(f1,f2)); 
       temp = temp->getInBound(params->cli[client].startingInventory, params->cli[client].startingInventory);
       double at;

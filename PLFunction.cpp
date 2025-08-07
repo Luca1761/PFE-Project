@@ -24,17 +24,18 @@ void PLFunction::clear() {
 }
 
 PLFunction::PLFunction(Params *_params, Insertion insertion, unsigned int client, unsigned int idxScenario) : params(_params){
+    double maxDeliverable = (params->endDayInventories) ? params->cli[client].maxInventory + params->cli[client].dailyDemand[idxScenario][1] : params->cli[client].maxInventory;
     nbPieces = 0;
     pieces = vector<shared_ptr<LinearPiece>>();
     minimalPiece = nullptr;
-    double lim = std::min(insertion.load, params->cli[client].maxInventory);
+    double lim = std::min(insertion.load, maxDeliverable);
     double cost1 = insertion.detour - params->inventoryCostSupplier * (double)(params->nbDays) * lim;
     shared_ptr<LinearPiece> tmp(make_shared<LinearPiece>(0, insertion.detour, lim, cost1));
     tmp->fromInst = make_shared<Insertion>(insertion.detour, insertion.load, insertion.place);
     append(tmp);
-    if (insertion.load < params->cli[client].maxInventory) {
-        double cost = insertion.detour + params->penalityCapa[idxScenario] * std::max(0.0, params->cli[client].maxInventory - insertion.load) - params->inventoryCostSupplier * (double)(params->nbDays) * params->cli[client].maxInventory;
-        shared_ptr<LinearPiece> tmp2(make_shared<LinearPiece>(insertion.load, cost1, params->cli[client].maxInventory, cost));
+    if (insertion.load < maxDeliverable) {
+        double cost = insertion.detour + params->penalityCapa[idxScenario] * std::max(0.0, maxDeliverable - insertion.load) - params->inventoryCostSupplier * (double)(params->nbDays) * (maxDeliverable);
+        shared_ptr<LinearPiece> tmp2(make_shared<LinearPiece>(insertion.load, cost1, maxDeliverable, cost));
         tmp2->fromInst = make_shared<Insertion>(insertion.detour, insertion.load, insertion.place);
         append(tmp2);
     }
@@ -60,30 +61,24 @@ PLFunction::PLFunction(Params *_params, vector<Insertion> insertions, unsigned i
     Node *pre_place = nullptr;
 
     // loop through all pieces
-    while (index != insertions.end())
-    {
+    while (index != insertions.end()) {
         if (index->detour < -1) {
             std::cout << index->detour << std::endl;
             throw std::string("Negative detour??");
         }
-        if (index == insertions.begin())
-        {
+        if (index == insertions.begin()) {
             pre_x = 0;
             pre_y = calculateGFunction(day, index->detour, pre_x,  pre_x, idxScenario);
             x = index->load;
             y = calculateGFunction(day, index->detour, x, index->load, idxScenario); //x,load: demand loadfree
-        }
-        else
-        {
+        } else {
             double current_cost = calculateGFunction(day, index->detour, index->load, index->load, idxScenario);
             std::vector<Insertion>::iterator pre_index = index - 1;
             double pre_insertion_cost_with_current_demand = calculateGFunction(day, pre_index->detour, index->load, pre_index->load, idxScenario);
 
             bool is_dominated_vehicle = (index->load <= pre_load) || (pre_insertion_cost_with_current_demand <= current_cost);
 
-            if (!is_dominated_vehicle)
-            {    // make piecey
-                //index->detour = pre_detour +  x *PenalityCapacity - preload*PenalityCapacity 
+            if (!is_dominated_vehicle) {    // make piecey
                 x = pre_load + (index->detour - pre_detour) / params->penalityCapa[idxScenario];
 
                 y = calculateGFunction(day, pre_detour, x, pre_load, idxScenario);
@@ -116,7 +111,7 @@ PLFunction::PLFunction(Params *_params, vector<Insertion> insertions, unsigned i
     }
 
     // the last piece
-    x = params->cli[client].maxInventory;
+    x =  (params->endDayInventories) ? params->cli[client].maxInventory + params->cli[client].dailyDemand[idxScenario][day + 1] : params->cli[client].maxInventory;
     if (x - pre_x <= 0.01 ) {
         return;
     }
@@ -370,7 +365,6 @@ void PLFunction::moveUp(double y_axis)
 
 std::shared_ptr<PLFunction> PLFunction::getInBound(double lb, double ub)
 {
-    
     std::shared_ptr<PLFunction> plFunction(std::make_shared<PLFunction>(params));
 
     plFunction->clear();
