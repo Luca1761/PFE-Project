@@ -205,7 +205,12 @@ void LocalSearch::printInventoryLevels(std::ostream& file,bool add, std::vector<
 
   for (unsigned int r = 0; r < params->vehicleNumber[1]; r++) {
     routeCosts += routes[1][r]->time; // temps: total travel time
-    if(!add)  file << "route["<<r<<"]: travel time = " << routes[1][r]->time << "; capacity = " << routes[1][r]->capacity  << "; charge = " << std::accumulate(deliveries.begin(), deliveries.end(), 0.0) << "; depot = " << routes[1][r]->depot->idx << endl;
+    double chargeRoute = std::accumulate(deliveries.begin(), deliveries.end(), 0.0);
+    if (chargeRoute > routes[1][r]->capacity) {
+      std::cout << "INVALID CHARGE" << std::endl;
+      throw std::string("INVALID CHARGE");
+    }
+    if(!add)  file << "route["<<r<<"]: travel time = " << routes[1][r]->time << "; capacity = " << routes[1][r]->capacity << "; charge = " << chargeRoute << "; depot = " << routes[1][r]->depot->idx << endl;
     routes[1][r]->printRoute(file);
   }
   

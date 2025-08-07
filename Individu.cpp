@@ -425,6 +425,14 @@ double Individu::measureSol(std::vector<double> &delivers, unsigned int idxDay) 
 		toDeliver = round(toDeliver);
 		inventoryCost += params->cli[cus].inventoryCost * std::max<double>(0, I_end[cus] + toDeliver - params->cli[cus].trueDemand[idxDay]);
 		stockoutCost += params->cli[cus].stockoutCost * std::max<double>(0, params->cli[cus].trueDemand[idxDay] - I_end[cus] - toDeliver);
+		if (params->endDayInventories && I_end[cus] + toDeliver - params->cli[cus].trueDemand[idxDay] > params->cli[cus].maxInventory) {
+			std::cout << "INVALID INVENTORY" << std::endl;
+			throw std::string("INVALID INVENTORY");
+		}
+		if (!params->endDayInventories && I_end[cus] + toDeliver > params->cli[cus].maxInventory) {
+			std::cout << "INVALID INVENTORY" << std::endl;
+			throw std::string("INVALID INVENTORY");
+		}
 		supplyCost -= toDeliver * params->inventoryCostSupplier;
 		delivers.push_back(toDeliver);
 	}
