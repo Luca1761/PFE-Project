@@ -14,10 +14,11 @@ void commandline::set_default_sorties_name(string to_parse) {
 
   if (pos != -1) {
     unsigned int position = (unsigned int) pos;
-    string directory = (true_demand) ? "irp_results/" : "dsirp_results/";
+    string directory = (deterministic) ? "irp_results/" : "dsirp_results/";
     string filename = to_parse.substr(position + 1, to_parse.length() - position - 1-4);
-    string type = (true_demand) ? "IRPsol-" : "DSIRPsol-";
+    string type = (deterministic) ? "IRPsol-" : "DSIRPsol-";
     if (end_day_inventories) type += "end-";
+    if (true_demand_day1) type += "day1-";
 
     sortie_name = directory + type + filename + "_seed-" + std::to_string(seed) + "_veh-" + std::to_string(nbVeh) + "_scenarios-" + std::to_string(nb_scenarios);
   } else {
@@ -46,9 +47,10 @@ commandline::commandline(int argc, char *argv[])
     maxIter = 100;
     maxIterNonProd = 100;
     traces = true;
-    true_demand = false;
+    true_demand_day1 = false;
     end_day_inventories = false;
     bool hasSolName = false;
+    deterministic = false;
 
     // parameters
     for (int i = 2; i < argc; i += 2)
@@ -62,8 +64,10 @@ commandline::commandline(int argc, char *argv[])
         nb_cores = (unsigned int) atoi(argv[i + 1]);
       else if (string(argv[i]) == "-endDay")
         end_day_inventories = (atoi(argv[i + 1]) == 1);
-      else if (string(argv[i]) == "-trueDemand")
-        true_demand = (atoi(argv[i + 1]) == 1);
+      else if (string(argv[i]) == "-trueDemand1")
+        true_demand_day1 = (atoi(argv[i + 1]) == 1);
+      else if (string(argv[i]) == "-deterministic")
+        deterministic = (atoi(argv[i + 1]) == 1);
       else if (string(argv[i]) == "-traces")
         traces = (atoi(argv[i + 1]) == 1);
       else if (string(argv[i]) == "-time")
@@ -87,14 +91,15 @@ commandline::commandline(int argc, char *argv[])
           }
           nb_scenarios = (unsigned int) nbS;
       } else {
-        std::cout << "Commande non reconnue : " << string(argv[i]) << std::endl;
-        throw std::string("Commande non reconnue");
+        std::cout << "Unknown command : " << string(argv[i]) << std::endl;
+        throw std::string("Unknown command");
       }
     }
-    if (true_demand) nb_scenarios = 1;
-    if (end_day_inventories) {
-      nb_scenarios = 1;
-      true_demand = true;
+    if (deterministic) nb_scenarios = 1;
+    if (end_day_inventories && !deterministic && !true_demand_day1) {
+      std::cout << "INVALID COMBINATION, CANNOT HAVE END-DAY INVENTORIES WITHOUT DETERMINISTIC OR TRUE DAY 1 DEMAND" << std::endl;
+      throw std::string("INVALID COMBINATION, CANNOT HAVE END-DAY INVENTORIES WITHOUT DETERMINISTIC OR TRUE DAY 1 DEMAND");
+
     }
     if (!hasSolName)
       set_default_sorties_name(string(argv[1]));
@@ -107,11 +112,13 @@ int commandline::get_seed() { return seed; }
 
 unsigned int commandline::get_nb_cores() { return nb_cores; }
 
-bool commandline::get_true_demand() {return true_demand;}
+bool commandline::get_true_demand() {return true_demand_day1;}
 
 bool commandline::get_end_day_inventories() {return end_day_inventories;}
 
 unsigned int commandline::get_nb_scenarios() {return nb_scenarios; }
+
+bool commandline::get_deterministic() {return deterministic;}
 
 unsigned int commandline::get_nbVeh() { return nbVeh; }
 

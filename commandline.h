@@ -17,14 +17,17 @@ private:
     // nb cores for multithreading in expes
     unsigned int nb_cores;
 
-    // to solve with true demand (if true, nb_scenarios should be 1)
-    bool true_demand;
-
+    // do we know demand of day 1
+    bool true_demand_day1;
+    
     // if true, constraint is I_i + q_i - d_i < U_i. Else, it is I_i + q_i < U_i (beginning of the day)
     bool end_day_inventories;
-
+    
     // number of scenarios
     unsigned int nb_scenarios;
+    
+    // to solve with true demand (if true, nb_scenarios should be 1)
+    bool deterministic;
 
     // nbVehicles, if given (1 in our setup)
     unsigned int nbVeh;
@@ -69,7 +72,7 @@ public:
     // nb cores for multithreading
     unsigned int get_nb_cores();
 
-    // get information to set true demand or not
+    // get information to set true demand on day 1 or not
     bool get_true_demand();
 
     // get the information about inventory time
@@ -77,6 +80,9 @@ public:
 
     // number of scenarios
     unsigned int get_nb_scenarios(); 
+
+    // is deterministic
+    bool get_deterministic();
 
     // number of vehicles
     unsigned int get_nbVeh();

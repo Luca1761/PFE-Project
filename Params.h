@@ -154,8 +154,11 @@ class Params {
   // compute the demands for every client (according to mean and std or to true demand)
   void adjustDemands();
 
-  // if true, the true demand is used (no scenarios)
-  bool trueDemands;
+  // if true, the true demand is used (only one scenario)
+  bool deterministic;
+
+  // if true, the true demand of day 1 is used
+  bool trueDemandDay1;
 
   // number of depots (1 in this work) | index 0 
   unsigned int nbDepots;

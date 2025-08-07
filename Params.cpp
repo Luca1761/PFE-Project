@@ -29,11 +29,9 @@ double calculateStandardDeviation(const std::vector<double>& data, bool isSample
     }
 }
 
-
-
 // creating the parameters from the instance file
-Params::Params(string nomInstance, int seedRNG, unsigned int nbCore, unsigned int nbScenario, unsigned int nbVeh, bool trace, bool trueDemand) : 
-	seed(seedRNG), nbCores(nbCore), nbScenarios(nbScenario), nbVehiculesPerDep(nbVeh), traces(trace), trueDemands(trueDemand)
+Params::Params(string nomInstance, int seedRNG, unsigned int nbCore, unsigned int nbScenario, unsigned int nbVeh, bool trace, bool trueDemand1) : 
+	seed(seedRNG), nbCores(nbCore), nbScenarios(nbScenario), nbVehiculesPerDep(nbVeh), traces(trace), trueDemandDay1(trueDemand1)
 {
 	endDayInventories = false;
 
@@ -81,8 +79,8 @@ void Params::adjustDemands() {
 			for (unsigned int day = 1; day <= nbDays; day++) {
 				double x = normDist(gen);        // x ~ N(0,1)
 				x = max<double>(0.0, x);   
-				x = min<double>(x, cli[i].maxInventory);
-				if (trueDemands) cli[i].dailyDemand[scenario][day] = cli[i].testDemand[jVal + day - 1];
+				// x = min<double>(x, cli[i].maxInventory);
+				if ((trueDemandDay1 && day == 1) || deterministic) cli[i].dailyDemand[scenario][day] = cli[i].testDemand[jVal + day - 1];
 				else cli[i].dailyDemand[scenario][day] = (double) round(x);
 				if (traces) std::cout << cli[i].dailyDemand[scenario][day] << " ";
         	}

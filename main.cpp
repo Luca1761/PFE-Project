@@ -28,6 +28,7 @@ int main(int argc, char *argv[]) {
     command.get_true_demand()
   );
   params->endDayInventories = command.get_end_day_inventories();
+  params->deterministic = command.get_deterministic();
   if (params->traces)std::cout << "Read instance: " << command.get_path_to_instance() << std::endl;
   if (params->traces)std::cout << "Solution stored in: "<< command.get_path_to_solution() << std::endl;
   
