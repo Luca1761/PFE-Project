@@ -6,11 +6,12 @@
 #define INDIVIDUAL_H
 
 /*
-Classe individu : chaque individu est represente par son chromT traduisant la sequence de parcours des sommets, sans inserer la depot nulle part. Le calcul du chemin VRP reel et de son fitness se fait avec la fonction split. 
+Individual: each individual is represented by its chromT. ChromT contains the big tour (without depot) with clients to visit, for each day and each scenario.
+ChromL contains the quantity to deliver to these clients
 
-Attention, certains champs ne sont calcules qu'apres une execution de split, ne pas tenter d'y acceder avant.
+We compute the real VRP (with the depot and different routes from different vehicles) later with split functions, giving the real cost of the solution.
 
-Des getters auraient pu etre faits afin de restreindre l'acces mais dans un souci d'efficacite algorithmique on se contentera de la conscience du codeur. 
+Be careful, many different fields of this class are not accessible before the general_split (particularly the cost)
 */
 
 #include <vector>
@@ -25,23 +26,30 @@ using namespace std ;
 class LocalSearch ;
 
 struct coutSol {
-  // valeur du fitness comportant les penalites, si il a ete calcule
+  // fitness value, including penalities (from inventory or capacity overcharge)
   double evaluation ;
 
-  // valeur du fitness non penalise
+  // fitness value without penalities
   double fitness ;
 
-  // violations de capacite
+  // penalities
   double capacityViol ;
+};
+
+// literally the same but for each scenario (coutSol is then compute as an average of these)
+struct coutSol_scenario {
+  vector<double> evaluation;
+  vector<double> fitness;
+  vector<double> capacityViol;
 };
 
 class Individual ;
 
 struct proxData {
-  // individu en question
+  // Individual
   Individual * indiv ;
 
-  // sa distance
+  // distance to the individual 
   double dist ;
 };
 
@@ -50,111 +58,120 @@ class Individual
 
  private:
 
- // Acces aux parametres de l'instance et du genetique
+ // parameters of instance and genetic algorithm
  Params* params;
 
  public:
 
+  // number of scenarios ( = params->nbScenario but we use it a lot so define it again)
   unsigned int nbScenario;
 
   // fitness etendu
-  double fitnessEtendu ;
+  double fitnessEtendu;
 
   // rang diversite
-  float divRank ;
+  float divRank;
 
   // rang fitness 
-  float fitRank ;
+  float fitRank;
 
-  // evaluation de la solution
-  struct coutSol coutSol;  //Coût global de la solution
-  struct coutSol_scenario {
-    vector<double> evaluation;    //coûts totaux des scénarios
-    vector<double> fitness;       //coûts sans les pénalités d'excès de stock
-    vector<double> capacityViol;  //coûts de pénalités de capacité
-  };
-  coutSol_scenario coutSol_scenario; //Coûts de chaque scénario
+  // average gloval solution cost
+  struct coutSol coutSol; 
+
+  // solution cost, scenario per scenario
+  coutSol_scenario coutSol_scenario;
 
   // The giant tour of each individual 
-  // chromT [i][j] -> jour i, client j dans la succession des clients du jour i
+  // chromT[1][j] -> day 1, j-th customer of the corresponding tour (shared by every scenario)
+  // chromT[t + s * (nbDays - 1)][j], t=2...nbDays -> day t, scenario s, j-th customer of the corresponding tour
   vector<vector<unsigned int>> chromT ;
 
-  // chromL [i][j] -> The load to be delivered to each customer [j] on day [i]
+  // chromL[t + s * nbDays][j], t=1...nbDays -> day t, scenario s, the load to be delivered to customer whose index is j (not the j-th) on this day and scenario
   vector<vector<double>> chromL ;
 
   // Auxiliary data structure to run the Split
-  // potentiels[i+1] -> distance pour atteindre le sommet i
-  // de la sequence
-  // potentiels[0] = 0 et non   
-  // potentiels[1] = distance du sommet 0
-  vector<vector<double>> potentiels ;
+  // potentials[i + 1] ->  distance to join i-th customer of the tour
+  // potentials[0] = 0  
+  // potentials[1] = distance to 0
+  vector<vector<double>> potentials ;
 
-  // pour chaque jour le tableau de [nbCamions] [predecesseur]
-  // potentiels[i+1] -> predecesseur de i
+  // for each day, the array of size [nbVehicles] [predecessor]
+  // pred[c][i+1] -> predecessor of i-th customer on route of vehicle c
   vector<vector<vector<unsigned int>>> pred ;
 
   // says if the individual is a feasible solution
-  bool estValide ;
+  bool isFeasible ;
 
-  // distance measure
+  // distance measure between two individuals
   double distance(Individual * indiv2);
 
-  // individus classes par proximite dans la population, pour les politiques de remplacement
+  // individual sorted by proximity in their population, for replacement policies
   list<proxData> plusProches;
 
-  // ajoute un element proche dans les structures de proximite
+  // add an individual in proximity structures
   void addProche(Individual * indiv) ;
 
-  // enleve un element dans les structures de proximite 
+  // remove an individual in proximity structures
   void removeProche(Individual * indiv) ;
 
-  // distance moyenne avec les n individus les plus proches
-  double distPlusProche(int n) ;
+  // average distance with the n nearest Individuals
+  double distPlusProche(int n);
 
-  // structure de donnee associee a l'individu au sein de la recherche locale
-  // seul le rejeton de Genetic.cpp possede cette structure
-  // sinon elle n'est pas initialisee
+  // one local search per scenario, only rejeton from Genetic has this structure, otherwise its not initialized
+  // this structure will help to apply local search to this individual
+  vector<LocalSearch*> localSearchList;
 
-  vector<LocalSearch *> localSearchList;
-
-  // fonction Split pour tous les jours
-  // essaye deja le split simple
-  // si la solution ne respecte pas le nombre de camions : essaye le split a flotte limitee
+  // global split function, to split every giant tour from every scenario and day
+  // we try a simple split and if the solution we get has an invalid number of vehicles, we try the limited fleed split
   void generalSplit_scenario();
 
   // fonction split ne respectant pas forcement le nombre de vehicules
   // retourne 1 si succes, 0 sinon
+  // simple split to apply to each tour with day >= 2 for each scenario
   int splitSimple_scenario(unsigned int k, unsigned int scenario) ;
+
+  // same but for day 1 (with average cost on each scenario)
   bool splitSimpleDay1();
 
-  // fonction split pour problemes a flotte limitee
+  // split function with limited fleet to apply to each tour with day >= 2 for each scenario
   bool splitLF_scenario(unsigned int k, unsigned int scenario);
+
+   // same but for day 1 (with average cost on each scenario)
   bool splitLF_scenario_day1();
 
-  // fonction qui se charge d'evaluer exactement les violations
-  // et de remplir tous les champs d'evaluation de solution
+  // function that evaluate violations and cost of the solution
+  // also fills every evaluation field of the solution
   void measureSol_scenario();
 
-  double measureSol(std::vector<double> &delivers, unsigned int idxDay);
+  // measure the cost of the solution with true demand (and fills the vector delivers with the quantity we choose to deliver)
+  double measureTrueCost(std::vector<double> &delivers);
 
-  // initialisation du vecteur potentiels
+  // re-initialize potentials structure
   void initPot_scenario(unsigned int k, unsigned int scenario) ;
 
-  // mise a jour de l'objet localSearch, 
-  // Attention, Split doit avoir ete calcule avant
+  // update localSearch list, (fills localSearch structures with chromT and chromL)
+  // BE CAREFUL: Split needs to be compute before
   void updateLS_scenario() ;
 
-  void localSearchRunSearch_scenario();
-  void muterDifferentScenarioDP();
-  int mutationDP(unsigned int client, bool &rechercheTerminee);
+  // start the local search procedure
+  void runLocalSearch_scenario();
+
+  // start the backward dynamic programming operator
+  void backwardDPOperator();
+
+  // start the backward DP operator for a given client
+  int backwardDPSingleClient(unsigned int client, bool &rechercheTerminee);
+
+  // start all the other local search operator many times on day 1
   void runSearchDay1();
-  int mutationSameDay1();
+
+  // start an iteration of local search
+  int mutationDay1();
 
   // Inverse procedure, after local search to return to a giant tour solution representation and thus fill the chromT table.
   void updateIndiv_scenario() ;
 
-  // Computes the maximum amount of load that can be delivered to client on a day k without exceeding the 
-  // customer maximum inventory
+  // every type of day 1 mutations
   int mutation1_indiv();
   int mutation2_indiv();
   int mutation3_indiv();
@@ -165,10 +182,10 @@ class Individual
   int mutation8_indiv();
   int mutation9_indiv();
 
-
+  // random constructor
   Individual(Params* _params);
 
-  //destructeur
+  // destructor
   ~Individual();
 };
 #endif

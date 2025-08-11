@@ -36,7 +36,7 @@ Population::Population(Params* _params) : params(_params)
 		
 		education_scenario(randomIndiv);
 		if (compter) updateNbValides(randomIndiv);
-		if (addIndividu(randomIndiv) == 0 && randomIndiv->estValide) {
+		if (addIndividu(randomIndiv) == 0 && randomIndiv->isFeasible) {
 			if (params->traces) std::cout << "NEW BEST FEASIBLE FROM INITIALIZATION" << std::endl;
 		}
 		delete randomIndiv;
@@ -84,7 +84,7 @@ void Population::evalExtFit(SousPop *pop) {
 }
 
 unsigned int Population::addIndividu(Individual *indiv) {
-	SousPop *souspop = (indiv->estValide) ? valides : invalides;
+	SousPop *souspop = (indiv->isFeasible) ? valides : invalides;
 	unsigned int result = placeIndividu(souspop, indiv);
 
 	// il faut eventuellement enlever la moitie de la pop
@@ -142,7 +142,7 @@ void Population::diversify() {
 		}
 		Individual *random = new Individual(params);
 		education_scenario(random);
-		if (addIndividu(random) == 0 && random->estValide) {
+		if (addIndividu(random) == 0 && random->isFeasible) {
 			if (params->traces) std::cout << "NEW BEST FEASIBLE FROM DIVERSIFY" << std::endl;
 		}
 		delete random;
@@ -289,7 +289,7 @@ void Population::recopieIndividu(Individual *destination, Individual *source) {
 	destination->chromL = source->chromL;
 	destination->coutSol = source->coutSol;
 	destination->coutSol_scenario = source->coutSol_scenario;
-	destination->estValide = source->estValide;
+	destination->isFeasible = source->isFeasible;
 }
 
 void Population::ExportPop(string nomFichier,bool add, std::vector<double> deliveries, double &totalCost) {
@@ -413,7 +413,7 @@ void Population::education_scenario(Individual *indiv) {
 	recopieIndividu(trainer, indiv); //copie provisoire de indiv dans trainer
 	trainer->generalSplit_scenario(); //split du grand tour en différentes routes + mesure coût
 	trainer->updateLS_scenario(); //on remplit les structures de recherches locales grâce à chromL et chromT
-	trainer->localSearchRunSearch_scenario(); //phase de recherche locale
+	trainer->runLocalSearch_scenario(); //phase de recherche locale
 	trainer->updateIndiv_scenario();  //on remplit chromT et chromL avec les résultats de LS
 	recopieIndividu(indiv, trainer); //on recopie dans indiv le trainer
 }
@@ -426,12 +426,12 @@ void Population::updateNbValides(Individual *indiv)
 	listeValiditeCharge.pop_front();
 }
 
-void Population::measureAndUpdateQuantities(std::vector<double> &deliveries, double &totalCost, unsigned int j) {
+void Population::measureAndUpdateQuantities(std::vector<double> &deliveries, double &totalCost) {
 	if (getIndividuBestValide() != NULL) {
       Individual * bestIndividual = getIndividuBestValide();
       bestIndividual->generalSplit_scenario();
-      double val = bestIndividual->measureSol(deliveries, j);
-      if (params->traces) std::cout << "Cost of the day " << j << ": " << val << std::endl;
+      double val = bestIndividual->measureTrueCost(deliveries);
+      if (params->traces) std::cout << "Cost of the day " << params->jVal << ": " << val << std::endl;
       totalCost += val;
       if (params->traces) std::cout << "Total cost yet: " << totalCost << std::endl;
     } else {

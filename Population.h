@@ -130,7 +130,7 @@ class Population
    // met a jour le compte des valides
    void updateNbValides (Individual * indiv);
 
-   void measureAndUpdateQuantities(std::vector<double> &deliveries, double &totalCost, unsigned int j);
+   void measureAndUpdateQuantities(std::vector<double> &deliveries, double &totalCost);
 
    //constructeur
    Population(Params* params);

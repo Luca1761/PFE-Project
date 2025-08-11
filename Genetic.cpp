@@ -45,16 +45,16 @@ void Genetic::evolve(unsigned int maxIter, unsigned int maxIterNonProd, unsigned
 		muter_scenario();
 		
 		// REPAIR IF NEEDED
-		if (!rejeton->estValide) {
+		if (!rejeton->isFeasible) {
 			place = population->addIndividu(rejeton);
 			reparer_scenario();
 		}
-		if (rejeton->estValide) {
+		if (rejeton->isFeasible) {
 			place = population->addIndividu(rejeton);
 		}
 		
 		nbIterNonProd++;
-		if (place == 0 && rejeton->estValide) {
+		if (place == 0 && rejeton->isFeasible) {
 			nbIterNonProd = 1;
 			if (params->traces) std::cout << "NEW BEST FEASIBLE ";
 			if (params->traces) std::cout << rejeton->coutSol.evaluation;	
@@ -89,7 +89,7 @@ void Genetic::evolve(unsigned int maxIter, unsigned int maxIterNonProd, unsigned
 void Genetic::muter_scenario() {
 	rejeton->generalSplit_scenario();
 	rejeton->updateLS_scenario();
-	rejeton->localSearchRunSearch_scenario();
+	rejeton->runLocalSearch_scenario();
 	rejeton->updateIndiv_scenario();
 	population->updateNbValides(rejeton);
 }
@@ -109,16 +109,16 @@ void Genetic::reparer_scenario() {
 	if (params->rng->genrand64_real1() < params->pRep) {
 		rejeton->generalSplit_scenario();
 		rejeton->updateLS_scenario();
-		rejeton->localSearchRunSearch_scenario();
+		rejeton->runLocalSearch_scenario();
 		rejeton->updateIndiv_scenario();
-		if (!rejeton->estValide) {
+		if (!rejeton->isFeasible) {
 			for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
 				if (rejeton->coutSol_scenario.capacityViol[scenario] > 0.0001)
 					params->penalityCapa[scenario] *= 500;
 			}
 			rejeton->generalSplit_scenario();
 			rejeton->updateLS_scenario();
-			rejeton->localSearchRunSearch_scenario();
+			rejeton->runLocalSearch_scenario();
 			rejeton->updateIndiv_scenario();
 		}
 	}

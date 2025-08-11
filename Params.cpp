@@ -271,7 +271,7 @@ void Params::updateToDay(unsigned int j, std::vector<double> deliveries) {
 	if (j != 1) cli[0].startingInventory = availableSupply[1] - std::accumulate(deliveries.begin(), deliveries.end(), 0.0); // if not first day of rolling horizon, actualize starting inventory of supplier
 	if (traces) std::cout << " Client | Init | MAX | Previous delivery | True demand" << std::endl;
     for (unsigned int c = nbDepots; c < nbDepots + nbClients; c++) {  
-		string deliver = (j == 1) ? "?" : to_string(deliveries[c - nbDepots]);
+		string deliver = (j == 1) ? "?" : to_string((int) deliveries[c - nbDepots]);
 		if (j != 1) cli[c].startingInventory = std::max(0.0, cli[c].startingInventory + deliveries[c - nbDepots] - cli[c].trueDemand[j - 1]); // same for customers
       if (traces) std::cout << "Client " << c << ": " <<  cli[c].startingInventory << " " << cli[c].maxInventory << " " << deliver << " "  << cli[c].trueDemand[j] << std::endl;
     }

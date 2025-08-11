@@ -36,11 +36,10 @@ struct Point
 {
     double x;
     double y;
-    bool isFeasible;
 
     Point() {}
 
-    Point(double _x, double _y) : x(_x), y(_y), isFeasible(true) {}
+    Point(double _x, double _y) : x(_x), y(_y) {}
 
     virtual ~Point() {}
     
