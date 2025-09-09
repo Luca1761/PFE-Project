@@ -2,30 +2,6 @@
 #include <algorithm> 
 #include <unistd.h>
 
-// inline double GetMemoryUsage(int pid, int flag=true) {
-// 	std::ifstream status("/proc/" + std::to_string(pid) + "/status");
-// 	std::string line;
-// 	long long vm_size_kb = 0, vm_rss_kb = 0;
-
-// 	while (std::getline(status, line)) {
-// 		if (line.find("VmSize:") != std::string::npos) {
-// 			vm_size_kb = std::stoll(line.substr(line.find(":") + 1));
-// 		} else if (line.find("VmRSS:") != std::string::npos) {
-// 			vm_rss_kb = std::stoll(line.substr(line.find(":") + 1));
-// 		}
-// 	}
-
-// 	double vm_size_mb = (double) vm_size_kb / 1024.0;
-// 	double vm_rss_mb = vm_rss_kb / 1024.0;
-
-// 	if (flag) {
-// 		std::cout << "Virtual Memory Size: " << vm_size_mb << " MB\n";
-// 		std::cout << "Resident Set Size (RSS): " << vm_rss_mb << " MB\n";
-// 	}
-
-// 	return vm_size_mb;
-// }
-
 void Genetic::evolve(unsigned int maxIter, unsigned int maxIterNonProd, unsigned int maxTime) {
 	unsigned int place;
 	double rangRelatif;
@@ -87,10 +63,10 @@ void Genetic::evolve(unsigned int maxIter, unsigned int maxIterNonProd, unsigned
 }
 
 void Genetic::muter_scenario() {
-	rejeton->generalSplit_scenario();
-	rejeton->updateLS_scenario();
-	rejeton->runLocalSearch_scenario();
-	rejeton->updateIndiv_scenario();
+	rejeton->split();
+	rejeton->updateLocalSearch();
+	rejeton->runLocalSearch();
+	rejeton->updateIndividual();
 	population->updateNbValides(rejeton);
 }
 
@@ -107,19 +83,19 @@ void Genetic::reparer_scenario() {
 			params->penalityCapa[scenario] *= 10;
 	}
 	if (params->rng->genrand64_real1() < params->pRep) {
-		rejeton->generalSplit_scenario();
-		rejeton->updateLS_scenario();
-		rejeton->runLocalSearch_scenario();
-		rejeton->updateIndiv_scenario();
+		rejeton->split();
+		rejeton->updateLocalSearch();
+		rejeton->runLocalSearch();
+		rejeton->updateIndividual();
 		if (!rejeton->isFeasible) {
 			for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
 				if (rejeton->coutSol_scenario.capacityViol[scenario] > 0.0001)
 					params->penalityCapa[scenario] *= 500;
 			}
-			rejeton->generalSplit_scenario();
-			rejeton->updateLS_scenario();
-			rejeton->runLocalSearch_scenario();
-			rejeton->updateIndiv_scenario();
+			rejeton->split();
+			rejeton->updateLocalSearch();
+			rejeton->runLocalSearch();
+			rejeton->updateIndividual();
 		}
 	}
 
@@ -287,7 +263,7 @@ int Genetic::crossPOX_scenario() {
 			}
 		}
 	}
-	rejeton->generalSplit_scenario();
+	rejeton->split();
 	return 0;
 }
 
@@ -386,7 +362,7 @@ void Genetic::crossPOX2() {
 			}
 		}
 	}
-	rejeton->generalSplit_scenario();
+	rejeton->split();
 }
 
 Genetic::~Genetic(void)

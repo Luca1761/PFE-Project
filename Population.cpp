@@ -64,7 +64,7 @@ void Population::evalExtFit(SousPop *pop) {
 	vector<double> distances;
 	for (unsigned int indiv = 0; indiv < pop->nbIndiv; indiv++) {
 		classement.push_back(indiv);
-		distances.push_back(pop->individus[indiv]->distPlusProche(params->nbCountDistMeasure));
+		distances.push_back(pop->individus[indiv]->distNearest(params->nbCountDistMeasure));
 	}
 
 	// classement des individus en fonction de leur note de distance
@@ -79,7 +79,7 @@ void Population::evalExtFit(SousPop *pop) {
 	for (unsigned int i = 0; i < pop->nbIndiv; i++) {
 		pop->individus[classement[i]]->divRank = (float)i / (float)(pop->nbIndiv - 1);
 		pop->individus[classement[i]]->fitRank = (float)classement[i] / (float)(pop->nbIndiv - 1);
-		pop->individus[classement[i]]->fitnessEtendu = pop->individus[classement[i]]->fitRank + ((float)1.0 - (float)params->el / (float)pop->nbIndiv) * pop->individus[classement[i]]->divRank;
+		pop->individus[classement[i]]->extendedFitness = pop->individus[classement[i]]->fitRank + ((float)1.0 - (float)params->el / (float)pop->nbIndiv) * pop->individus[classement[i]]->divRank;
 	}
 }
 
@@ -102,8 +102,8 @@ unsigned int Population::addIndividu(Individual *indiv) {
 void Population::updateProximity(SousPop *pop, Individual *indiv) {
 	for (unsigned int k = 0; k < pop->nbIndiv; k++)
 		if (pop->individus[k] != indiv) {
-			pop->individus[k]->addProche(indiv);
-			indiv->addProche(pop->individus[k]);
+			pop->individus[k]->addNearest(indiv);
+			indiv->addNearest(pop->individus[k]);
 		}
 }
 
@@ -202,7 +202,7 @@ void Population::removeIndividu(SousPop *pop, unsigned int p) {
 
 	// on l'enleve des structures de proximit�
 	for (unsigned int i = 0; i < pop->nbIndiv; i++)
-		pop->individus[i]->removeProche(partant);
+		pop->individus[i]->removeNearest(partant);
 
 	// et on supprime le partant
 	delete partant;
@@ -259,7 +259,7 @@ Individual *Population::getIndividuBinT(double &rangRelatif) {
 	evalExtFit(valides);
 	evalExtFit(invalides);
 
-	if (individu1->fitnessEtendu < individu2->fitnessEtendu) {
+	if (individu1->extendedFitness < individu2->extendedFitness) {
 		rangRelatif = rangRelatif1;
 		return individu1;
 	} else {
@@ -392,16 +392,16 @@ unsigned int Population::selectCompromis(SousPop *souspop) {
 	// pour chaque individu on modifie le fitness etendu
 	for (unsigned int i = 0; i < souspop->nbIndiv; i++) {
 		classement.push_back(i);
-		if (souspop->individus[i]->distPlusProche(1) < params->distMin) souspop->individus[i]->fitnessEtendu += 5.0;
+		if (souspop->individus[i]->distNearest(1) < params->distMin) souspop->individus[i]->extendedFitness += 5.0;
 		// for the CVRP instances, we need to allow duplicates with the same fitness since in the Golden instances
 		// there is a lot of symmetry.
-		if (fitExist(souspop, souspop->individus[i])) souspop->individus[i]->fitnessEtendu += 5.0;
+		if (fitExist(souspop, souspop->individus[i])) souspop->individus[i]->extendedFitness += 5.0;
 	}
 
 	// on classe les elements par fitness etendu et on prend le plus mauvais
 	for (unsigned int n = 0; n < souspop->nbIndiv; n++) {
 		for (unsigned int i = 1; i < souspop->nbIndiv - n - 1; i++) {
-			if (souspop->individus[classement[i]]->fitnessEtendu > souspop->individus[classement[i + 1]]->fitnessEtendu) {
+			if (souspop->individus[classement[i]]->extendedFitness > souspop->individus[classement[i + 1]]->extendedFitness) {
 				std::swap(classement[i], classement[i+1]);
 			}
 		}
@@ -411,10 +411,10 @@ unsigned int Population::selectCompromis(SousPop *souspop) {
 
 void Population::education_scenario(Individual *indiv) {
 	recopieIndividu(trainer, indiv); //copie provisoire de indiv dans trainer
-	trainer->generalSplit_scenario(); //split du grand tour en différentes routes + mesure coût
-	trainer->updateLS_scenario(); //on remplit les structures de recherches locales grâce à chromL et chromT
-	trainer->runLocalSearch_scenario(); //phase de recherche locale
-	trainer->updateIndiv_scenario();  //on remplit chromT et chromL avec les résultats de LS
+	trainer->split(); //split du grand tour en différentes routes + mesure coût
+	trainer->updateLocalSearch(); //on remplit les structures de recherches locales grâce à chromL et chromT
+	trainer->runLocalSearch(); //phase de recherche locale
+	trainer->updateIndividual();  //on remplit chromT et chromL avec les résultats de LS
 	recopieIndividu(indiv, trainer); //on recopie dans indiv le trainer
 }
 
@@ -429,7 +429,7 @@ void Population::updateNbValides(Individual *indiv)
 void Population::measureAndUpdateQuantities(std::vector<double> &deliveries, double &totalCost) {
 	if (getIndividuBestValide() != NULL) {
       Individual * bestIndividual = getIndividuBestValide();
-      bestIndividual->generalSplit_scenario();
+      bestIndividual->split();
       double val = bestIndividual->measureTrueCost(deliveries);
       if (params->traces) std::cout << "Cost of the day " << params->jVal << ": " << val << std::endl;
       totalCost += val;

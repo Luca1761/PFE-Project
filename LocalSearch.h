@@ -154,7 +154,7 @@ public:
   int mutation9();
 
   // Evaluates the current objective function from the model
-  double evaluateCurrentCost_stockout(unsigned int client, bool test = false);
+  double evaluateCurrentClientCost(unsigned int client);
 
   // Prints some useful information on the current solution
   void printInventoryLevels(std::ostream& file,bool add, std::vector<double> deliveries, double &totalCost);
@@ -168,14 +168,14 @@ public:
   void swapNoeud(Node *U, Node *V);
 
   // supprime le noeud
-  void removeNoeud(Node *U);
+  void removeNode(Node *U);
 
   // ajoute un noeud � l'endroit indique dans Noeud->placeRoute
-  void addNoeud(Node *U);
+  void addNode(Node *U);
 
   // calcule pour un jour donn� et un client donn� (repr�sent� par un noeud)
   // les couts d'insertion dans les differentes routes constituant ce jour
-  void computeCoutInsertion(Node *client);
+  void computeInsertionCost(Node *client);
 
   LocalSearch();
 

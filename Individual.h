@@ -26,10 +26,10 @@ using namespace std ;
 class LocalSearch ;
 
 struct coutSol {
-  // fitness value, including penalities (from inventory or capacity overcharge)
+  // fitness value, including penalties (from inventory or capacity overcharge)
   double evaluation ;
 
-  // fitness value without penalities
+  // fitness value without penalties
   double fitness ;
 
   // penalities
@@ -47,10 +47,10 @@ class Individual ;
 
 struct proxData {
   // Individual
-  Individual * indiv ;
+  Individual * indiv;
 
   // distance to the individual 
-  double dist ;
+  double dist;
 };
 
 class Individual
@@ -66,13 +66,13 @@ class Individual
   // number of scenarios ( = params->nbScenario but we use it a lot so define it again)
   unsigned int nbScenario;
 
-  // fitness etendu
-  double fitnessEtendu;
+  // extended fitness
+  double extendedFitness;
 
-  // rang diversite
+  // diversity rank
   float divRank;
 
-  // rang fitness 
+  // fitness rank 
   float fitRank;
 
   // average gloval solution cost
@@ -100,87 +100,89 @@ class Individual
   vector<vector<vector<unsigned int>>> pred ;
 
   // says if the individual is a feasible solution
-  bool isFeasible ;
+  bool isFeasible;
 
   // distance measure between two individuals
   double distance(Individual * indiv2);
 
   // individual sorted by proximity in their population, for replacement policies
-  list<proxData> plusProches;
+  list<proxData> nearestIndiv;
 
   // add an individual in proximity structures
-  void addProche(Individual * indiv) ;
+  void addNearest(Individual * indiv) ;
 
   // remove an individual in proximity structures
-  void removeProche(Individual * indiv) ;
+  void removeNearest(Individual * indiv) ;
 
   // average distance with the n nearest Individuals
-  double distPlusProche(int n);
+  double distNearest(int n);
 
   // one local search per scenario, only rejeton from Genetic has this structure, otherwise its not initialized
   // this structure will help to apply local search to this individual
   vector<LocalSearch*> localSearchList;
 
   // global split function, to split every giant tour from every scenario and day
-  // we try a simple split and if the solution we get has an invalid number of vehicles, we try the limited fleed split
-  void generalSplit_scenario();
+  // we try the best split and if the solution we get has an invalid number of vehicles, we try the limited fleed split
+  void split();
 
-  // fonction split ne respectant pas forcement le nombre de vehicules
-  // retourne 1 si succes, 0 sinon
+  // functions that computes the best possible split
+  // at the end, if the number of used vehicles is <= max number of vehicles, it's a success
+  // return 1 if succes, 0 otherwise
+
   // simple split to apply to each tour with day >= 2 for each scenario
-  int splitSimple_scenario(unsigned int k, unsigned int scenario) ;
+  int bestSplit(unsigned int k, unsigned int scenario) ;
 
   // same but for day 1 (with average cost on each scenario)
-  bool splitSimpleDay1();
+  bool bestSplitFirstDay();
 
   // split function with limited fleet to apply to each tour with day >= 2 for each scenario
-  bool splitLF_scenario(unsigned int k, unsigned int scenario);
+  bool splitLimitedFleet(unsigned int k, unsigned int scenario);
 
    // same but for day 1 (with average cost on each scenario)
-  bool splitLF_scenario_day1();
+  bool splitLimitedFleetFirstDay();
 
   // function that evaluate violations and cost of the solution
   // also fills every evaluation field of the solution
-  void measureSol_scenario();
+  void measureSol();
 
   // measure the cost of the solution with true demand (and fills the vector delivers with the quantity we choose to deliver)
   double measureTrueCost(std::vector<double> &delivers);
 
   // re-initialize potentials structure
-  void initPot_scenario(unsigned int k, unsigned int scenario) ;
+  void initPotentials(unsigned int k, unsigned int scenario) ;
 
   // update localSearch list, (fills localSearch structures with chromT and chromL)
   // BE CAREFUL: Split needs to be compute before
-  void updateLS_scenario() ;
+  void updateLocalSearch() ;
 
   // start the local search procedure
-  void runLocalSearch_scenario();
+  void runLocalSearch();
 
   // start the backward dynamic programming operator
   void backwardDPOperator();
 
   // start the backward DP operator for a given client
-  int backwardDPSingleClient(unsigned int client, bool &rechercheTerminee);
+  void backwardDPSingleClient(unsigned int client, bool &stopResearch);
 
   // start all the other local search operator many times on day 1
-  void runSearchDay1();
+  void runSearchFirstDay();
 
   // start an iteration of local search
-  int mutationDay1();
+  int mutationFirstDay();
 
   // Inverse procedure, after local search to return to a giant tour solution representation and thus fill the chromT table.
-  void updateIndiv_scenario() ;
+  void updateIndividual() ;
 
   // every type of day 1 mutations
-  int mutation1_indiv();
-  int mutation2_indiv();
-  int mutation3_indiv();
-  int mutation4_indiv();
-  int mutation5_indiv();
-  int mutation6_indiv();
-  int mutation7_indiv();
-  int mutation8_indiv();
-  int mutation9_indiv();
+  bool mutation1_indiv();
+  bool mutation2_indiv();
+  bool mutation3_indiv();
+  bool mutation4_indiv();
+  bool mutation5_indiv();
+  bool mutation6_indiv();
+  bool mutation7_indiv();
+  bool mutation8_indiv();
+  bool mutation9_indiv();
 
   // random constructor
   Individual(Params* _params);
