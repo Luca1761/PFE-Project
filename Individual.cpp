@@ -2,9 +2,9 @@
 
 Individual::Individual(Params* _params) : params(_params), nbScenario(params->nbScenarios)
 {
-	coutSol.evaluation = 0;
-	coutSol.fitness = 0;
-	coutSol.capacityViol = 0;
+	solutionCost.evaluation = 0;
+	solutionCost.fitness = 0;
+	solutionCost.capacityViol = 0;
 
 	//not same lengths because quantities at day 1 are second stage variables while roads are first stage
 	chromT = vector<vector<unsigned int>>(nbScenario * (params->nbDays - 1) + 1 + 1);
@@ -235,7 +235,7 @@ int Individual::bestSplit(unsigned int k, unsigned int scenario) {
 		l = pred[k][1][l];
 	}
 
-	coutSol.evaluation = -1.e30; // just for security, making sure this value is not used (as it does not contain the constants)
+	solutionCost.evaluation = -1.e30; // just for security, making sure this value is not used (as it does not contain the constants)
 	initPotentials(k, scenario);
 	return (l == 0); // if l == 0, means that every client has been placed in one of the routes
 }
@@ -279,7 +279,7 @@ bool Individual::bestSplitFirstDay() {
 		l = pred[1][1][l];
 	}
 
-	coutSol.evaluation = -1.e30; // just for security, making sure this value is not used (as it does not contain the constants)
+	solutionCost.evaluation = -1.e30; // just for security, making sure this value is not used (as it does not contain the constants)
 	initPotentials(1, 0);
 	return (l == 0); // if l == 0, means that every client has been placed in one of the routes
 }
@@ -504,9 +504,9 @@ void Individual::measureSol() {
 	vector<double> routeCost(nbScenario, 0);
 	vector<double> capaViol(nbScenario, 0);
 	vector<double> fitness(nbScenario, 0);
-	coutSol_scenario.fitness = fitness;
-	coutSol_scenario.evaluation = fitness;
-	coutSol_scenario.capacityViol = capaViol;
+	solutionCost_scenario.fitness = fitness;
+	solutionCost_scenario.evaluation = fitness;
+	solutionCost_scenario.capacityViol = capaViol;
 	isFeasible = true;
 
 	for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
@@ -582,23 +582,23 @@ void Individual::measureSol() {
 		fitness[scenario] = routeCost[scenario] + inventoryCost[scenario] + params->objectiveConstant;
 	}
 
-	coutSol.fitness = 0;
-	coutSol.evaluation = 0;
-	coutSol.capacityViol = 0;
+	solutionCost.fitness = 0;
+	solutionCost.evaluation = 0;
+	solutionCost.capacityViol = 0;
 	for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
-		coutSol_scenario.fitness[scenario] = fitness[scenario];
-		coutSol.fitness += fitness[scenario];
-		coutSol_scenario.evaluation[scenario] = params->penalityCapa[scenario] * capaViol[scenario] + fitness[scenario];
-		coutSol.evaluation += coutSol_scenario.evaluation[scenario];
-		coutSol_scenario.capacityViol[scenario] = capaViol[scenario];
+		solutionCost_scenario.fitness[scenario] = fitness[scenario];
+		solutionCost.fitness += fitness[scenario];
+		solutionCost_scenario.evaluation[scenario] = params->penalityCapa[scenario] * capaViol[scenario] + fitness[scenario];
+		solutionCost.evaluation += solutionCost_scenario.evaluation[scenario];
+		solutionCost_scenario.capacityViol[scenario] = capaViol[scenario];
 		if (capaViol[scenario] > 0.0001) {
-			coutSol.capacityViol += capaViol[scenario];
+			solutionCost.capacityViol += capaViol[scenario];
 			isFeasible = false;
 		}
 	}
-	coutSol.evaluation /= (double)nbScenario;
-	coutSol.fitness /= (double)nbScenario;
-	coutSol.capacityViol /= (double)nbScenario;
+	solutionCost.evaluation /= (double)nbScenario;
+	solutionCost.fitness /= (double)nbScenario;
+	solutionCost.capacityViol /= (double)nbScenario;
 }
 
 void Individual::initPotentials(unsigned int k, unsigned int scenario) {

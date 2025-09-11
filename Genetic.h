@@ -1,13 +1,11 @@
 /*                       Algorithme - HGSADC                         */
-/*                    Propri�t� de Thibaut VIDAL                     */
+/*                    Propriete de Thibaut VIDAL                     */
 /*                    thibaut.vidal@cirrelt.ca                       */
 
 #ifndef GENETIC_H
 #define GENETIC_H
 
-// definition de la structure d'un algorithme genetique
-// un algorithme genetique contient ses parametres (Params)
-// ainsi que l'adresse de la population sur laquelle il travaille
+// class for genetic algorithm
 
 #include "Population.h"
 #include "Params.h"
@@ -24,10 +22,10 @@ using namespace std ;
 class Genetic
 {
 private:
-    //global parameters
+    // global parameters
 	Params* params;
 
-	//population of solutions
+	// population of solutions to work on
 	Population* population ;	
 
 	// Number of non-improving iterations before stopping
@@ -40,36 +38,34 @@ private:
 	unsigned int nbScenario;
 
 	// First individual to be used as input for the crossover
-	Individual* rejeton ; 
+	Individual* child; 
 
 	// Second individual to be used as input for the crossover
-	Individual* rejeton2 ;
+	Individual* child2;
 
-	// effectue la mutation
-	void muter_scenario();
+	// launch the mutation
+	void mutate();
 
-	// eventuellement effectue une reparation de la solution
-	void reparer_scenario();
+	// repair the solution if it's not feasible
+	void repair();
 
-	// procedure de crossover
-	// retourne -1 si l'individu ainsi cree n'est pas valide
-	void crossPOX2();
-	int crossPOX_scenario();
+	// crossover
+	void crossPOX(); // for one scenario (deterministic for example)
+	void crossPOX_scenario(); // for multiple scenarios
 	
-	// gestion des penalites
-	void gererPenalites_scenario();
+	// manage penalties
+	void managePenalties();
 
 public:
-
-    // lancement de l'algorithme sur les parametres "params" et la population "population"
-	// la boucle s'arrete lorsque l'on a effectue maxIterProd iterations productives
-	// ou maxIterNonProd iterations non productives 
+	// launch the genetic algorithm using parameters params on population
+	// the loop stops when we reach maxIterProd iterations or maxIterNonProd of non productive iterations
+	// (or if we reach maxTime)
     void evolve(unsigned int maxIter, unsigned int maxIterNonProd, unsigned int maxTime) ;
 
-	// constructeur du solveur genetique
+	// constructor
 	Genetic(Params* _params, Population * _population);
 
-	// destructeur
+	// destructor
 	~Genetic(void);
 };
 

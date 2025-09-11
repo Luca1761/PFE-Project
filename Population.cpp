@@ -10,11 +10,11 @@ Population::Population(Params* _params) : params(_params)
 	nbScenario = params->nbScenarios;
 
 	trainer = new Individual(params);
-	valides = new SousPop(); 
-	invalides = new SousPop();
+	valid = new SousPop(); 
+	invalid = new SousPop();
 
-	valides->nbIndiv = 0;
-	invalides->nbIndiv = 0;
+	valid->nbIndiv = 0;
+	invalid->nbIndiv = 0;
 	listeValiditeCharge = list<bool> (100, true);
 	bool compter = true;
 	
@@ -35,7 +35,7 @@ Population::Population(Params* _params) : params(_params)
 		Individual *randomIndiv = new Individual(params);  
 		
 		education_scenario(randomIndiv);
-		if (compter) updateNbValides(randomIndiv);
+		if (compter) updateNbValid(randomIndiv);
 		if (addIndividu(randomIndiv) == 0 && randomIndiv->isFeasible) {
 			if (params->traces) std::cout << "NEW BEST FEASIBLE FROM INITIALIZATION" << std::endl;
 		}
@@ -52,10 +52,10 @@ Population::Population(Params* _params) : params(_params)
 
 // destructeur
 Population::~Population() {
-	for (unsigned int i = 0; i < valides->individus.size(); i++)
-		delete valides->individus[i];
-	for (unsigned int i = 0; i < invalides->individus.size(); i++)
-		delete invalides->individus[i];
+	for (unsigned int i = 0; i < valid->individus.size(); i++)
+		delete valid->individus[i];
+	for (unsigned int i = 0; i < invalid->individus.size(); i++)
+		delete invalid->individus[i];
 	delete trainer;
 }
 
@@ -84,7 +84,7 @@ void Population::evalExtFit(SousPop *pop) {
 }
 
 unsigned int Population::addIndividu(Individual *indiv) {
-	SousPop *souspop = (indiv->isFeasible) ? valides : invalides;
+	SousPop *souspop = (indiv->isFeasible) ? valid : invalid;
 	unsigned int result = placeIndividu(souspop, indiv);
 
 	// il faut eventuellement enlever la moitie de la pop
@@ -111,9 +111,9 @@ void Population::updateProximity(SousPop *pop, Individual *indiv) {
 
 bool Population::fitExist(SousPop *pop, Individual *indiv)
 {
-	double fitness = indiv->coutSol.evaluation;
+	double fitness = indiv->solutionCost.evaluation;
 	for (Individual* indiv2 : pop->individus) {
-		if (indiv != indiv2 && indiv2->coutSol.evaluation >= (fitness - params->delta) && indiv2->coutSol.evaluation <= (fitness + params->delta))
+		if (indiv != indiv2 && indiv2->solutionCost.evaluation >= (fitness - params->delta) && indiv2->solutionCost.evaluation <= (fitness + params->delta))
 			return true;
 	}
 	return false;
@@ -128,11 +128,11 @@ void Population::diversify() {
 		savePenalities[scenario] = params->penalityCapa[scenario];
 	}
 	
-	while (valides->nbIndiv > params->rho * params->mu) {
-		removeIndividu(valides, valides->nbIndiv - 1);
+	while (valid->nbIndiv > params->rho * params->mu) {
+		removeIndividu(valid, valid->nbIndiv - 1);
 	}
-	while (invalides->nbIndiv > params->rho * params->mu) {
-		removeIndividu(invalides, invalides->nbIndiv-1);
+	while (invalid->nbIndiv > params->rho * params->mu) {
+		removeIndividu(invalid, invalid->nbIndiv-1);
 	}
 	for (unsigned int i = 0; i < params->mu * 2; i++) {
 		if (i == params->mu) {
@@ -156,7 +156,7 @@ void Population::diversify() {
 //Individuals are increasingly sorted in the subpopulation
 unsigned int Population::placeIndividu(SousPop *pop, Individual *indiv) {
 	Individual *monIndiv = new Individual(params);
-	recopieIndividu(monIndiv, indiv);
+	copyIndividual(monIndiv, indiv);
 
 	// regarde si son fitness est suffisamment espace
 	bool placed = false;
@@ -164,7 +164,7 @@ unsigned int Population::placeIndividu(SousPop *pop, Individual *indiv) {
 
 	pop->individus.push_back(monIndiv);
 	while (i >= 1 && !placed) {
-		if (pop->individus[i - 1]->coutSol.evaluation >= indiv->coutSol.evaluation + 0.001) {
+		if (pop->individus[i - 1]->solutionCost.evaluation >= indiv->solutionCost.evaluation + 0.001) {
 			pop->individus[i] = pop->individus[i - 1];
 			i--;
 		} else {
@@ -180,7 +180,7 @@ unsigned int Population::placeIndividu(SousPop *pop, Individual *indiv) {
 		placed = true;
 		pop->nbIndiv++;
 		updateProximity(pop, monIndiv);
-		if (pop == valides) timeBest = clock();
+		if (pop == valid) timeBest = clock();
 		return 0; // reussite
 	}
 	std::cout << "Failed to place individual" << std::endl;
@@ -212,83 +212,76 @@ void Population::removeIndividu(SousPop *pop, unsigned int p) {
 // operateur de tri peu efficace mais fonction appelee tres rarement
 void Population::validatePen() {
 	// on met a jour les evaluations
-	for (Individual* indiv : invalides->individus) {
-		indiv->coutSol.evaluation = 0.0;
+	for (Individual* indiv : invalid->individus) {
+		indiv->solutionCost.evaluation = 0.0;
 		for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
-			indiv->coutSol_scenario.evaluation[scenario] = indiv->coutSol_scenario.fitness[scenario] + params->penalityCapa[scenario] * indiv->coutSol_scenario.capacityViol[scenario]; 
-			indiv->coutSol.evaluation += indiv->coutSol_scenario.evaluation[scenario];
+			indiv->solutionCost_scenario.evaluation[scenario] = indiv->solutionCost_scenario.fitness[scenario] + params->penalityCapa[scenario] * indiv->solutionCost_scenario.capacityViol[scenario]; 
+			indiv->solutionCost.evaluation += indiv->solutionCost_scenario.evaluation[scenario];
 		}
-		indiv->coutSol.evaluation /= (double)nbScenario;
+		indiv->solutionCost.evaluation /= (double)nbScenario;
 	}
-	for (unsigned int i = 0; i < invalides->nbIndiv; i++) {
+	for (unsigned int i = 0; i < invalid->nbIndiv; i++) {
 
-		for (unsigned int j = 0; j < invalides->nbIndiv - i - 1; j++) {
-			if (invalides->individus[j]->coutSol.evaluation > invalides->individus[j + 1]->coutSol.evaluation) {
-				std::swap(invalides->individus[j], invalides->individus[j + 1]);
+		for (unsigned int j = 0; j < invalid->nbIndiv - i - 1; j++) {
+			if (invalid->individus[j]->solutionCost.evaluation > invalid->individus[j + 1]->solutionCost.evaluation) {
+				std::swap(invalid->individus[j], invalid->individus[j + 1]);
 			}
 		}
 	}
 }
 
-Individual *Population::getIndividuBinT(double &rangRelatif) {
+Individual *Population::getIndividualBinT() {
 	Individual *individu1;
 	Individual *individu2;
 	unsigned int place1, place2;
-	double rangRelatif1, rangRelatif2;
 
-	place1 = (unsigned int) (params->rng->genrand64_int64() % (valides->nbIndiv + invalides->nbIndiv));
-	if (place1 >= valides->nbIndiv) {
-		place1 -= valides->nbIndiv;
-		individu1 = invalides->individus[place1];
-		rangRelatif1 = (double) place1 / (double)invalides->nbIndiv;
+	place1 = (unsigned int) (params->rng->genrand64_int64() % (valid->nbIndiv + invalid->nbIndiv));
+	if (place1 >= valid->nbIndiv) {
+		place1 -= valid->nbIndiv;
+		individu1 = invalid->individus[place1];
 	} else {
-		individu1 = valides->individus[place1];
-		rangRelatif1 = (double) place1 / (double)valides->nbIndiv;
+		individu1 = valid->individus[place1];
 	}
 
-	place2 = (unsigned int) (params->rng->genrand64_int64() % (valides->nbIndiv + invalides->nbIndiv));
-	if (place2 >= valides->nbIndiv) {
-		place2 -= valides->nbIndiv;
-		individu2 = invalides->individus[place2];
-		rangRelatif2 = (double) place2 / (double)invalides->nbIndiv;
+	place2 = (unsigned int) (params->rng->genrand64_int64() % (valid->nbIndiv + invalid->nbIndiv));
+	if (place2 >= valid->nbIndiv) {
+		place2 -= valid->nbIndiv;
+		individu2 = invalid->individus[place2];
 	} else {
-		individu2 = valides->individus[place2];
-		rangRelatif2 = (double) place2 / (double)valides->nbIndiv;
+		individu2 = valid->individus[place2];
 	}
 
-	evalExtFit(valides);
-	evalExtFit(invalides);
+	evalExtFit(valid);
+	evalExtFit(invalid);
 
 	if (individu1->extendedFitness < individu2->extendedFitness) {
-		rangRelatif = rangRelatif1;
 		return individu1;
 	} else {
-		rangRelatif = rangRelatif2;
 		return individu2;
 	}
 }
 
 Individual *Population::getIndividuBestValide() {
-	if (valides->nbIndiv != 0) return valides->individus[0];
+	if (valid->nbIndiv != 0) return valid->individus[0];
 	return NULL;
 }
 
 Individual *Population::getIndividuBestInvalide() {
-	if (invalides->nbIndiv != 0) return invalides->individus[0];
+	if (invalid->nbIndiv != 0) return invalid->individus[0];
 	return NULL;
 }
 
 // getter simple d'un individu
 Individual *Population::getIndividu(unsigned int p) {
-	return valides->individus[p];
+	return valid->individus[p];
 }
 // recopie un Individu dans un autre
 // ATTENTION !!! ne recopie que le chromT et les attributs du fitness
-void Population::recopieIndividu(Individual *destination, Individual *source) {
+void Population::copyIndividual(Individual *destination, Individual *source) {
 	destination->chromT = source->chromT;
 	destination->chromL = source->chromL;
-	destination->coutSol = source->coutSol;
-	destination->coutSol_scenario = source->coutSol_scenario;
+	destination->solutionCost = source->solutionCost;
+	destination->solutionCost_scenario = source->solutionCost_scenario;
 	destination->isFeasible = source->isFeasible;
 }
 
@@ -350,7 +343,7 @@ void Population::ExportPop(string nomFichier,bool add, std::vector<double> deliv
 }
 
 // retourne la fraction d'individus valides en terme de charge
-double Population::fractionValidesCharge() {
+double Population::validChargePart() {
 	int count = 0;
 	for (list<bool>::iterator it = listeValiditeCharge.begin(); it != listeValiditeCharge.end(); ++it) {
 		count += *it;
@@ -372,16 +365,16 @@ double Population::getDiversity(SousPop *pop) {
 
 double Population::getMoyenneValides() {
 	double moyenne = 0;
-	for (Individual* indiv : valides->individus)
-		moyenne += indiv->coutSol.evaluation;
-	return moyenne / (double)valides->nbIndiv;
+	for (Individual* indiv : valid->individus)
+		moyenne += indiv->solutionCost.evaluation;
+	return moyenne / (double)valid->nbIndiv;
 }
 double Population::getMoyenneInvalides() {
 	double moyenne = 0;
-	for (Individual* indiv : invalides->individus) {
-		moyenne += indiv->coutSol.evaluation;
+	for (Individual* indiv : invalid->individus) {
+		moyenne += indiv->solutionCost.evaluation;
 	}
-	return moyenne / (double)invalides->nbIndiv;
+	return moyenne / (double)invalid->nbIndiv;
 }
 
 unsigned int Population::selectCompromis(SousPop *souspop) {
@@ -410,19 +403,18 @@ unsigned int Population::selectCompromis(SousPop *souspop) {
 }
 
 void Population::education_scenario(Individual *indiv) {
-	recopieIndividu(trainer, indiv); //copie provisoire de indiv dans trainer
+	copyIndividual(trainer, indiv); //copie provisoire de indiv dans trainer
 	trainer->split(); //split du grand tour en différentes routes + mesure coût
 	trainer->updateLocalSearch(); //on remplit les structures de recherches locales grâce à chromL et chromT
 	trainer->runLocalSearch(); //phase de recherche locale
 	trainer->updateIndividual();  //on remplit chromT et chromL avec les résultats de LS
-	recopieIndividu(indiv, trainer); //on recopie dans indiv le trainer
+	copyIndividual(indiv, trainer); //on recopie dans indiv le trainer
 }
 
 
-// met a jour le compte des valides
-void Population::updateNbValides(Individual *indiv)
+void Population::updateNbValid(Individual *indiv)
 {
-	listeValiditeCharge.push_back(indiv->coutSol.capacityViol < 0.0001);
+	listeValiditeCharge.push_back(indiv->solutionCost.capacityViol < 0.0001);
 	listeValiditeCharge.pop_front();
 }
 
@@ -442,16 +434,15 @@ void Population::measureAndUpdateQuantities(std::vector<double> &deliveries, dou
 
 }
 
-void Population::afficheEtat(unsigned int nbIter)
-{
+void Population::displayState(unsigned int nbIter) {
 	cout.precision(8);
 
 	cout << "It " << nbIter << " | Sol moy: ";
 
 	if (getIndividuBestValide() != NULL) {
-		cout << getIndividuBestValide()->coutSol.evaluation << " Scenarios - ";
+		cout << getIndividuBestValide()->solutionCost.evaluation << " Scenarios - ";
 		for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
-			cout << scenario + 1 << ": " << getIndividuBestValide()->coutSol_scenario.evaluation[scenario] << " ";
+			cout << scenario + 1 << ": " << getIndividuBestValide()->solutionCost_scenario.evaluation[scenario] << " ";
 		}
 	} else {
 		cout << "NO-VALID ";
@@ -460,9 +451,9 @@ void Population::afficheEtat(unsigned int nbIter)
 	cout << " | ";
 
 	if (getIndividuBestInvalide() != NULL) {
-		cout << getIndividuBestInvalide()->coutSol.evaluation << " Scenarios - ";
+		cout << getIndividuBestInvalide()->solutionCost.evaluation << " Scenarios - ";
 		for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
-			cout << scenario << ": " << getIndividuBestInvalide()->coutSol_scenario.evaluation[scenario] << " ";
+			cout << scenario << ": " << getIndividuBestInvalide()->solutionCost_scenario.evaluation[scenario] << " ";
 		}
 	} else {
 		cout << "NO-INVALID";
@@ -476,7 +467,7 @@ void Population::afficheEtat(unsigned int nbIter)
 	avgPenalityCapa /= (double) nbScenario;
 
 	cout << " | Moy " << getMoyenneValides() << " " << getMoyenneInvalides()
-		 << " | Div " << getDiversity(valides) << " " << getDiversity(invalides)
-		 << " | Val " << fractionValidesCharge()
-		 << " | Pen moy " << avgPenalityCapa << " | Pop " << valides->nbIndiv << " " << invalides->nbIndiv << endl;
+		 << " | Div " << getDiversity(valid) << " " << getDiversity(invalid)
+		 << " | Val " << validChargePart()
+		 << " | Pen moy " << avgPenalityCapa << " | Pop " << valid->nbIndiv << " " << invalid->nbIndiv << endl;
 }

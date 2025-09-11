@@ -79,16 +79,16 @@ class Population
 
    // recopie un Individu dans un autre
    // ATTENTION !!! ne recopie que le chromT et les attributs du fitness
-   void recopieIndividu (Individual * destination , Individual * source);
+   void copyIndividual (Individual * destination , Individual * source);
    
    // differents individus valides presents dans la population
-   SousPop * valides;
+   SousPop * valid;
 
    // differents individus invalides presents dans la population
-   SousPop * invalides;
+   SousPop * invalid;
 
    // getter de 1 individu par binary tournament
-   Individual * getIndividuBinT (double & rangRelatif);
+   Individual * getIndividualBinT();
 
    // getter du meilleur individu valide
    // retourne NULL si il n'y a pas de valides
@@ -113,7 +113,7 @@ class Population
    void ExportPop(string nomFichier, bool add, std::vector<double> deliveries, double &totalCost) ;
 
    // retourne la fraction d'individus valides en terme de charge
-   double fractionValidesCharge() ;
+   double validChargePart() ;
 
    // diversite de la population
    double getDiversity(SousPop * pop);
@@ -125,10 +125,10 @@ class Population
    double getMoyenneInvalides();
 
    // affiche l'etat de la population
-   void afficheEtat(unsigned int NbIter);
+   void displayState(unsigned int NbIter);
 
    // met a jour le compte des valides
-   void updateNbValides (Individual * indiv);
+   void updateNbValid (Individual * indiv);
 
    void measureAndUpdateQuantities(std::vector<double> &deliveries, double &totalCost);
 

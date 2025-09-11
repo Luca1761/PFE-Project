@@ -25,7 +25,7 @@ using namespace std ;
 
 class LocalSearch ;
 
-struct coutSol {
+struct solutionCost {
   // fitness value, including penalties (from inventory or capacity overcharge)
   double evaluation ;
 
@@ -37,7 +37,7 @@ struct coutSol {
 };
 
 // literally the same but for each scenario (coutSol is then compute as an average of these)
-struct coutSol_scenario {
+struct solutionCost_scenario {
   vector<double> evaluation;
   vector<double> fitness;
   vector<double> capacityViol;
@@ -76,10 +76,10 @@ class Individual
   float fitRank;
 
   // average gloval solution cost
-  struct coutSol coutSol; 
+  struct solutionCost solutionCost; 
 
   // solution cost, scenario per scenario
-  coutSol_scenario coutSol_scenario;
+  solutionCost_scenario solutionCost_scenario;
 
   // The giant tour of each individual 
   // chromT[1][j] -> day 1, j-th customer of the corresponding tour (shared by every scenario)
