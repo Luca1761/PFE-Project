@@ -21,13 +21,13 @@ void Genetic::evolve(unsigned int maxIter, unsigned int maxIterNonProd, unsigned
 		
 		// repair if needed
 		if (!child->isFeasible) {
-			place = population->addIndividu(child);
+			place = population->addIndividual(child);
 			repair();
 		}
 
 		// add feasible solutions (repaired or not)
 		if (child->isFeasible) { 
-			place = population->addIndividu(child);
+			place = population->addIndividual(child);
 		}
 		
 		nbIterNonProd++;
@@ -76,11 +76,7 @@ void Genetic::mutate() {
 }
 
 void Genetic::repair() {
-	vector<double> savePenalities(nbScenario, 0.0); // we save penalities to restore them just after
-
-	for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
-		savePenalities[scenario] = params->penalityCapa[scenario];
-	}
+	vector<double> savePenalities = params->penalityCapa; // we save penalities to restore them just after
 
 	for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
 		if (child->solutionCost_scenario.capacityViol[scenario] > 0.0001)
@@ -102,10 +98,7 @@ void Genetic::repair() {
 			child->updateIndividual();
 		}
 	}
-
-	for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
-		params->penalityCapa[scenario] = savePenalities[scenario]; // restore penalities
-	}
+	params->penalityCapa = savePenalities;
 }
 
 void Genetic::managePenalties() {

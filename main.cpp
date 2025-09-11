@@ -49,7 +49,7 @@ int main(int argc, char *argv[]) {
     solver.evolve(command.get_maxIter(), command.get_maxIterNonProd(), command.get_maxTime());
 
     population->measureAndUpdateQuantities(deliveries, totalCost);
-    population->ExportPop(command.get_path_to_solution(),true, deliveries, totalCostBis);
+    population->ExportPop(command.get_path_to_solution(), deliveries, totalCostBis);
   }
   if (params->traces) std::cout << "FINAL COST: " << totalCost << std::endl;
   else std::cout << totalCost << std::endl;

@@ -16,12 +16,12 @@
 
 using namespace std ;
 
-struct SousPop
+struct SubPopulation
 {
-	// individus de la sous-population
-	vector<Individual*> individus ;
+   // individuals from sub-population
+	vector<Individual*> individuals ;
 
-	// nombre de ces individus
+	// number of individuals
 	unsigned int nbIndiv ;
 };
 
@@ -29,113 +29,109 @@ class Population
 {
    private:
 
-   // Acces aux parametres de l'instance et du genetique
+   // parameters of instance and genetic algorithm
    Params* params;
 
+   // number of scenarios
    unsigned int nbScenario;
 
-   // liste qui repertorie si les XXX derniers individus produits etaient valides en terme de charge ou non
-   list<bool> listeValiditeCharge ;
+   // indicates if the last XX produced individuals were feasible (capacity point of view)
+   list<bool> capaValidityList ;
 
    // auxiliary data structure to apply the local search
-   Individual * trainer;
+   Individual* trainer;
 
-   void education_scenario(Individual * indiv);
+   // education of an individual (with split and localsearch)
+   void train(Individual* indiv);
 
-   // fonction booleenne verifiant si le fitness n'existe pas deja
-   bool fitExist(SousPop * pop, Individual * indiv);
+   // boolean function checking if the fitness already exists
+   bool fitExist(SubPopulation* pop, Individual* indiv);
 
-   // place un individu donne dans le tableau
-   // retourne une erreur si echec sinon sa position dans la population
-   unsigned int placeIndividu(SousPop * pop, Individual * indiv);
+   // place an individual in the correct subpopulation and returns its place (Individuals are increasingly sorted in the subpopulation)
+   unsigned int placeIndividual(SubPopulation* pop, Individual* indiv);
 
    public:
 
    // clock time when the best individual was found
    clock_t timeBest ;
 
+   // total clock time
    clock_t totalTime ;
 
-   // calcule le fitness etendu des elements de la sous-population
-   void evalExtFit(SousPop * pop);
+   // computes the extended fitness of subpopulation individuals
+   void evalExtFit(SubPopulation* pop);
 
-   // ajoute un individu a la population
-   // la population se debrouille pour le placer ou il lui semble bon
-   // updateNbValides est mis a true si on veut mettre jour la proportion de valides aussi 
-   // retourne une erreur si echec, sinon sa nouvelle position dans la population
-   unsigned int addIndividu (Individual * indiv);
+   // same than placeIndividual but we also remove potential individuals from the population
+   // if it's full
+   unsigned int addIndividual(Individual* indiv);
 
-   // enleve un individu de la population en fonction de la replacement policy
-   void removeIndividu(SousPop * pop, unsigned int p);
+   // remove an individual from the population, depending on replacement policy
+   void removeIndividual(SubPopulation* pop, unsigned int p);
 
-   // met a jour les individus les plus proches d'une population
-   // en fonction de l'arrivant
-   void updateProximity (SousPop * pop, Individual * indiv);
+   // update the nearest individuals of a population (because of new individual indiv)
+   void updateProximity(SubPopulation* pop, Individual* indiv);
 
-   // procede de redemarrage avec remplacement d'une partie de la population
-   // modele tres simplifie
-   // on remplace la moitie individus de fitness situes sous la moyenne par des individus aleatoires
-   void diversify ();
+   // "restart process" where we replace a part of the population by random individuals
+   void diversify();
 
-   // recopie un Individu dans un autre
-   // ATTENTION !!! ne recopie que le chromT et les attributs du fitness
-   void copyIndividual (Individual * destination , Individual * source);
+   // copy an individual into another
+   // WARNING!! copy only chromT and fitness attributes
+   void copyIndividual(Individual* destination , Individual* source);
    
-   // differents individus valides presents dans la population
-   SousPop * valid;
+   // feasible individuals from the population
+   SubPopulation* valid;
 
-   // differents individus invalides presents dans la population
-   SousPop * invalid;
+   // infeasible individuals from the population
+   SubPopulation* invalid;
 
-   // getter de 1 individu par binary tournament
-   Individual * getIndividualBinT();
+   // "getter" of 1 individual with binary tournament
+   Individual* getIndividualBinT();
 
-   // getter du meilleur individu valide
-   // retourne NULL si il n'y a pas de valides
-   Individual * getIndividuBestValide ();
+   // "getter" of best feasible individual
+   // return NULL if no feasible
+   Individual* getBestFeasIndividual();
 
-   // getter du meilleur individu invalide
-   // retourne NULL si il n'y a pas de invalides
-   Individual * getIndividuBestInvalide ();
+   // "getter" of best infeasible individual
+   // return NULL if no infeasible
+   Individual* getBestInfeasIndividual();
 
-   // compromis entre fitness et diversite
-   unsigned int selectCompromis (SousPop * souspop) ;
+   // compromise between fitness and diversity
+   unsigned int selectCompromise(SubPopulation * souspop) ;
 
-   // recalcule l'evaluation des individus a partir des violations
-   // puis effectue un tri a bulles de la population
-   // operateur de tri peu efficace mais fonction appellee tres rarement
-   void validatePen ();
+   // after penalties changes, computes the new evaluation of individuals and make a new sort of individuals
+   // with their new cost
+   void validatePen();
 
-   // getter simple d'un individu
-   Individual * getIndividu(unsigned int p);
+   // export the best solution into a solution file
+   void ExportPop(string nomFichier, std::vector<double> deliveries, double &totalCost) ;
 
-   // exporte la meilleure solution
-   void ExportPop(string nomFichier, bool add, std::vector<double> deliveries, double &totalCost) ;
-
-   // retourne la fraction d'individus valides en terme de charge
+   // return the part of feasible individuals
    double validChargePart() ;
 
-   // diversite de la population
-   double getDiversity(SousPop * pop);
+   // computes population diversity
+   double getDiversity(SubPopulation * pop);
 
-   // retourne la moyenne des solutions valides
-   double getMoyenneValides();
+   // return the mean cost of feasible solutions
+   double getAverageFeasible();
 
-    // retourne la moyenne des solutions invalides
-   double getMoyenneInvalides();
+   // return the mean cost of infeasible solutions
+   double getAverageInfeasible();
 
-   // affiche l'etat de la population
+   // display the current state of population
    void displayState(unsigned int NbIter);
 
-   // met a jour le compte des valides
+   // update the number of valid individuals
    void updateNbValid (Individual * indiv);
 
+   // measure the cost of our best solution applied to true demands
+   // also updates the quantities to deliver on day 1 by computing average quantities on
+   // all scenarios
    void measureAndUpdateQuantities(std::vector<double> &deliveries, double &totalCost);
 
-   //constructeur
+   // constructor
    Population(Params* params);
 
-   //destructeur
+   // destructor
    ~Population();
 };
 

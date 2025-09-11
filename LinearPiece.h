@@ -66,7 +66,6 @@ public:
     shared_ptr<LinearPiece> fromF;
     shared_ptr<Insertion> fromInst;
     double replenishment_loss;
-    double stockout_hm;
 
     LinearPiece();
 
@@ -76,9 +75,7 @@ public:
     LinearPiece(LinearPiece *lp);
     std::shared_ptr<LinearPiece> getInpiece(double start, double end) const;
    
-
     double cost(double x);
-    double invertCost(double y);
 
     std::shared_ptr<LinearPiece> getInBound(double lb, double ub);
 
@@ -90,7 +87,6 @@ public:
     bool eqDeep(const shared_ptr<LinearPiece> rhs);
 
     std::shared_ptr<LinearPiece> clone();
-    std::shared_ptr<LinearPiece> cloneWithout();
     void update(double left_x, double left_y, double right_x, double right_y);
 
     ~LinearPiece();

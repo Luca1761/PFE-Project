@@ -49,7 +49,6 @@ void LinearPiece::updateLinearPiece(double left_x, double left_y, double right_x
     p2 = make_shared<Point>(lp->p2->x, lp->p2->y);
     slope = lp->slope;
     next = lp->next;
-    //    pre = lp->pre;
     fromC = lp->fromC;
     fromC_pre = lp->fromC_pre;
     fromF = lp->fromF;
@@ -71,11 +70,6 @@ double LinearPiece::cost(double x)
     }
     slope = (p2->y-p1->y)/(p2->x-p1->x);
     return slope * (x - p2->x) + p2->y;
-}
-
-double LinearPiece::invertCost(double y)
-{
-    return p2->x + (y - p2->y) / slope;
 }
 
 std::shared_ptr<LinearPiece> LinearPiece::getInBound(double lb, double ub)
@@ -260,22 +254,7 @@ std::shared_ptr<LinearPiece> LinearPiece::clone() {
     return lp;
 }
 
-std::shared_ptr<LinearPiece> LinearPiece::cloneWithout()
-{
-    shared_ptr<LinearPiece> lp(make_shared<LinearPiece>(p1->x, p1->y, p2->x, p2->y));
-    lp->slope = slope;
-    lp->next = next;
-    lp->fromC = nullptr;
-    lp->fromF = nullptr;
-    lp->fromInst = nullptr;
-    lp->fromC_pre = nullptr;  
-    lp->replenishment_loss = replenishment_loss;
-    
-    return lp;
-}
-
-void LinearPiece::print()
-{   
+void LinearPiece::print() {   
     cout << "(" << p1->x << ", " << p1->y << ", " << p2->x
              << ", " << p2->y << ") ";
     cout << endl;
