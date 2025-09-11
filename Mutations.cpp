@@ -1,8 +1,7 @@
 #include "LocalSearch.h"
 
-// effectue l'insertion du client U apres V
-void LocalSearch::insertNoeud(Node * U, Node * V) {
-	// mettre a jour les noeuds
+void LocalSearch::insertNode(Node* U, Node* V) {
+	// update nodes (deleter U and insert it after V)
 	U->prev->next = U->next ;
 	U->next->prev = U->prev ;
 	V->next->prev = U ;
@@ -10,236 +9,233 @@ void LocalSearch::insertNoeud(Node * U, Node * V) {
 	U->next = V->next ;
 	V->next = U ;
 
+	// update routes
 	U->route = routeV ;
 	routeU->updateRouteData();
 	routeV->updateRouteData();
 }
-// effectue le swap du client U avec V
-void LocalSearch::swapNoeud(Node * U, Node * V) 
-{
-	Node * VPred = V->prev ;
-	Node * VSuiv = V->next ;
-	Node * UPred = U->prev ;
-	Node * USuiv = U->next ;
-	Route * myRouteU = U->route ;
-	Route * myRouteV = V->route ;
 
-	UPred->next = V ;
-	USuiv->prev = V ;
-	VPred->next = U ;
-	VSuiv->prev = U ;
+void LocalSearch::swapNode(Node* U, Node* V) {
+	// update nodes
+	Node* VPrev = V->prev ;
+	Node* VNext = V->next ;
+	Node* UPrev = U->prev ;
+	Node* UNExt = U->next ;
+	Route* myRouteU = U->route ;
+	Route* myRouteV = V->route ;
 
-	U->prev = VPred ;
-	U->next = VSuiv ;
-	V->prev = UPred ;
-	V->next = USuiv ;
+	UPrev->next = V ;
+	UNExt->prev = V ;
+	VPrev->next = U ;
+	VNext->prev = U ;
 
+	U->prev = VPrev ;
+	U->next = VNext ;
+	V->prev = UPrev ;
+	V->next = UNExt ;
+
+	// update routes
 	U->route = myRouteV ;
 	V->route = myRouteU ;
 	U->route->updateRouteData();
 	V->route->updateRouteData();
 }
-// INSERT
-// If noeudU is a client node, remove noeudU then insert it after noeudV
-int LocalSearch::mutation1 ()
-{
-	double costSuppU = params->timeCost[noeudUPredCour][xCour] 
-	- params->timeCost[noeudUPredCour][noeudUCour]  
-	- params->timeCost[noeudUCour][xCour];
 
-	double costSuppV = params->timeCost[noeudVCour][noeudUCour] 
-	+ params->timeCost[noeudUCour][yCour] 
-	- params->timeCost[noeudVCour][yCour];
+bool LocalSearch::mutation1 () {
+	double costSuppU = params->timeCost[idxNodeUPrev][idxX] 
+	- params->timeCost[idxNodeUPrev][idxNodeU]  
+	- params->timeCost[idxNodeU][idxX];
 
-	// dans le cas ou l'on est dans la meme route , le cout n'est pas calcule correctement en realite
-	// tout ce qu'on sait c'est que si il est negatif c'est qu'il est bien reellement negatif
-	// pas d'incidence pour l'instant mais attention
+	double costSuppV = params->timeCost[idxNodeV][idxNodeU] 
+	+ params->timeCost[idxNodeU][idxY] 
+	- params->timeCost[idxNodeV][idxY];
+
 	if (routeU != routeV) {
-		costSuppU += routeU->excedentCharge(routeU->load - deliveryPerDay[dayCour][noeudUCour])*params->penalityCapa[idxScenario]
+		costSuppU += routeU->excedentCharge(routeU->load - deliveryPerDay[currDay][idxNodeU])*params->penalityCapa[idxScenario]
 		- routeU->excedentCharge(routeU->load)*params->penalityCapa[idxScenario] ;
 
-		costSuppV += routeV->excedentCharge(routeV->load + deliveryPerDay[dayCour][noeudUCour])*params->penalityCapa[idxScenario]
+		costSuppV += routeV->excedentCharge(routeV->load + deliveryPerDay[currDay][idxNodeU])*params->penalityCapa[idxScenario]
 		- routeV->excedentCharge(routeV->load)*params->penalityCapa[idxScenario] ;
 	}
 
-	if (costSuppU + costSuppV > -0.0001) return 0 ;
-	if (noeudUCour == yCour) return 0;
+	if (costSuppU + costSuppV > -0.0001) return false;
+	if (idxNodeU == idxY) return false;
 
-	// mettre a jour les noeuds
-	insertNoeud(noeudU,noeudV);
+	// update nodes
+	insertNode(nodeU,nodeV);
 
-	rechercheTerminee = false ; 
-	return 1 ;
+	stopResearch = false ; 
+	return true;
 }
 
 // If noeudU and x are clients, remove them then insert (noeudU,x) after noeudV
 // teste si x n'est pas un depot , et si x different de noeudV, et si noeudU pas deja apres noeudV
-int LocalSearch::mutation2 ()
+bool LocalSearch::mutation2 ()
 {
-	double costSuppU = params->timeCost[noeudUPredCour][xSuivCour] 
-	- params->timeCost[noeudUPredCour][noeudUCour] 
-	- params->timeCost[noeudUCour][xCour] 
-	- params->timeCost[xCour][xSuivCour];
+	double costSuppU = params->timeCost[idxNodeUPrev][idxXNext] 
+	- params->timeCost[idxNodeUPrev][idxNodeU] 
+	- params->timeCost[idxNodeU][idxX] 
+	- params->timeCost[idxX][idxXNext];
 
-	double costSuppV = params->timeCost[noeudVCour][noeudUCour] 
-	+ params->timeCost[noeudUCour][xCour] 
-	+ params->timeCost[xCour][yCour] 
-	- params->timeCost[noeudVCour][yCour];
+	double costSuppV = params->timeCost[idxNodeV][idxNodeU] 
+	+ params->timeCost[idxNodeU][idxX] 
+	+ params->timeCost[idxX][idxY] 
+	- params->timeCost[idxNodeV][idxY];
 
 	if (routeU != routeV) {
-	costSuppU += routeU->excedentCharge(routeU->load - deliveryPerDay[dayCour][noeudUCour] - deliveryPerDay[dayCour][xCour])*params->penalityCapa[idxScenario]
+	costSuppU += routeU->excedentCharge(routeU->load - deliveryPerDay[currDay][idxNodeU] - deliveryPerDay[currDay][idxX])*params->penalityCapa[idxScenario]
 	- routeU->excedentCharge(routeU->load)*params->penalityCapa[idxScenario] ;
 	
-	costSuppV += routeV->excedentCharge(routeV->load + deliveryPerDay[dayCour][noeudUCour] + deliveryPerDay[dayCour][xCour])*params->penalityCapa[idxScenario]
+	costSuppV += routeV->excedentCharge(routeV->load + deliveryPerDay[currDay][idxNodeU] + deliveryPerDay[currDay][idxX])*params->penalityCapa[idxScenario]
 	- routeV->excedentCharge(routeV->load)*params->penalityCapa[idxScenario] ;
 	}
 
 	if ( costSuppU + costSuppV > -0.0001 ) { return 0 ;}
-	if ( noeudU == y || noeudV == x || x->isADepot ) { return 0 ;}
+	if ( nodeU == y || nodeV == x || x->isADepot ) { return 0 ;}
 
 	// mettre a jour les noeuds
-	insertNoeud(noeudU,noeudV);
-	insertNoeud(x,noeudU);
+	insertNode(nodeU,nodeV);
+	insertNode(x,nodeU);
 
-	rechercheTerminee = false ; 
+	stopResearch = false ; 
 	return 1 ;
 }
 
 // If noeudU and x are clients, remove them then insert (x,noeudU) after noeudV
 // teste si x n'est pas un depot , et si x different de noeudV, et si noeudU pas d�ja apres noeudV
-int LocalSearch::mutation3 ()
+bool LocalSearch::mutation3 ()
 {
-	double costSuppU = params->timeCost[noeudUPredCour][xSuivCour] 
-	- params->timeCost[noeudUPredCour][noeudUCour] 
-	- params->timeCost[noeudUCour][xCour] 
-	- params->timeCost[xCour][xSuivCour];
+	double costSuppU = params->timeCost[idxNodeUPrev][idxXNext] 
+	- params->timeCost[idxNodeUPrev][idxNodeU] 
+	- params->timeCost[idxNodeU][idxX] 
+	- params->timeCost[idxX][idxXNext];
 
-	double costSuppV = params->timeCost[noeudVCour][xCour] 
-	+ params->timeCost[xCour][noeudUCour] 
-	+ params->timeCost[noeudUCour][yCour] 
-	- params->timeCost[noeudVCour][yCour];
+	double costSuppV = params->timeCost[idxNodeV][idxX] 
+	+ params->timeCost[idxX][idxNodeU] 
+	+ params->timeCost[idxNodeU][idxY] 
+	- params->timeCost[idxNodeV][idxY];
 
 	if (routeU != routeV) {
-	costSuppU += routeU->excedentCharge(routeU->load - deliveryPerDay[dayCour][noeudUCour] - deliveryPerDay[dayCour][xCour])*params->penalityCapa[idxScenario]
+	costSuppU += routeU->excedentCharge(routeU->load - deliveryPerDay[currDay][idxNodeU] - deliveryPerDay[currDay][idxX])*params->penalityCapa[idxScenario]
 	- routeU->excedentCharge(routeU->load)*params->penalityCapa[idxScenario] ;
 	
-	costSuppV += routeV->excedentCharge(routeV->load + deliveryPerDay[dayCour][noeudUCour] + deliveryPerDay[dayCour][xCour])*params->penalityCapa[idxScenario]
+	costSuppV += routeV->excedentCharge(routeV->load + deliveryPerDay[currDay][idxNodeU] + deliveryPerDay[currDay][idxX])*params->penalityCapa[idxScenario]
 	- routeV->excedentCharge(routeV->load)*params->penalityCapa[idxScenario] ;
 	}
 
 	if ( costSuppU + costSuppV > -0.0001 ) return 0;
-	if ( noeudU == y ||  x == noeudV || x->isADepot ) return 0;
+	if ( nodeU == y ||  x == nodeV || x->isADepot ) return 0;
 
 	// mettre a jour les noeuds
-	insertNoeud(x,noeudV);
-	insertNoeud(noeudU,x);
+	insertNode(x,nodeV);
+	insertNode(nodeU,x);
 
-	rechercheTerminee = false ; 
+	stopResearch = false ; 
 	return 1 ;
 }
 // SWAP
 // If noeudU and noeudV are clients, swap noeudU and noeudV
 // sauf si noeudU et noeudV se succedent
-int LocalSearch::mutation4 ()
+bool LocalSearch::mutation4 ()
 {
-	double costSuppU = params->timeCost[noeudUPredCour][noeudVCour] 
-	+ params->timeCost[noeudVCour][xCour]
-	- params->timeCost[noeudUPredCour][noeudUCour] 
-	- params->timeCost[noeudUCour][xCour];
+	double costSuppU = params->timeCost[idxNodeUPrev][idxNodeV] 
+	+ params->timeCost[idxNodeV][idxX]
+	- params->timeCost[idxNodeUPrev][idxNodeU] 
+	- params->timeCost[idxNodeU][idxX];
 
-	double costSuppV = params->timeCost[noeudVPredCour][noeudUCour] 
-	+ params->timeCost[noeudUCour][yCour]
-	- params->timeCost[noeudVPredCour][noeudVCour] 
-	- params->timeCost[noeudVCour][yCour];
+	double costSuppV = params->timeCost[idxNodeVPrev][idxNodeU] 
+	+ params->timeCost[idxNodeU][idxY]
+	- params->timeCost[idxNodeVPrev][idxNodeV] 
+	- params->timeCost[idxNodeV][idxY];
 
 	if (routeU != routeV) {
-	costSuppU += routeU->excedentCharge(routeU->load + deliveryPerDay[dayCour][noeudVCour] - deliveryPerDay[dayCour][noeudUCour])*params->penalityCapa[idxScenario]
+	costSuppU += routeU->excedentCharge(routeU->load + deliveryPerDay[currDay][idxNodeV] - deliveryPerDay[currDay][idxNodeU])*params->penalityCapa[idxScenario]
 	- routeU->excedentCharge(routeU->load)*params->penalityCapa[idxScenario] ;
 	
-	costSuppV += routeV->excedentCharge(routeV->load + deliveryPerDay[dayCour][noeudUCour] - deliveryPerDay[dayCour][noeudVCour])*params->penalityCapa[idxScenario]
+	costSuppV += routeV->excedentCharge(routeV->load + deliveryPerDay[currDay][idxNodeU] - deliveryPerDay[currDay][idxNodeV])*params->penalityCapa[idxScenario]
 	- routeV->excedentCharge(routeV->load)*params->penalityCapa[idxScenario] ;
 	}
 
 	if ( costSuppU + costSuppV > -0.0001 ) { return 0 ;}
-	if ( noeudUCour == noeudVPredCour || noeudUCour == yCour) { return 0 ;}
+	if ( idxNodeU == idxNodeVPrev || idxNodeU == idxY) { return 0 ;}
 
 	// mettre a jour les noeuds
-	swapNoeud(noeudU, noeudV) ;
+	swapNode(nodeU, nodeV) ;
 
-	rechercheTerminee = false ; 
+	stopResearch = false ; 
 	return 1 ;
 }
 
 // If noeudU, x and noeudV are clients, swap (noeudU,x) and noeudV
-int LocalSearch::mutation5 ()
+bool LocalSearch::mutation5 ()
 {
 	// on ne fait pas le cas ou x et noeudVCour se suivent
 	// car il faut traiter autrement
 	// et la mutation 2 entre (noeudUCour,x) et noeudVCour fait le meme travail correctement
 
-	double costSuppU = params->timeCost[noeudUPredCour][noeudVCour] 
-	+ params->timeCost[noeudVCour][xSuivCour]
-	- params->timeCost[noeudUPredCour][noeudUCour] 
-	- params->timeCost[noeudUCour][xCour] 
-	- params->timeCost[xCour][xSuivCour];
+	double costSuppU = params->timeCost[idxNodeUPrev][idxNodeV] 
+	+ params->timeCost[idxNodeV][idxXNext]
+	- params->timeCost[idxNodeUPrev][idxNodeU] 
+	- params->timeCost[idxNodeU][idxX] 
+	- params->timeCost[idxX][idxXNext];
 
-	double costSuppV = params->timeCost[noeudVPredCour][noeudUCour] 
-	+ params->timeCost[xCour][yCour]
-	+ params->timeCost[noeudUCour][xCour]
-	- params->timeCost[noeudVPred->idx][noeudVCour] 
-	- params->timeCost[noeudVCour][yCour];
+	double costSuppV = params->timeCost[idxNodeVPrev][idxNodeU] 
+	+ params->timeCost[idxX][idxY]
+	+ params->timeCost[idxNodeU][idxX]
+	- params->timeCost[nodeVPrev->idx][idxNodeV] 
+	- params->timeCost[idxNodeV][idxY];
 	
 	if (routeU != routeV) {
-	costSuppU += routeU->excedentCharge(routeU->load + deliveryPerDay[dayCour][noeudVCour] - deliveryPerDay[dayCour][noeudUCour] - deliveryPerDay[dayCour][xCour])*params->penalityCapa[idxScenario]
+	costSuppU += routeU->excedentCharge(routeU->load + deliveryPerDay[currDay][idxNodeV] - deliveryPerDay[currDay][idxNodeU] - deliveryPerDay[currDay][idxX])*params->penalityCapa[idxScenario]
 	- routeU->excedentCharge(routeU->load)*params->penalityCapa[idxScenario] ;
 
-	costSuppV += routeV->excedentCharge(routeV->load + deliveryPerDay[dayCour][noeudUCour] + deliveryPerDay[dayCour][xCour] - deliveryPerDay[dayCour][noeudVCour])*params->penalityCapa[idxScenario]
+	costSuppV += routeV->excedentCharge(routeV->load + deliveryPerDay[currDay][idxNodeU] + deliveryPerDay[currDay][idxX] - deliveryPerDay[currDay][idxNodeV])*params->penalityCapa[idxScenario]
 	- routeV->excedentCharge(routeV->load)*params->penalityCapa[idxScenario] ;
 	}
 
 	if ( costSuppU + costSuppV > -0.0001 ) { return 0 ;}
-	if ( noeudU == noeudVPred || x == noeudVPred || noeudU == y || x->isADepot ) { return 0 ;}
+	if ( nodeU == nodeVPrev || x == nodeVPrev || nodeU == y || x->isADepot ) { return 0 ;}
 
 	// mettre a jour les noeuds
-	swapNoeud(noeudU, noeudV) ;
-	insertNoeud(x,noeudU);
+	swapNode(nodeU, nodeV) ;
+	insertNode(x,nodeU);
 
-	rechercheTerminee = false ; 
+	stopResearch = false ; 
 	return 1 ;
 }
 // If (noeudU,x) and (noeudV,y) are clients, swap (noeudU,x) and (noeudV,y)
-int LocalSearch::mutation6 ()
+bool LocalSearch::mutation6 ()
 {
-	double costSuppU = params->timeCost[noeudUPredCour][noeudVCour]  
-	+ params->timeCost[noeudVCour][yCour]
-	+ params->timeCost[yCour][xSuivCour]
-	- params->timeCost[noeudUPredCour][noeudUCour] 
-	- params->timeCost[noeudUCour][xCour] 
-	- params->timeCost[xCour][xSuivCour];
+	double costSuppU = params->timeCost[idxNodeUPrev][idxNodeV]  
+	+ params->timeCost[idxNodeV][idxY]
+	+ params->timeCost[idxY][idxXNext]
+	- params->timeCost[idxNodeUPrev][idxNodeU] 
+	- params->timeCost[idxNodeU][idxX] 
+	- params->timeCost[idxX][idxXNext];
 
-	double costSuppV = params->timeCost[noeudVPredCour][noeudUCour] 
-	+ params->timeCost[noeudUCour][xCour]
-	+ params->timeCost[xCour][ySuivCour]
-	- params->timeCost[noeudVPredCour][noeudVCour] 
-	- params->timeCost[noeudVCour][yCour]
-	- params->timeCost[yCour][ySuivCour];
+	double costSuppV = params->timeCost[idxNodeVPrev][idxNodeU] 
+	+ params->timeCost[idxNodeU][idxX]
+	+ params->timeCost[idxX][idxYNext]
+	- params->timeCost[idxNodeVPrev][idxNodeV] 
+	- params->timeCost[idxNodeV][idxY]
+	- params->timeCost[idxY][idxYNext];
 	
 	if (routeU != routeV) {
-	costSuppU += routeU->excedentCharge(routeU->load + deliveryPerDay[dayCour][noeudVCour] + deliveryPerDay[dayCour][yCour] - deliveryPerDay[dayCour][noeudUCour] - deliveryPerDay[dayCour][xCour])*params->penalityCapa[idxScenario]
+	costSuppU += routeU->excedentCharge(routeU->load + deliveryPerDay[currDay][idxNodeV] + deliveryPerDay[currDay][idxY] - deliveryPerDay[currDay][idxNodeU] - deliveryPerDay[currDay][idxX])*params->penalityCapa[idxScenario]
 	- routeU->excedentCharge(routeU->load)*params->penalityCapa[idxScenario] ;
 	
-	costSuppV += routeV->excedentCharge(routeV->load + deliveryPerDay[dayCour][noeudUCour] + deliveryPerDay[dayCour][xCour] - deliveryPerDay[dayCour][noeudVCour] - deliveryPerDay[dayCour][yCour])*params->penalityCapa[idxScenario]
+	costSuppV += routeV->excedentCharge(routeV->load + deliveryPerDay[currDay][idxNodeU] + deliveryPerDay[currDay][idxX] - deliveryPerDay[currDay][idxNodeV] - deliveryPerDay[currDay][idxY])*params->penalityCapa[idxScenario]
 	- routeV->excedentCharge(routeV->load)*params->penalityCapa[idxScenario] ;
 	}
 
 	if ( costSuppU + costSuppV > -0.0001 ) { return 0 ;}
-	if ( x->isADepot || y->isADepot || y == noeudUPred || noeudU == y || x == noeudV || noeudV == noeudXSuiv ) { return 0 ;}
+	if ( x->isADepot || y->isADepot || y == nodeUPrev || nodeU == y || x == nodeV || nodeV == nodeXNext ) { return 0 ;}
 
 	// mettre a jour les noeuds
-	swapNoeud(noeudU, noeudV) ;
-	swapNoeud(x,y) ;
+	swapNode(nodeU, nodeV) ;
+	swapNode(x,y) ;
 
-	rechercheTerminee = false ; 
+	stopResearch = false ; 
 	return 1 ;
 }
 // 2-OPT
@@ -247,15 +243,15 @@ int LocalSearch::mutation6 ()
 // effectue si noeudU place avant noeudV sur la meme route, et que noeudU n'est pas immediatement avant noeudV
 // noeudU x et noeudV sont des sommets , y peut etre un depot.
 // on n'a pas le cas ou noeudUCour est un depot.
-int LocalSearch::mutation7 ()
+bool LocalSearch::mutation7 ()
 {
-	Node * nodeNum = noeudXSuiv ;
+	Node * nodeNum = nodeXNext ;
 	Node * temp ;
 
-	if  ((routeU->idx != routeV->idx) || noeudU->next == noeudV || noeudU->place > noeudV->place ) {  return 0 ; }
+	if  ((routeU->idx != routeV->idx) || nodeU->next == nodeV || nodeU->place > nodeV->place ) {  return 0 ; }
 
-	double cost = params->timeCost[noeudUCour][noeudVCour] + params->timeCost[xCour][yCour]
-	- params->timeCost[noeudUCour][xCour] - params->timeCost[noeudVCour][yCour] ;
+	double cost = params->timeCost[idxNodeU][idxNodeV] + params->timeCost[idxX][idxY]
+	- params->timeCost[idxNodeU][idxX] - params->timeCost[idxNodeV][idxY] ;
 
 	if ( cost > -0.0001 ) { return 0 ;}
 
@@ -263,7 +259,7 @@ int LocalSearch::mutation7 ()
 	x->prev = nodeNum ;
 	x->next = y ;
 
-	while ( nodeNum != noeudV )
+	while ( nodeNum != nodeV )
 	{
 		temp = nodeNum->next ;
 		nodeNum->next = nodeNum->prev ;
@@ -271,33 +267,33 @@ int LocalSearch::mutation7 ()
 		nodeNum = temp ;
 	}
 
-	noeudV->next = noeudV->prev ;
-	noeudV->prev = noeudU ;
-	noeudU->next = noeudV ;
+	nodeV->next = nodeV->prev ;
+	nodeV->prev = nodeU ;
+	nodeU->next = nodeV ;
 	y->prev = x ;
 
 	// et mettre a jour les routes
 	routeU->updateRouteData();
 
-	rechercheTerminee = false ; 
+	stopResearch = false ; 
 	return 1 ;
 }
 
 // 2-OPT* (avec inversion du sens de parties de routes)
 // If T(noeudU) != T(noeudV) , replace (noeudU,x) and (noeudV,y) by (noeudU,noeudV) and (x,y)
-int LocalSearch::mutation8 ()
+bool LocalSearch::mutation8 ()
 {
 	// TODO : heterogenous fleet, 2 types de mutations suivant les camions choisis pour chaque segment
 	if  ( routeU->idx == routeV->idx || routeU->depot->idx != routeV->depot->idx) { return 0 ; }
 
-	double chargeResteU = routeU->load - noeudU->previousLoad ;
-	double chargeResteV = routeV->load - noeudV->previousLoad ;
+	double chargeResteU = routeU->load - nodeU->previousLoad ;
+	double chargeResteV = routeV->load - nodeV->previousLoad ;
 
-	double cost = params->timeCost[noeudUCour][noeudVCour] 
-	+ params->timeCost[xCour][yCour]
-	- params->timeCost[noeudUCour][xCour] 
-	- params->timeCost[noeudVCour][yCour]
-    + routeU->excedentCharge(noeudU->previousLoad + noeudV->previousLoad)*params->penalityCapa[idxScenario]
+	double cost = params->timeCost[idxNodeU][idxNodeV] 
+	+ params->timeCost[idxX][idxY]
+	- params->timeCost[idxNodeU][idxX] 
+	- params->timeCost[idxNodeV][idxY]
+    + routeU->excedentCharge(nodeU->previousLoad + nodeV->previousLoad)*params->penalityCapa[idxScenario]
 	+ routeV->excedentCharge(chargeResteV + chargeResteU)*params->penalityCapa[idxScenario]
 	- routeU->excedentCharge(routeU->load)*params->penalityCapa[idxScenario]
 	- routeV->excedentCharge(routeV->load)*params->penalityCapa[idxScenario] ;
@@ -315,7 +311,7 @@ int LocalSearch::mutation8 ()
 	// on inverse le sens et on change le nom des routes
 	Node * temp ;
 	Node * xx = x ;
-	Node * vv = noeudV ;
+	Node * vv = nodeV ;
 
 	while ( !xx->isADepot )
 	{
@@ -336,8 +332,8 @@ int LocalSearch::mutation8 ()
 	}
 
 	// mettre a jour les noeuds
-	noeudU->next = noeudV ;
-	noeudV->prev = noeudU ;
+	nodeU->next = nodeV ;
+	nodeV->prev = nodeU ;
 	x->next = y ;
 	y->prev = x ;
 
@@ -350,13 +346,13 @@ int LocalSearch::mutation8 ()
 		depotV->next = y ;
 		y->prev = depotV ;
 	}
-	else if ( noeudV->isADepot )
+	else if ( nodeV->isADepot )
 	{
 		depotV->next = depotUFin->prev ;
 		depotV->next->prev = depotV ;
 		depotV->prev = depotVFin ;
-		depotUFin->prev = noeudU ;
-		noeudU->next = depotUFin ;
+		depotUFin->prev = nodeU ;
+		nodeU->next = depotUFin ;
 	}
 	else
 	{
@@ -370,27 +366,27 @@ int LocalSearch::mutation8 ()
 	routeU->updateRouteData();
 	routeV->updateRouteData();
 
-	rechercheTerminee = false ; 
+	stopResearch = false ; 
 	return 1 ;
 }
 
 // 2-OPT* (sans inversion du sens de parties de routes)
 // If T(noeudU) != T(noeudV) , replace (noeudU,x) and (noeudV,y) by (noeudU,y) and (noeudV,x)
-int LocalSearch::mutation9 ()
+bool LocalSearch::mutation9 ()
 {
 	if  (routeU->idx == routeV->idx || routeU->depot->idx != routeV->depot->idx) { return 0 ; }
 
 	Node * count ;
 
-	double chargeResteU = routeU->load - noeudU->previousLoad ;
-	double chargeResteV = routeV->load - noeudV->previousLoad ;
+	double chargeResteU = routeU->load - nodeU->previousLoad ;
+	double chargeResteV = routeV->load - nodeV->previousLoad ;
 
-	double cost = params->timeCost[noeudUCour][yCour] 
-	+ params->timeCost[noeudVCour][xCour]
-	- params->timeCost[noeudUCour][xCour] 
-	- params->timeCost[noeudVCour][yCour]
-	+ (routeU->excedentCharge(noeudU->previousLoad + chargeResteV)
-	+ routeV->excedentCharge(noeudV->previousLoad + chargeResteU)
+	double cost = params->timeCost[idxNodeU][idxY] 
+	+ params->timeCost[idxNodeV][idxX]
+	- params->timeCost[idxNodeU][idxX] 
+	- params->timeCost[idxNodeV][idxY]
+	+ (routeU->excedentCharge(nodeU->previousLoad + chargeResteV)
+	+ routeV->excedentCharge(nodeV->previousLoad + chargeResteU)
 	- routeU->excedentCharge(routeU->load)
 	- routeV->excedentCharge(routeV->load))*params->penalityCapa[idxScenario] ;
 
@@ -421,18 +417,18 @@ int LocalSearch::mutation9 ()
 	}
 
 	// mettre a jour les noeuds
-	noeudU->next = y ;
-	y->prev = noeudU ;
-	noeudV->next = x ;
-	x->prev = noeudV ;
+	nodeU->next = y ;
+	y->prev = nodeU ;
+	nodeV->next = x ;
+	x->prev = nodeV ;
 
 	// mettre � jour les extr�mit�s
 	if (x->isADepot)
 	{
 		depotUFin->prev = depotVFin->prev ;
 		depotUFin->prev->next = depotUFin ;
-		noeudV->next = depotVFin ;
-		depotVFin->prev = noeudV ;
+		nodeV->next = depotVFin ;
+		depotVFin->prev = nodeV ;
 	}
 	else
 	{
@@ -445,6 +441,6 @@ int LocalSearch::mutation9 ()
 	routeU->updateRouteData();
 	routeV->updateRouteData();
 
-	rechercheTerminee = false ;
+	stopResearch = false ;
 	return 1 ;
 }

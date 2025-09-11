@@ -45,9 +45,6 @@ double previousLoad;
 // list of possible best insertions in the different routes
 vector<Insertion> allInsertions;
 
-// removing dominated insertions
-void removeDominatedInsertions(double penalityCapa);
-
 // final choosen place to insert this node
 Node* placeInsertion;
 

@@ -1,14 +1,12 @@
 /*                       Algorithme - HGSADC                         */
-/*                    Propri�t� de Thibaut VIDAL                     */
+/*                    Propriete de Thibaut VIDAL                     */
 /*                    thibaut.vidal@cirrelt.ca                       */
 
 #ifndef LOCALSEARCH_H
 #define LOCALSEARCH_H
 
-// structure de donnees adaptee a la recherche locale
-// une structure de ce type associee a chaque individu de la population
-
-// nouvelle representation des structures
+// local search class
+// this class is linked to an individual from the population
 
 #include <math.h>
 #include <stdio.h>
@@ -24,165 +22,147 @@ using namespace std;
 
 class Individual;
 
-struct paireJours
-{
-  int j1;
-  int j2;
-};
-
 class LocalSearch
 {
 private:
-Individual *individu;
+Individual *indiv;
 
 public:
   Params *params;
 
   unsigned int idxScenario;
 
-  bool rechercheTerminee;
-  // vecteur donnant l'ordre de parcours des sommets pour chaque jour, ne
-  // contenant pas les sommets
-  // qui n'existent pas pour le jour donn�
-  // afin de diversifier la recherche
-  vector<vector<unsigned int>> ordreParcours;
+  bool stopResearch;
 
-  // ajoute un client dans l'ordre de parcours
-  void addOP(unsigned int day, unsigned int client);
+  // order to explore clients of each day
+  vector<vector<unsigned int>> clientOrder;
 
-  void removeOP(unsigned int day, unsigned int client);
+  // add a client in previous vector
+  void addCO(unsigned int day, unsigned int client);
+
+  // remove a client
+  void removeCO(unsigned int day, unsigned int client);
   
-  void melangeParcours();
+  // shuffle the order
+  void shuffleOrder();
   
+  // updates the moves for each node which will be tried in mutationSameDay
   void updateMoves();
   
+  // verify if we are in the first loop of local search
   bool firstLoop;
 
-  Node *noeudU;
-  Node *noeudUPred;
-  Node *x;
-  Node *noeudXSuiv;
-  Node *noeudV;
-  Node *noeudVPred;
-  Node *y;
-  Node *noeudYSuiv;
+  Node *nodeU;
+  Node *nodeV;
+  Node *x; // node after U (not called nodeUNext because we also need nodeXNext)
+  Node *y; // node after V (not called nodeVNext because we also need nodeYNext)
+  Node *nodeUPrev;
+  Node *nodeVPrev;
+  Node *nodeXNext;
+  Node *nodeYNext;
   Route *routeU;
   Route *routeV;
-  unsigned int noeudUCour, noeudUPredCour, xCour, xSuivCour, ySuivCour, noeudVCour,
-      noeudVPredCour, yCour;
-  unsigned int dayCour;
+  unsigned int idxNodeU, idxNodeUPrev, idxX, idxXNext, idxYNext, idxNodeV,
+      idxNodeVPrev, idxY;
+  unsigned int currDay;
 
-  /* vecteur de taille nbClients , l'element client(day)(i) contient des donnees
-  // relatives
-  // a l'emplacement de la visite du client i+1 dans les routes
-  clients
-│
-├── Day 1
-│   ├── Client 1 -> Noeud Pointer
-│   ├── Client 2 -> Noeud Pointer
-│   └── ...
-│
-├── Day 2
-│   ├── Client 1 -> Noeud Pointer
-│   ├── Client 2 -> Noeud Pointer
-│   └── ...
-│
-└── ...
-*/
+  /* nbDays * nbClients sized vector, clients[day][i] gives every information about client i on this day
+  (even if this client is not present on this day)
+  */
+
   vector<vector<Node*>> clients;
 
-  // noeuds associes aux depots utilises
+  // nodes related to used depots
   vector<vector<Node*>> depots;
 
-  // noeuds associes aux terminaisons des routes (doublon des depots)
-  vector<vector<Node*>> depotsFin;
+  // nodes related to routes ends
+  vector<vector<Node*>> endDepots;
 
-  // vecteur repertoriant des donnees sur les routes routes
+  // vector with routes information
   vector<vector<Route*>> routes;
 
   // deliveryPerDay[i][j] -> The load to be delivered to each customer [j] on day [i]
   vector<vector<double>> deliveryPerDay;
 
-  // effectue une parcours complet de toutes les mutations possibles
-  // retourne le nombre de mouvements effectues
+  // full procedure doing every possible mutation (pattern changes and swaps)
+  // returns the number of move it made
   int mutationSameDay(unsigned int day);
 
-  // effectue un parcours complet de tous les changement de pattern et swap
-  // intra-jours possibles
-  // retourne le nombre de mouvements effectu�s
-
+  // launch the previous procedure on every day
   void runSearchSameDay();
-  // Neighborhoods
 
-  /* RELOCATE */
+  ////////////////////////////  MUTATION PART  ////////////////////////////
 
-  // If posUreal is a client node, remove posUreal then insert it after posVreal
-  int mutation1();
+  // If nodeU is a client node, remove nodeU then insert it after nodeV
+  bool mutation1();
 
-  // If posUreal and x are clients, remove them then insert (posUreal,x) after
-  // posVreal
-  int mutation2();
+  // If nodeU and x are clients, remove them then insert (nodeU,x) after
+  // nodeV
+  bool mutation2();
 
-  // If posUreal and x are clients, remove them then insert (x,posUreal) after
-  // posVreal
-  int mutation3();
+  // If nodeU and x are clients, remove them then insert (x,nodeU) after
+  // nodeV
+  bool mutation3();
 
   /* SWAP */
 
-  // If posUreal and posVreal are clients, swap posUreal and posVreal
-  int mutation4();
+  // If nodeU and nodeV are clients, swap them
+  bool mutation4();
 
-  // If posUreal, x and posVreal are clients, swap (posUreal,x) and posVreal
-  int mutation5();
+  // If nodeU, x and nodeV are clients, swap (nodeU,x) and nodeV
+  bool mutation5();
 
-  // If (posUreal,x) and (posVreal,y) are cliens, swap (posUreal,x) and
-  // (posVreal,y)
-  int mutation6();
+  // If (nodeU,x) and (nodeV,y) are cliens, swap (nodeU,x) and
+  // (nodeV,y)
+  bool mutation6();
 
   /* 2-OPT and 2-OPT* */
 
-  // If T(posUreal) = T(posVreal) , replace (posUreal,x) and (posVreal,y) by
-  // (posUreal,posVreal) and (x,y)
-  int mutation7();
+  // If T(nodeU) = T(nodeV) , replace (nodeU,x) and (nodeV,y) by
+  // (nodeU,nodeV) and (x,y)
+  bool mutation7();
 
-  // If T(posUreal) != T(posVreal) , replace (posUreal,x) and (posVreal,y) by
-  // (posUreal,posVreal) and (x,y)
-  int mutation8();
+  // If T(nodeU) != T(nodeV) , replace (nodeU,x) and (nodeV,y) by
+  // (nodeU,nodeV) and (x,y)
+  bool mutation8();
 
-  // If T(posUreal) != T(posVreal) , replace (posUreal,x) and (posVreal,y) by
-  // (posUreal,y) and (posVreal,x)
-  int mutation9();
+  // If T(nodeU) != T(nodeV) , replace (nodeU,x) and (nodeV,y) by
+  // (nodeU,y) and (nodeV,x)
+  bool mutation9();
+
+  //////////////////////////////////////////////////////////////////////
 
   // Evaluates the current objective function from the model
   double evaluateCurrentClientCost(unsigned int client);
 
-  // Prints some useful information on the current solution
-  void printInventoryLevels(std::ostream& file,bool add, std::vector<double> deliveries, double &totalCost);
+  // Prints some useful information on the current solution (and write those in a given file)
+  // Also evaluates the current objective function of the whole solution with true demands
+  void printInventoryLevels(std::ostream& file, std::vector<double> deliveries, double &totalCost);
 
   /* Routines to update the solution */
 
-  // effectue l'insertion du client U apres V
-  void insertNoeud(Node *U, Node *V);
+  // insert node U just after node V in its route
+  void insertNode(Node *U, Node *V);
 
-  // effectue le swap du client U avec V
-  void swapNoeud(Node *U, Node *V);
+  // swap node U and V in their respective routes
+  void swapNode(Node *U, Node *V);
 
-  // supprime le noeud
+  // remove a given node
   void removeNode(Node *U);
 
-  // ajoute un noeud � l'endroit indique dans Noeud->placeRoute
+  // add a given node in the place indicated by Node->placeRoute
   void addNode(Node *U);
 
-  // calcule pour un jour donn� et un client donn� (repr�sent� par un noeud)
-  // les couts d'insertion dans les differentes routes constituant ce jour
+  // for a given client/day, computes its insertion cost in the different possible routes on this day
   void computeInsertionCost(Node *client);
 
+  // default constructor
   LocalSearch();
+  
+  // constructor (creates all the required nodes for depots and clients)
+  LocalSearch(Individual* _indiv, Params* _params, unsigned int _idxScenario);
 
-  // constructeur, cree les structures de noeuds
-  // n'initialise pas pas la pile ni les routes
-  LocalSearch(Individual* _individu, Params* _params, unsigned int _idxScenario);
-
+  // destructor
   ~LocalSearch(void);
 };
 

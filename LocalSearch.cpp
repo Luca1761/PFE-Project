@@ -4,7 +4,7 @@
 void LocalSearch::runSearchSameDay() {
   int nbMoves = 1;
   int nbPhases = 0;
-  while (nbMoves > 0 && nbPhases < 1000) {
+  while (nbMoves > 0 && nbPhases < 1000) { // limit on nbPhases to fasten the algorithm
     nbMoves = 0;
     updateMoves();
     for (unsigned int day = 2; day <= params->nbDays; day++) {
@@ -14,417 +14,393 @@ void LocalSearch::runSearchSameDay() {
   }
 }
 
-void LocalSearch::melangeParcours() {
+void LocalSearch::shuffleOrder() {
   unsigned int j;
   for (unsigned int k = 0; k <= params->nbDays; k++) {
-    for (unsigned int i = 1; i < ordreParcours[k].size(); i++) {
-      j = i - 1 + (unsigned int) (params->rng->genrand64_int64() % (ordreParcours[k].size() - i + 1));
-      std::swap(ordreParcours[k][i], ordreParcours[k][j]);
+    for (unsigned int i = 1; i < clientOrder[k].size(); i++) {
+      j = i - 1 + (unsigned int) (params->rng->genrand64_int64() % (clientOrder[k].size() - i + 1));
+      std::swap(clientOrder[k][i], clientOrder[k][j]);
     }
   }
 }
 
-// updates the moves for each node which will be tried in mutationSameDay
 void LocalSearch::updateMoves() {
   unsigned int client, client2;
   unsigned int size;
 
   for (unsigned int k = 1; k <= params->nbDays; k++) {
-    // pour chaque client present dans ce jour
-    for (unsigned int i = 0; i < ordreParcours[k].size(); i++) {
-      client = ordreParcours[k][i];
+    for (unsigned int i = 0; i < clientOrder[k].size(); i++) {
+      client = clientOrder[k][i];
       clients[k][client]->moves.clear();
       size = (unsigned int) params->cli[client].neighbors.size();
 
       for (unsigned int a1 = 0; a1 < size; a1++) {
         client2 = params->cli[client].neighbors[a1];
-        if (client2 >= params->nbDepots && clients[k][client2]->isPresent)
+        if (client2 >= params->nbDepots && clients[k][client2]->isPresent) // we add clients neighbors that are present
           clients[k][client]->moves.push_back(client2);
       }
     }
   }
 
   params->shuffleNeighbors();
-  melangeParcours();
+  shuffleOrder();
 }
 
 int LocalSearch::mutationSameDay(unsigned int day) {
-  dayCour = day;
-  unsigned int size = (unsigned int) ordreParcours[day].size();
-  unsigned int size2;
-  rechercheTerminee = false;
-  bool moveEffectue = false;
-  int nbMoves = 0;
+  currDay = day;
+  stopResearch = false;
   firstLoop = true;
+  unsigned int size = (unsigned int) clientOrder[day].size();
+  unsigned int size2;
+  bool moveDone = false;
+  int nbMoves = 0;
 
-  while (!rechercheTerminee) {
-    rechercheTerminee = true;
-    moveEffectue = false;
+  while (!stopResearch) {
+    stopResearch = true;
+    moveDone = false;
     for (unsigned int posU = 0; posU < size; posU++) {
-      posU -= moveEffectue; // on retourne sur le dernier noeud si on a modifie
-      nbMoves += moveEffectue;
-      moveEffectue = false;
-      noeudU = clients[day][ordreParcours[day][posU]];
+      posU -= moveDone; // if we did a move, we go back to last node
+      nbMoves += moveDone;
+      moveDone = false;
+      nodeU = clients[day][clientOrder[day][posU]];
 
-      noeudUPred = noeudU->prev;
-      x = noeudU->next;
-      noeudXSuiv = x->next;
-      xSuivCour = x->next->idx;
-      routeU = noeudU->route;
-      noeudUCour = noeudU->idx;
-      noeudUPredCour = noeudUPred->idx;
-      xCour = x->idx;
+      nodeUPrev = nodeU->prev;
+      x = nodeU->next;
+      nodeXNext = x->next;
+      idxXNext = x->next->idx;
+      routeU = nodeU->route;
+      idxNodeU = nodeU->idx;
+      idxNodeUPrev = nodeUPrev->idx;
+      idxX = x->idx;
 
-      size2 = (unsigned int) noeudU->moves.size();
-      for (unsigned int posV = 0; posV < size2 && moveEffectue == 0; posV++) {
-        noeudV = clients[day][noeudU->moves[posV]];
-        if (!noeudV->route->nodeAndRouteTested[noeudU->idx] ||
-            !noeudU->route->nodeAndRouteTested[noeudU->idx] || firstLoop)
+      size2 = (unsigned int) nodeU->moves.size();
+      for (unsigned int posV = 0; posV < size2 && !moveDone; posV++) {
+        nodeV = clients[day][nodeU->moves[posV]];
+        if (!nodeV->route->nodeAndRouteTested[nodeU->idx] ||
+            !nodeU->route->nodeAndRouteTested[nodeU->idx] || firstLoop)
         {
-          noeudVPred = noeudV->prev;
-          y = noeudV->next;
-          noeudYSuiv = y->next;
-          ySuivCour = y->next->idx;
-          routeV = noeudV->route;
-          noeudVCour = noeudV->idx;
-          noeudVPredCour = noeudVPred->idx;
-          yCour = y->idx;
+          nodeVPrev = nodeV->prev;
+          y = nodeV->next;
+          nodeYNext = y->next;
+          idxYNext = y->next->idx;
+          routeV = nodeV->route;
+          idxNodeV = nodeV->idx;
+          idxNodeVPrev = nodeVPrev->idx;
+          idxY = y->idx;
+          
+          // LNS
+          if (!moveDone) moveDone = mutation1();
+          if (!moveDone) moveDone = mutation2();
+          if (!moveDone) moveDone = mutation3();
 
-          if (!moveEffectue)
-            moveEffectue = mutation1();
-          if (!moveEffectue)
-            moveEffectue = mutation2();
-          if (!moveEffectue)
-            moveEffectue = mutation3();
-
-          // les mutations 4 et 6 (switch) , sont sym�triques
-          if (noeudU->idx <= noeudV->idx) {
-            if (!moveEffectue)
-              moveEffectue = mutation4();
-            if (!moveEffectue)
-              moveEffectue = mutation6();
+          // mutations 4 and 6 (switch) are symetrical
+          if (nodeU->idx <= nodeV->idx) {
+            if (!moveDone) moveDone = mutation4();
+            if (!moveDone) moveDone = mutation6();
           }
-          if (!moveEffectue)
-            moveEffectue = mutation5();
+          if (!moveDone) moveDone = mutation5();
 
-          // mutations 2-opt
-          if (!moveEffectue)
-            moveEffectue = mutation7();
-          if (!moveEffectue)
-            moveEffectue = mutation8();
-          if (!moveEffectue)
-            moveEffectue = mutation9();
+          // mutations 2-OPT
+          if (!moveDone) moveDone = mutation7();
+          if (!moveDone) moveDone = mutation8();
+          if (!moveDone) moveDone = mutation9();
 
-          if (moveEffectue) {
+          if (moveDone) {
             routeU->reinitSingleDayMoves();
             routeV->reinitSingleDayMoves();
           }
         }
       }
 
-  // c'est un depot on tente l'insertion derriere le depot de ce jour
-      // si il ya correlation
-      if (params->isCorrelated[noeudU->idx][depots[day][0]->idx] &&
-          moveEffectue != 1)
-        for (unsigned int route = 0; route < depots[day].size(); route++) {
-          noeudV = depots[day][route];
-          if (!noeudV->route->nodeAndRouteTested[noeudU->idx] ||
-              !noeudU->route->nodeAndRouteTested[noeudU->idx] || firstLoop)
+      // we try to insert just after the depot on this day (if it's correlated)
+      if (params->isCorrelated[nodeU->idx][depots[day][0]->idx] && !moveDone)
+        for (unsigned int depot = 0; depot < depots[day].size(); depot++) {
+          nodeV = depots[day][depot];
+          if (!nodeV->route->nodeAndRouteTested[nodeU->idx] ||
+              !nodeU->route->nodeAndRouteTested[nodeU->idx] || firstLoop)
           {
-            noeudVPred = noeudV->prev;
-            y = noeudV->next;
-            noeudYSuiv = y->next;
-            ySuivCour = y->next->idx;
-            routeV = noeudV->route;
-            noeudVCour = noeudV->idx;
-            noeudVPredCour = noeudVPred->idx;
-            yCour = y->idx;
+            nodeVPrev = nodeV->prev;
+            y = nodeV->next;
+            nodeYNext = y->next;
+            idxYNext = y->next->idx;
+            routeV = nodeV->route;
+            idxNodeV = nodeV->idx;
+            idxNodeVPrev = nodeVPrev->idx;
+            idxY = y->idx;
 
-            if (!moveEffectue)
-              moveEffectue = mutation1();
-            if (!moveEffectue)
-              moveEffectue = mutation2();
-            if (!moveEffectue)
-              moveEffectue = mutation3();
+            if (!moveDone) moveDone = mutation1();
+            if (!moveDone) moveDone = mutation2();
+            if (!moveDone) moveDone = mutation3();
 
-            if (!noeudV->next->isADepot)
-            {
-              if (!moveEffectue)
-                moveEffectue = mutation8();
-              if (!moveEffectue)
-                moveEffectue = mutation9();
+            //mutations 4, 5, 6 and 7 cannot be done with a depot
+
+            if (!nodeV->next->isADepot) {
+              if (!moveDone) moveDone = mutation8();
+              if (!moveDone) moveDone = mutation9();
             }
 
-            if (moveEffectue)
-            {
+            if (moveDone) {
               routeU->reinitSingleDayMoves();
               routeV->reinitSingleDayMoves();
             }
           }
         }
-      // TODO -- check that memories are working
     }
     firstLoop = false;
   }
   return nbMoves;
 }
 
-// enleve un client de l'ordre de parcours
-void LocalSearch::removeOP(unsigned int day, unsigned int client) {
+void LocalSearch::removeCO(unsigned int day, unsigned int client) {
+  if (clientOrder[day].empty()) throw std::string("ERROR SIZE");
   unsigned int it = 0;
-  while (ordreParcours[day][it] != client) {
+  while (clientOrder[day][it] != client) {
     it++;
   }
-  if (ordreParcours[day].empty()) throw std::string("ERROR SIZE");
-  ordreParcours[day][it] = ordreParcours[day][ordreParcours[day].size() - 1];
-  ordreParcours[day].pop_back();
+  clientOrder[day][it] = clientOrder[day][clientOrder[day].size() - 1];
+  clientOrder[day].pop_back();
 }
 
-// ajoute un client dans l'ordre de parcours
-void LocalSearch::addOP(unsigned int day, unsigned int client) {
+void LocalSearch::addCO(unsigned int day, unsigned int client) {
   unsigned int it;
-  if (!ordreParcours[day].empty()) {
-    it = (unsigned int) (params->rng->genrand64_int64() % ordreParcours[day].size());
-    ordreParcours[day].push_back(ordreParcours[day][it]);
-    ordreParcours[day][it] = client;
+  if (!clientOrder[day].empty()) {
+    it = (unsigned int) (params->rng->genrand64_int64() % clientOrder[day].size());
+    clientOrder[day].push_back(clientOrder[day][it]);
+    clientOrder[day][it] = client;
   }
   else
-    ordreParcours[day].push_back(client);
+    clientOrder[day].push_back(client);
 }
 
-// Evaluates the current objective function of the whole solution
-void LocalSearch::printInventoryLevels(std::ostream& file,bool add, std::vector<double> deliveries, double &totalCost) {
+void LocalSearch::printInventoryLevels(std::ostream& file, std::vector<double> deliveries, double &totalCost) {
   double inventoryClientCosts = 0.;
   double inventorySupplyCosts = 0.;
-  double stockClientCosts = 0;
-  double stockClientAmount=0;
+  double stockoutClientCosts = 0;
+  double stockoutClientAmount = 0;
   double routeCosts = 0.;
-  double loadCosts = 0.;
 
   // Summing distance and load penalty
-
   for (unsigned int r = 0; r < params->vehicleNumber[1]; r++) {
-    routeCosts += routes[1][r]->time; // temps: total travel time
-    double chargeRoute = std::accumulate(deliveries.begin(), deliveries.end(), 0.0);
-    if (chargeRoute > routes[1][r]->capacity) {
-      std::cout << "INVALID CHARGE" << std::endl;
-      throw std::string("INVALID CHARGE");
+    routeCosts += routes[1][r]->time; //  total travel time
+    double loadRoute = 0.0;
+
+    Node* node = routes[1][r]->depot ;
+    while (!node->next->isADepot) {
+      node = node->next;
+      loadRoute += deliveries[node->idx - params->nbDepots]; // compute the load of the route with average deliveries
     }
-    if(!add)  file << "route["<<r<<"]: travel time = " << routes[1][r]->time << "; capacity = " << routes[1][r]->capacity << "; charge = " << chargeRoute << "; depot = " << routes[1][r]->depot->idx << endl;
+
+    if (loadRoute > routes[1][r]->capacity) {
+      std::cout << "INVALID CHARGE for route " + to_string(r) << std::endl;
+      throw std::string("INVALID CHARGE for route " + to_string(r));
+    }
+    file << "route["<<r<<"]: travel time = " << routes[1][r]->time << "; capacity = " << routes[1][r]->capacity << "; charge = " << loadRoute << "; depot = " << routes[1][r]->depot->idx << endl;
     routes[1][r]->printRoute(file);
   }
+  file << endl;
   
 
   // Printing customer inventory and computing customer inventory cost
-
   double inventoryClient;
   for (unsigned int i = params->nbDepots; i < params->nbDepots + params->nbClients; i++) {
     inventoryClient = params->cli[i].startingInventory;
-    if(!add) file  << "CUSTOMER " << i << " bounds (" << "0"
-          << "," << params->cli[i].maxInventory << ") " << " " << params->meanDemands[i - params->nbDepots] << " " << params->stdDemands[i - params->nbDepots] << " " << params->cli[i].trueDemand[params->jVal] << " " ; 
+    file  << "CUSTOMER " << i << " bounds (" << "0"
+          << "," << params->cli[i].maxInventory << ")" << " | Av: " 
+          << params->meanDemands[i - params->nbDepots] << " | Std: " 
+          << params->stdDemands[i - params->nbDepots] << " | True: " 
+          << params->cli[i].trueDemand[params->jVal] << " " ; 
 
     // print the level in the morning
-    if(!add) file << "[morning: " << inventoryClient;
+    file << "[morning: " << inventoryClient;
     // print the level after receiving inventory
     inventoryClient += deliveries[i - params->nbDepots];
-    if(!add) file  << ", replenishment: " << deliveries[i - params->nbDepots];
+    file  << ", replenishment: " << deliveries[i - params->nbDepots];
     // print the level after consumption
-    double stock = std::max<double>(0,params->cli[i].trueDemand[params->jVal]-inventoryClient);
-    inventoryClient = std::max<double>(0,inventoryClient-params->cli[i].trueDemand[params->jVal]);
+    double stockout = std::max<double>(0, params->cli[i].trueDemand[params->jVal] - inventoryClient);
+    inventoryClient = std::max<double>(0, inventoryClient - params->cli[i].trueDemand[params->jVal]);
     
-    if(!add) file  << ", evening: " << inventoryClient << "] ";
+    file  << ", evening: " << inventoryClient << "] ";
 
     inventoryClientCosts += inventoryClient * params->cli[i].inventoryCost ;
-    stockClientCosts += stock*params->cli[i].stockoutCost;
-    stockClientAmount += stock;
+    stockoutClientCosts += stockout * params->cli[i].stockoutCost;
+    stockoutClientAmount += stockout;
 
-    if(!add) file  << endl;
+    file  << endl;
   }
 
   file  << endl;
-  double inventorySupply = 0;
-  if(!add) file  << "SUPPLIER INVENTORY ";
 
+  double inventorySupply = 0;
+  file  << "SUPPLIER INVENTORY ";
   inventorySupply += params->availableSupply[1];
   // print the level in the morning
-  if(!add) file << "[" << inventorySupply << ",";
+  file << "[morning: " << inventorySupply;
   for (unsigned int i = params->nbDepots; i < params->nbDepots + params->nbClients; i++)
     inventorySupply -= deliveries[i - params->nbDepots];
   // print the level after delivery
-  if(!add) file  << inventorySupply << "] ";
+  file << ", evening: " <<  inventorySupply << "] ";
   inventorySupplyCosts += inventorySupply * params->inventoryCostSupplier;
   
-  if(!add) file  << endl;
+  file  << endl;
 
   file  << "ROUTE COST: " << routeCosts << endl;
   file << "SUPPLY INVENTORY COST: " << inventorySupplyCosts << endl;
   file << "CLIENT INVENTORY COST: " << inventoryClientCosts << endl;
-  file << "CLIENT STOCKOUT COST: " << stockClientCosts<<endl;
-  file << "CLIENT STOCKOUT Amount: " << stockClientAmount<<endl;
-  file  << "COST SUMMARY : OVERALL "
-       << routeCosts + loadCosts + inventorySupplyCosts + inventoryClientCosts + stockClientCosts
+  file << "CLIENT STOCKOUT COST: " << stockoutClientCosts << endl;
+  file << "CLIENT STOCKOUT Amount: " << stockoutClientAmount << endl;
+  file  << "COST SUMMARY : THIS DAY "
+       << routeCosts + inventorySupplyCosts + inventoryClientCosts + stockoutClientCosts
        << endl;
-  totalCost += routeCosts + loadCosts + inventorySupplyCosts + inventoryClientCosts + stockClientCosts;
+  totalCost += routeCosts + inventorySupplyCosts + inventoryClientCosts + stockoutClientCosts;
 }
 
-// supprime le noeud
 void LocalSearch::removeNode(Node *U) {
-  // mettre a jour les noeuds
+  // update nodes
   U->prev->next = U->next;
- 
   U->next->prev = U->prev;
 
+  // update related route
   U->route->updateRouteData();
 
-  // on g�re les autres structures de donn�es
-  removeOP(U->day, U->idx);
+  // remove from client order and its presence
+  removeCO(U->day, U->idx);
   U->isPresent = false;
 
-  // signifier que les insertions sur cette route ne sont plus bonnes
+  // insertions on this route are not good anymore
   U->route->initiateInsertions();
 }
 
 void LocalSearch::addNode(Node *U) {
+  // update nodes
   U->placeInsertion->next->prev = U;
   U->prev = U->placeInsertion;
   U->next = U->placeInsertion->next;
   U->placeInsertion->next = U;
 
-  // et mettre a jour les routes
+  // update route
   U->route = U->placeInsertion->route;
   U->route->updateRouteData();
 
-  // on g�re les autres structures de donn�es
-  addOP(U->day, U->idx);
+  // add to client order and set its presence to true
+  addCO(U->day, U->idx);
   U->isPresent = true;
 
-  // signifier que les insertions sur cette route ne sont plus bonnes
+  // insertions on this route are not good anymore
   U->route->initiateInsertions();
 }
 
-// calcule pour un jour donn� et un client donn� (repr�sent� par un noeud)
-// les couts d'insertion dans les differentes routes constituant ce jour
+bool mySort (Insertion i, Insertion j) { 
+	if (i.detour < j.detour) return true ;
+	else if (i.detour > j.detour) return false ;
+	else return (i.load > j.load) ;
+}
+
 void LocalSearch::computeInsertionCost(Node *client) {
   Route *myRoute;
   client->allInsertions.clear();
   // for each route of this day
   for (unsigned int r = 0; r < routes[client->day].size(); r++){
-    // later on we can simply retrieve
     // calculate the best insertion point as well as its load
-
     myRoute = routes[client->day][r];
     myRoute->evalInsertClient(client);
     client->allInsertions.push_back(myRoute->bestInsertion[client->idx]);
   }
-
-  // eliminate dominated insertions
-  client->removeDominatedInsertions(params->penalityCapa[idxScenario]);
+  std::sort(client->allInsertions.begin(), client->allInsertions.end(), mySort);
 }
 
 double LocalSearch::evaluateCurrentClientCost(unsigned int client) {
-  Node *noeudClient;
-  double myCost = 0.;
+  Node *clientNode;
+  double cost = 0.;
   double I = params->cli[client].startingInventory;
   // Sum up the detour cost, inventory cost, and eventual excess of capacity
   for (unsigned int k = 1; k <= params->nbDays; k++) {
-    noeudClient = clients[k][client];
-    if (noeudClient->isPresent){
+    clientNode = clients[k][client];
+    if (clientNode->isPresent){
       // adding the inventory cost
-        myCost +=
-          params->cli[client].inventoryCost * 
-          std::max<double> (0., I + deliveryPerDay[k][client] - params->cli[client].dailyDemand[idxScenario][k]);
+      cost +=
+        params->cli[client].inventoryCost * 
+        std::max<double> (0., I + deliveryPerDay[k][client] - params->cli[client].dailyDemand[idxScenario][k]);
+      
       //stockout
-        myCost +=
-          params->cli[client].stockoutCost * std::max<double> (0., params->cli[client].dailyDemand[idxScenario][k] - I - deliveryPerDay[k][client]);
+      cost +=
+        params->cli[client].stockoutCost * std::max<double> (0., params->cli[client].dailyDemand[idxScenario][k] - I - deliveryPerDay[k][client]);
 
       //-supplier *q[]
-        myCost -=  params->inventoryCostSupplier *
-            (double)(params->nbDays + 1 - k) * deliveryPerDay[k][client];
+      cost -=  params->inventoryCostSupplier *
+          (double)(params->nbDays + 1 - k) * deliveryPerDay[k][client];
 
       // the detour cost
-        myCost +=
-            params->timeCost[noeudClient->idx][noeudClient->next->idx] +
-            params->timeCost[noeudClient->prev->idx][noeudClient->idx] -
-            params->timeCost[noeudClient->prev->idx][noeudClient->next->idx];
+      cost +=
+          params->timeCost[clientNode->prev->idx][clientNode->idx] +
+          params->timeCost[clientNode->idx][clientNode->next->idx] -
+          params->timeCost[clientNode->prev->idx][clientNode->next->idx];
 
       // and the possible excess capacity, the privous penalty are calculated already.
-        double x1 = noeudClient->route->load -  noeudClient->route->capacity;
-        if(eq(x1,0)) x1 = 0;
-        double x2 = noeudClient->route->load -
-                  noeudClient->route->capacity - deliveryPerDay[k][client];
-        if(eq(x2, 0)) x2 = 0;
-        myCost += params->penalityCapa[idxScenario] *(std::max<double>(0., x1) - std::max<double>(0., x2));
-        double maxDeliverable = (params->endDayInventories) ? params->cli[client].dailyDemand[idxScenario][k] + params->cli[client].maxInventory : params->cli[client].maxInventory;
-        myCost += 1000000*std::max<double> (0., I + deliveryPerDay[k][client] - maxDeliverable);
+      double x1 = clientNode->route->load - clientNode->route->capacity;
+      if(eq(x1,0)) x1 = 0;
+      double x2 = clientNode->route->load - deliveryPerDay[k][client] - clientNode->route->capacity;
+      if(eq(x2, 0)) x2 = 0;
+      cost += params->penalityCapa[idxScenario] *(std::max<double>(0., x1) - std::max<double>(0., x2));
 
-        I = std::max<double> (0., I + deliveryPerDay[k][client] - params->cli[client].dailyDemand[idxScenario][k]);
-      }
-      else{     
-        myCost += params->cli[client].inventoryCost *  std::max<double>(0., I - params->cli[client].dailyDemand[idxScenario][k]);
-        myCost += params->cli[client].stockoutCost * std::max<double>  (0., params->cli[client].dailyDemand[idxScenario][k] - I);
+      double maxDeliverable = (params->endDayInventories) ? params->cli[client].dailyDemand[idxScenario][k] + params->cli[client].maxInventory : params->cli[client].maxInventory;
+      cost += 1000000 * std::max<double> (0., I + deliveryPerDay[k][client] - maxDeliverable);
 
-        I = std::max<double> (0., I - params->cli[client].dailyDemand[idxScenario][k]);
-        
-      }
+      I = std::max<double> (0., I + deliveryPerDay[k][client] - params->cli[client].dailyDemand[idxScenario][k]);
+    } else{     
+      cost += params->cli[client].inventoryCost *  std::max<double>(0., I - params->cli[client].dailyDemand[idxScenario][k]);
+      cost += params->cli[client].stockoutCost * std::max<double>  (0., params->cli[client].dailyDemand[idxScenario][k] - I);
+
+      I = std::max<double> (0., I - params->cli[client].dailyDemand[idxScenario][k]);
+      
+    }
   }
-  return myCost;
+  return cost;
 }
 
-// constructeur
 LocalSearch::LocalSearch(void) {}
 
-// constructeur 2
-LocalSearch::LocalSearch(Individual *_individu, Params *_params, unsigned int _idxScenario)
-    : individu(_individu), params(_params), idxScenario(_idxScenario)
+LocalSearch::LocalSearch(Individual *_indiv, Params *_params, unsigned int _idxScenario)
+    : indiv(_indiv), params(_params), idxScenario(_idxScenario)
 {
-  vector<Node*> tempNoeud; 
-  vector<Route*> tempRoute;
 
   Node *myDepot;
-  Node *myDepotFin;
+  Node *myEndDepot;
   Route *myRoute;
-  
-  clients.push_back(tempNoeud);
-  depots.push_back(tempNoeud);
-  depotsFin.push_back(tempNoeud);
-  routes.push_back(tempRoute);
+
+  clients = vector<vector<Node*>>(params->nbDays + 1);
+  depots = vector<vector<Node*>>(params->nbDays + 1);
+  endDepots = vector<vector<Node*>>(params->nbDays + 1);
+  routes = vector<vector<Route*>>(params->nbDays + 1);
   
   for (unsigned int day = 1; day <= params->nbDays; day++) {
-    clients.push_back(tempNoeud);
-    depots.push_back(tempNoeud);
-    depotsFin.push_back(tempNoeud);
-    routes.push_back(tempRoute);
-    // dimensionnement du champ noeuds a la bonne taille
     for (unsigned int depot = 0; depot < params->nbDepots; depot++) {
       clients[day].push_back(NULL);
     }
     for (unsigned int client = params->nbDepots; client < params->nbClients + params->nbDepots; client++) {
       clients[day].push_back(new Node(false, client, day, false, NULL, NULL, NULL));
     }
-        
-    // dimensionnement du champ depots et routes a la bonne taille       
-    for (unsigned int i = 0; i < params->vehicleNumber[day]; i++) {
-      myDepot = new Node(true, params->vehicleOrder[day][i].depotNumber, day, false, NULL, NULL, NULL);
-      myDepotFin = new Node(true, params->vehicleOrder[day][i].depotNumber, day, false, NULL, NULL, NULL);
-      myRoute = new Route(params, this, i, day, myDepot, 0, 0, params->vehicleOrder[day][i].capacity);
+   
+    for (unsigned int r = 0; r < params->vehicleNumber[day]; r++) {
+      myDepot = new Node(true, params->vehicleOrder[day][r].depotNumber, day, false, NULL, NULL, NULL);
+      myEndDepot = new Node(true, params->vehicleOrder[day][r].depotNumber, day, false, NULL, NULL, NULL);
+      myRoute = new Route(params, this, r, day, myDepot, 0, 0, params->vehicleOrder[day][r].capacity);
       myDepot->route = myRoute;
-      myDepotFin->route = myRoute;
+      myEndDepot->route = myRoute;
       routes[day].push_back(myRoute);
       depots[day].push_back(myDepot);
-      depotsFin[day].push_back(myDepotFin);
+      endDepots[day].push_back(myEndDepot);
     }
   }
               
-  // initialisation de la structure ordreParcours 
-  ordreParcours = std::vector<std::vector<unsigned int>>(params->nbDays + 1);
+  // initialize clientOrder
+  clientOrder = std::vector<std::vector<unsigned int>>(params->nbDays + 1);
 
   for (unsigned int client = params->nbDepots; client < params->nbDepots + params->nbClients; client++)
-    ordreParcours[0].push_back(client);
+    clientOrder[0].push_back(client);
 }
 
-
-// destructeur
 LocalSearch::~LocalSearch(void) {
+  // delete pointers if they exist
   if (!clients.empty())
     for (unsigned int i = 0; i < clients.size(); i++)
       if (!clients[i].empty())

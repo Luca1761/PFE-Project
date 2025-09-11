@@ -637,7 +637,7 @@ void Individual::updateLocalSearch() {
 		localSearchList[scenario]->deliveryPerDay = deliveryPerDay;
 
 		for (unsigned int kk = 1; kk <= params->nbDays; kk++) {
-			localSearchList[scenario]->ordreParcours[kk].clear();
+			localSearchList[scenario]->clientOrder[kk].clear();
 			for (unsigned int l = params->nbDepots; l < localSearchList[scenario]->clients[kk].size(); l++) {
 				localSearchList[scenario]->clients[kk][l]->isPresent = false;
 			}
@@ -649,7 +649,7 @@ void Individual::updateLocalSearch() {
 				i = pred[kk][params->vehicleNumber[kk] - jj][j];
 
 				tempDepot = localSearchList[scenario]->depots[kk][params->vehicleNumber[kk] - jj - 1];
-				tempDepotFin = localSearchList[scenario]->depotsFin[kk][params->vehicleNumber[kk] - jj - 1];
+				tempDepotFin = localSearchList[scenario]->endDepots[kk][params->vehicleNumber[kk] - jj - 1];
 				tempRoute = localSearchList[scenario]->routes[kk][params->vehicleNumber[kk] - jj - 1];
 
 				tempDepot->next = tempDepotFin;
@@ -666,7 +666,7 @@ void Individual::updateLocalSearch() {
 					tempClient->isPresent = true;
 					tempDepot->next = tempClient;
 					tempDepotFin->prev = tempClient;
-					localSearchList[scenario]->ordreParcours[kk].push_back(tempClient->idx);
+					localSearchList[scenario]->clientOrder[kk].push_back(tempClient->idx);
 				}
 				else if (j > i + 1) {
 					// second case: at least two clients
@@ -677,7 +677,7 @@ void Individual::updateLocalSearch() {
 					tempClient->route = tempRoute;
 					tempClient->isPresent = true;
 					tempDepot->next = tempClient;
-					localSearchList[scenario]->ordreParcours[kk].push_back(tempClient->idx);
+					localSearchList[scenario]->clientOrder[kk].push_back(tempClient->idx);
 
 					// last client
 					tempClient = localSearchList[scenario]->clients[kk][chromT[chromIndex][j - 1]];
@@ -686,7 +686,7 @@ void Individual::updateLocalSearch() {
 					tempClient->route = tempRoute;
 					tempClient->isPresent = true;
 					tempDepotFin->prev = tempClient;
-					localSearchList[scenario]->ordreParcours[kk].push_back(tempClient->idx);
+					localSearchList[scenario]->clientOrder[kk].push_back(tempClient->idx);
 
 					// intermediate clients
 					for (unsigned int k = i + 1; k <= j - 2; k++) {
@@ -695,7 +695,7 @@ void Individual::updateLocalSearch() {
 						tempClient->next = localSearchList[scenario]->clients[kk][chromT[chromIndex][k + 1]];
 						tempClient->route = tempRoute;
 						tempClient->isPresent = true;
-						localSearchList[scenario]->ordreParcours[kk].push_back(tempClient->idx);
+						localSearchList[scenario]->clientOrder[kk].push_back(tempClient->idx);
 					}
 				}
 				j = i;
@@ -739,16 +739,16 @@ void Individual::runSearchFirstDay() {
 }
 
 int Individual::mutationFirstDay() {
-	localSearchList[0]->dayCour = 1;
-	unsigned int size = (unsigned int) localSearchList[0]->ordreParcours[1].size();
+	localSearchList[0]->currDay = 1;
+	unsigned int size = (unsigned int) localSearchList[0]->clientOrder[1].size();
 	unsigned int size2;
-	localSearchList[0]->rechercheTerminee = false;
+	localSearchList[0]->stopResearch = false;
 	bool moveEffectue = false;
 	int nbMoves = 0;
 	localSearchList[0]->firstLoop = true;
 	
-	while (!localSearchList[0]->rechercheTerminee) {
-		localSearchList[0]->rechercheTerminee = true;
+	while (!localSearchList[0]->stopResearch) {
+		localSearchList[0]->stopResearch = true;
 		moveEffectue = false;
 		for (unsigned int posU = 0; posU < size; posU++) {
 			posU -= moveEffectue; // come back on last node if modified
@@ -756,33 +756,33 @@ int Individual::mutationFirstDay() {
 			moveEffectue = false;
 			
 			for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
-				localSearchList[scenario]->noeudU = localSearchList[scenario]->clients[1][localSearchList[0]->ordreParcours[1][posU]];
-				localSearchList[scenario]->noeudUPred = localSearchList[scenario]->noeudU->prev;
-				localSearchList[scenario]->x = localSearchList[scenario]->noeudU->next;
-				localSearchList[scenario]->noeudXSuiv = localSearchList[scenario]->x->next;
-				localSearchList[scenario]->xSuivCour = localSearchList[scenario]->x->next->idx;
-				localSearchList[scenario]->routeU = localSearchList[scenario]->noeudU->route;
-				localSearchList[scenario]->noeudUCour = localSearchList[scenario]->noeudU->idx;
-				localSearchList[scenario]->noeudUPredCour = localSearchList[scenario]->noeudUPred->idx;
-				localSearchList[scenario]->xCour = localSearchList[scenario]->x->idx;
+				localSearchList[scenario]->nodeU = localSearchList[scenario]->clients[1][localSearchList[0]->clientOrder[1][posU]];
+				localSearchList[scenario]->nodeUPrev = localSearchList[scenario]->nodeU->prev;
+				localSearchList[scenario]->x = localSearchList[scenario]->nodeU->next;
+				localSearchList[scenario]->nodeXNext = localSearchList[scenario]->x->next;
+				localSearchList[scenario]->idxXNext = localSearchList[scenario]->x->next->idx;
+				localSearchList[scenario]->routeU = localSearchList[scenario]->nodeU->route;
+				localSearchList[scenario]->idxNodeU = localSearchList[scenario]->nodeU->idx;
+				localSearchList[scenario]->idxNodeUPrev = localSearchList[scenario]->nodeUPrev->idx;
+				localSearchList[scenario]->idxX = localSearchList[scenario]->x->idx;
 			}
 
-			size2 = (unsigned int) localSearchList[0]->noeudU->moves.size();
+			size2 = (unsigned int) localSearchList[0]->nodeU->moves.size();
 			for (unsigned int posV = 0; posV < size2 && !moveEffectue; posV++) {
 				for (unsigned int scenario = 0; scenario < nbScenario; scenario++) 
-				localSearchList[scenario]->noeudV = localSearchList[scenario]->clients[1][localSearchList[0]->noeudU->moves[posV]];
-				if (!localSearchList[0]->noeudV->route->nodeAndRouteTested[localSearchList[0]->noeudU->idx] ||
-					!localSearchList[0]->noeudU->route->nodeAndRouteTested[localSearchList[0]->noeudU->idx] || localSearchList[0]->firstLoop)
+				localSearchList[scenario]->nodeV = localSearchList[scenario]->clients[1][localSearchList[0]->nodeU->moves[posV]];
+				if (!localSearchList[0]->nodeV->route->nodeAndRouteTested[localSearchList[0]->nodeU->idx] ||
+					!localSearchList[0]->nodeU->route->nodeAndRouteTested[localSearchList[0]->nodeU->idx] || localSearchList[0]->firstLoop)
 					{
 						for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
-							localSearchList[scenario]->noeudVPred = localSearchList[scenario]->noeudV->prev;
-							localSearchList[scenario]->y = localSearchList[scenario]->noeudV->next;
-							localSearchList[scenario]->noeudYSuiv = localSearchList[scenario]->y->next;
-							localSearchList[scenario]->ySuivCour = localSearchList[scenario]->y->next->idx;
-							localSearchList[scenario]->routeV = localSearchList[scenario]->noeudV->route;
-							localSearchList[scenario]->noeudVCour = localSearchList[scenario]->noeudV->idx;
-							localSearchList[scenario]->noeudVPredCour = localSearchList[scenario]->noeudVPred->idx;
-							localSearchList[scenario]->yCour = localSearchList[scenario]->y->idx;
+							localSearchList[scenario]->nodeVPrev = localSearchList[scenario]->nodeV->prev;
+							localSearchList[scenario]->y = localSearchList[scenario]->nodeV->next;
+							localSearchList[scenario]->nodeYNext = localSearchList[scenario]->y->next;
+							localSearchList[scenario]->idxYNext = localSearchList[scenario]->y->next->idx;
+							localSearchList[scenario]->routeV = localSearchList[scenario]->nodeV->route;
+							localSearchList[scenario]->idxNodeV = localSearchList[scenario]->nodeV->idx;
+							localSearchList[scenario]->idxNodeVPrev = localSearchList[scenario]->nodeVPrev->idx;
+							localSearchList[scenario]->idxY = localSearchList[scenario]->y->idx;
 						}
 						
 						if (!moveEffectue)
@@ -793,7 +793,7 @@ int Individual::mutationFirstDay() {
 						moveEffectue = mutation3_indiv();
 						
 						// mutations 4 and 6 (switch) are symetrical
-						if (localSearchList[0]->noeudU->idx <= localSearchList[0]->noeudV->idx) {
+						if (localSearchList[0]->nodeU->idx <= localSearchList[0]->nodeV->idx) {
 							if (!moveEffectue)
 							moveEffectue = mutation4_indiv();
 							if (!moveEffectue)
@@ -819,25 +819,25 @@ int Individual::mutationFirstDay() {
 					}
 			}
 			
-			if (localSearchList[0]->params->isCorrelated[localSearchList[0]->noeudU->idx][localSearchList[0]->depots[1][0]->idx] &&
+			if (localSearchList[0]->params->isCorrelated[localSearchList[0]->nodeU->idx][localSearchList[0]->depots[1][0]->idx] &&
 				!moveEffectue)
 				for (unsigned int route = 0; route < localSearchList[0]->depots[1].size(); route++)
 				{
 					for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
-						localSearchList[scenario]->noeudV = localSearchList[scenario]->depots[1][route];
+						localSearchList[scenario]->nodeV = localSearchList[scenario]->depots[1][route];
 					}
-					if (!localSearchList[0]->noeudV->route->nodeAndRouteTested[localSearchList[0]->noeudU->idx] ||
-						!localSearchList[0]->noeudU->route->nodeAndRouteTested[localSearchList[0]->noeudU->idx] || localSearchList[0]->firstLoop)
+					if (!localSearchList[0]->nodeV->route->nodeAndRouteTested[localSearchList[0]->nodeU->idx] ||
+						!localSearchList[0]->nodeU->route->nodeAndRouteTested[localSearchList[0]->nodeU->idx] || localSearchList[0]->firstLoop)
 					{
 						for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
-							localSearchList[scenario]->noeudVPred = localSearchList[scenario]->noeudV->prev;
-							localSearchList[scenario]->y = localSearchList[scenario]->noeudV->next;
-							localSearchList[scenario]->noeudYSuiv = localSearchList[scenario]->y->next;
-							localSearchList[scenario]->ySuivCour = localSearchList[scenario]->y->next->idx;
-							localSearchList[scenario]->routeV = localSearchList[scenario]->noeudV->route;
-							localSearchList[scenario]->noeudVCour = localSearchList[scenario]->noeudV->idx;
-							localSearchList[scenario]->noeudVPredCour = localSearchList[scenario]->noeudVPred->idx;
-							localSearchList[scenario]->yCour = localSearchList[scenario]->y->idx;
+							localSearchList[scenario]->nodeVPrev = localSearchList[scenario]->nodeV->prev;
+							localSearchList[scenario]->y = localSearchList[scenario]->nodeV->next;
+							localSearchList[scenario]->nodeYNext = localSearchList[scenario]->y->next;
+							localSearchList[scenario]->idxYNext = localSearchList[scenario]->y->next->idx;
+							localSearchList[scenario]->routeV = localSearchList[scenario]->nodeV->route;
+							localSearchList[scenario]->idxNodeV = localSearchList[scenario]->nodeV->idx;
+							localSearchList[scenario]->idxNodeVPrev = localSearchList[scenario]->nodeVPrev->idx;
+							localSearchList[scenario]->idxY = localSearchList[scenario]->y->idx;
 						}
 
 						if (!moveEffectue)
@@ -847,7 +847,7 @@ int Individual::mutationFirstDay() {
 						if (!moveEffectue)
 						moveEffectue = mutation3_indiv();
 
-						if (!localSearchList[0]->noeudV->next->isADepot)
+						if (!localSearchList[0]->nodeV->next->isADepot)
 						{
 						if (!moveEffectue)
 							moveEffectue = mutation8_indiv();
@@ -1061,235 +1061,235 @@ double Individual::distNearest(int n) {
 }
 
 bool Individual::mutation1_indiv() {
-	double costSuppU = params->timeCost[localSearchList[0]->noeudUPredCour][localSearchList[0]->xCour] 
-	- params->timeCost[localSearchList[0]->noeudUPredCour][localSearchList[0]->noeudUCour]  
-	- params->timeCost[localSearchList[0]->noeudUCour][localSearchList[0]->xCour];
+	double costSuppU = params->timeCost[localSearchList[0]->idxNodeUPrev][localSearchList[0]->idxX] 
+	- params->timeCost[localSearchList[0]->idxNodeUPrev][localSearchList[0]->idxNodeU]  
+	- params->timeCost[localSearchList[0]->idxNodeU][localSearchList[0]->idxX];
 
-	double costSuppV = params->timeCost[localSearchList[0]->noeudVCour][localSearchList[0]->noeudUCour] 
-	+ params->timeCost[localSearchList[0]->noeudUCour][localSearchList[0]->yCour] 
-	- params->timeCost[localSearchList[0]->noeudVCour][localSearchList[0]->yCour];
+	double costSuppV = params->timeCost[localSearchList[0]->idxNodeV][localSearchList[0]->idxNodeU] 
+	+ params->timeCost[localSearchList[0]->idxNodeU][localSearchList[0]->idxY] 
+	- params->timeCost[localSearchList[0]->idxNodeV][localSearchList[0]->idxY];
 
 	for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
 		if (localSearchList[scenario]->routeU != localSearchList[scenario]->routeV) {
-			costSuppU += (localSearchList[scenario]->routeU->excedentCharge(localSearchList[scenario]->routeU->load - localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->noeudUCour])*params->penalityCapa[scenario]
+			costSuppU += (localSearchList[scenario]->routeU->excedentCharge(localSearchList[scenario]->routeU->load - localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->idxNodeU])*params->penalityCapa[scenario]
 			- localSearchList[scenario]->routeU->excedentCharge(localSearchList[scenario]->routeU->load)*params->penalityCapa[scenario]) / (double)nbScenario ;
 
-			costSuppV += (localSearchList[scenario]->routeV->excedentCharge(localSearchList[scenario]->routeV->load + localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->noeudUCour])*params->penalityCapa[scenario]
+			costSuppV += (localSearchList[scenario]->routeV->excedentCharge(localSearchList[scenario]->routeV->load + localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->idxNodeU])*params->penalityCapa[scenario]
 			- localSearchList[scenario]->routeV->excedentCharge(localSearchList[scenario]->routeV->load)*params->penalityCapa[scenario]) / (double)nbScenario ;
 		}
 	}
 
 	if (costSuppU + costSuppV > -0.0001) return false;
-	if (localSearchList[0]->noeudUCour == localSearchList[0]->yCour) return false;
+	if (localSearchList[0]->idxNodeU == localSearchList[0]->idxY) return false;
 
 	// update nodes
 	for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
-		localSearchList[scenario]->insertNoeud(localSearchList[scenario]->noeudU,localSearchList[scenario]->noeudV);
+		localSearchList[scenario]->insertNode(localSearchList[scenario]->nodeU,localSearchList[scenario]->nodeV);
 	}
 
-	localSearchList[0]->rechercheTerminee = false;
+	localSearchList[0]->stopResearch = false;
 	return true;
 }
 
 bool Individual::mutation2_indiv() {
-	double costSuppU = params->timeCost[localSearchList[0]->noeudUPredCour][localSearchList[0]->xSuivCour] 
-	- params->timeCost[localSearchList[0]->noeudUPredCour][localSearchList[0]->noeudUCour] 
-	- params->timeCost[localSearchList[0]->noeudUCour][localSearchList[0]->xCour] 
-	- params->timeCost[localSearchList[0]->xCour][localSearchList[0]->xSuivCour];
+	double costSuppU = params->timeCost[localSearchList[0]->idxNodeUPrev][localSearchList[0]->idxXNext] 
+	- params->timeCost[localSearchList[0]->idxNodeUPrev][localSearchList[0]->idxNodeU] 
+	- params->timeCost[localSearchList[0]->idxNodeU][localSearchList[0]->idxX] 
+	- params->timeCost[localSearchList[0]->idxX][localSearchList[0]->idxXNext];
 
-	double costSuppV = params->timeCost[localSearchList[0]->noeudVCour][localSearchList[0]->noeudUCour] 
-	+ params->timeCost[localSearchList[0]->noeudUCour][localSearchList[0]->xCour] 
-	+ params->timeCost[localSearchList[0]->xCour][localSearchList[0]->yCour] 
-	- params->timeCost[localSearchList[0]->noeudVCour][localSearchList[0]->yCour];
+	double costSuppV = params->timeCost[localSearchList[0]->idxNodeV][localSearchList[0]->idxNodeU] 
+	+ params->timeCost[localSearchList[0]->idxNodeU][localSearchList[0]->idxX] 
+	+ params->timeCost[localSearchList[0]->idxX][localSearchList[0]->idxY] 
+	- params->timeCost[localSearchList[0]->idxNodeV][localSearchList[0]->idxY];
 
 	for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
 		if (localSearchList[scenario]->routeU != localSearchList[scenario]->routeV) {
-			costSuppU += (localSearchList[scenario]->routeU->excedentCharge(localSearchList[scenario]->routeU->load - localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->noeudUCour] - localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->xCour])*params->penalityCapa[scenario]
+			costSuppU += (localSearchList[scenario]->routeU->excedentCharge(localSearchList[scenario]->routeU->load - localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->idxNodeU] - localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->idxX])*params->penalityCapa[scenario]
 			- localSearchList[scenario]->routeU->excedentCharge(localSearchList[scenario]->routeU->load)*params->penalityCapa[scenario]) / (double) nbScenario;
 			
-			costSuppV += (localSearchList[scenario]->routeV->excedentCharge(localSearchList[scenario]->routeV->load + localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->noeudUCour] + localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->xCour])*params->penalityCapa[scenario]
+			costSuppV += (localSearchList[scenario]->routeV->excedentCharge(localSearchList[scenario]->routeV->load + localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->idxNodeU] + localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->idxX])*params->penalityCapa[scenario]
 			- localSearchList[scenario]->routeV->excedentCharge(localSearchList[scenario]->routeV->load)*params->penalityCapa[scenario]) / (double) nbScenario;
 		}
 	}
 
 	if ( costSuppU + costSuppV > -0.0001 ) { return false;}
-	if ( localSearchList[0]->noeudU == localSearchList[0]->y || localSearchList[0]->noeudV == localSearchList[0]->x || localSearchList[0]->x->isADepot ) { return false;}
+	if ( localSearchList[0]->nodeU == localSearchList[0]->y || localSearchList[0]->nodeV == localSearchList[0]->x || localSearchList[0]->x->isADepot ) { return false;}
 
 	// update nodes
 	for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
-		localSearchList[scenario]->insertNoeud(localSearchList[scenario]->noeudU,localSearchList[scenario]->noeudV);
-		localSearchList[scenario]->insertNoeud(localSearchList[scenario]->x,localSearchList[scenario]->noeudU);
+		localSearchList[scenario]->insertNode(localSearchList[scenario]->nodeU,localSearchList[scenario]->nodeV);
+		localSearchList[scenario]->insertNode(localSearchList[scenario]->x,localSearchList[scenario]->nodeU);
 	}
 
-	localSearchList[0]->rechercheTerminee = false ; 
+	localSearchList[0]->stopResearch = false ; 
 	return true;
 }
 
 bool Individual::mutation3_indiv() {
-	double costSuppU = params->timeCost[localSearchList[0]->noeudUPredCour][localSearchList[0]->xSuivCour] 
-	- params->timeCost[localSearchList[0]->noeudUPredCour][localSearchList[0]->noeudUCour] 
-	- params->timeCost[localSearchList[0]->noeudUCour][localSearchList[0]->xCour] 
-	- params->timeCost[localSearchList[0]->xCour][localSearchList[0]->xSuivCour];
+	double costSuppU = params->timeCost[localSearchList[0]->idxNodeUPrev][localSearchList[0]->idxXNext] 
+	- params->timeCost[localSearchList[0]->idxNodeUPrev][localSearchList[0]->idxNodeU] 
+	- params->timeCost[localSearchList[0]->idxNodeU][localSearchList[0]->idxX] 
+	- params->timeCost[localSearchList[0]->idxX][localSearchList[0]->idxXNext];
 
-	double costSuppV = params->timeCost[localSearchList[0]->noeudVCour][localSearchList[0]->xCour] 
-	+ params->timeCost[localSearchList[0]->xCour][localSearchList[0]->noeudUCour] 
-	+ params->timeCost[localSearchList[0]->noeudUCour][localSearchList[0]->yCour] 
-	- params->timeCost[localSearchList[0]->noeudVCour][localSearchList[0]->yCour];
+	double costSuppV = params->timeCost[localSearchList[0]->idxNodeV][localSearchList[0]->idxX] 
+	+ params->timeCost[localSearchList[0]->idxX][localSearchList[0]->idxNodeU] 
+	+ params->timeCost[localSearchList[0]->idxNodeU][localSearchList[0]->idxY] 
+	- params->timeCost[localSearchList[0]->idxNodeV][localSearchList[0]->idxY];
 
 	for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
 		if (localSearchList[scenario]->routeU != localSearchList[scenario]->routeV)
 		{
-		costSuppU += (localSearchList[scenario]->routeU->excedentCharge(localSearchList[scenario]->routeU->load - localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->noeudUCour] - localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->xCour])*params->penalityCapa[scenario]
+		costSuppU += (localSearchList[scenario]->routeU->excedentCharge(localSearchList[scenario]->routeU->load - localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->idxNodeU] - localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->idxX])*params->penalityCapa[scenario]
 		- localSearchList[scenario]->routeU->excedentCharge(localSearchList[scenario]->routeU->load)*params->penalityCapa[scenario]) / (double) nbScenario;
 		
-		costSuppV += (localSearchList[scenario]->routeV->excedentCharge(localSearchList[scenario]->routeV->load + localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->noeudUCour] + localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->xCour])*params->penalityCapa[scenario]
+		costSuppV += (localSearchList[scenario]->routeV->excedentCharge(localSearchList[scenario]->routeV->load + localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->idxNodeU] + localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->idxX])*params->penalityCapa[scenario]
 		- localSearchList[scenario]->routeV->excedentCharge(localSearchList[scenario]->routeV->load)*params->penalityCapa[scenario]) / (double) nbScenario;
 		}
 	}
 
 	if ( costSuppU + costSuppV > -0.0001 ) return false;
-	if (localSearchList[0]->noeudU == localSearchList[0]->y ||  localSearchList[0]->x == localSearchList[0]->noeudV || localSearchList[0]->x->isADepot ) return false;
+	if (localSearchList[0]->nodeU == localSearchList[0]->y ||  localSearchList[0]->x == localSearchList[0]->nodeV || localSearchList[0]->x->isADepot ) return false;
 
 	// mettre a jour les noeuds
 	for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
-		localSearchList[scenario]->insertNoeud(localSearchList[scenario]->x,localSearchList[scenario]->noeudV);
-		localSearchList[scenario]->insertNoeud(localSearchList[scenario]->noeudU,localSearchList[scenario]->x);
+		localSearchList[scenario]->insertNode(localSearchList[scenario]->x,localSearchList[scenario]->nodeV);
+		localSearchList[scenario]->insertNode(localSearchList[scenario]->nodeU,localSearchList[scenario]->x);
 	}
 
-	localSearchList[0]->rechercheTerminee = false ; 
+	localSearchList[0]->stopResearch = false ; 
 	return true;
 }
 
 bool Individual::mutation4_indiv() {
 	LocalSearch* local = localSearchList[0];
-	double costSuppU = params->timeCost[local->noeudUPredCour][local->noeudVCour] 
-	+ params->timeCost[local->noeudVCour][local->xCour]
-	- params->timeCost[local->noeudUPredCour][local->noeudUCour] 
-	- params->timeCost[local->noeudUCour][local->xCour];
+	double costSuppU = params->timeCost[local->idxNodeUPrev][local->idxNodeV] 
+	+ params->timeCost[local->idxNodeV][local->idxX]
+	- params->timeCost[local->idxNodeUPrev][local->idxNodeU] 
+	- params->timeCost[local->idxNodeU][local->idxX];
 
-	double costSuppV = params->timeCost[local->noeudVPredCour][local->noeudUCour] 
-	+ params->timeCost[local->noeudUCour][local->yCour]
-	- params->timeCost[local->noeudVPredCour][local->noeudVCour] 
-	- params->timeCost[local->noeudVCour][local->yCour];
+	double costSuppV = params->timeCost[local->idxNodeVPrev][local->idxNodeU] 
+	+ params->timeCost[local->idxNodeU][local->idxY]
+	- params->timeCost[local->idxNodeVPrev][local->idxNodeV] 
+	- params->timeCost[local->idxNodeV][local->idxY];
 
 	for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
 		if (localSearchList[scenario]->routeU != localSearchList[scenario]->routeV)
 		{
-		costSuppU += (localSearchList[scenario]->routeU->excedentCharge(localSearchList[scenario]->routeU->load + localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->noeudVCour] - localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->noeudUCour])*params->penalityCapa[scenario]
+		costSuppU += (localSearchList[scenario]->routeU->excedentCharge(localSearchList[scenario]->routeU->load + localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->idxNodeV] - localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->idxNodeU])*params->penalityCapa[scenario]
 		- localSearchList[scenario]->routeU->excedentCharge(localSearchList[scenario]->routeU->load)*params->penalityCapa[scenario]) / (double) nbScenario;
 		
-		costSuppV += (localSearchList[scenario]->routeV->excedentCharge(localSearchList[scenario]->routeV->load + localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->noeudUCour] - localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->noeudVCour])*params->penalityCapa[scenario]
+		costSuppV += (localSearchList[scenario]->routeV->excedentCharge(localSearchList[scenario]->routeV->load + localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->idxNodeU] - localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->idxNodeV])*params->penalityCapa[scenario]
 		- localSearchList[scenario]->routeV->excedentCharge(localSearchList[scenario]->routeV->load)*params->penalityCapa[scenario]) / (double) nbScenario;
 		}
 	}
 
 	if ( costSuppU + costSuppV > -0.0001 ) { return false;}
-	if ( local->noeudUCour == local->noeudVPredCour || local->noeudUCour == local->yCour) { return false;}
+	if ( local->idxNodeU == local->idxNodeVPrev || local->idxNodeU == local->idxY) { return false;}
 
 	// mettre a jour les noeuds
 	for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
-		localSearchList[scenario]->swapNoeud(localSearchList[scenario]->noeudU, localSearchList[scenario]->noeudV) ;
+		localSearchList[scenario]->swapNode(localSearchList[scenario]->nodeU, localSearchList[scenario]->nodeV) ;
 	}
 
-	localSearchList[0]->rechercheTerminee = false ; 
+	localSearchList[0]->stopResearch = false ; 
 	return true;
 }
 
 bool Individual::mutation5_indiv() {
 	LocalSearch* local = localSearchList[0];
-	double costSuppU = params->timeCost[local->noeudUPredCour][local->noeudVCour] 
-	+ params->timeCost[local->noeudVCour][local->xSuivCour]
-	- params->timeCost[local->noeudUPredCour][local->noeudUCour] 
-	- params->timeCost[local->noeudUCour][local->xCour] 
-	- params->timeCost[local->xCour][local->xSuivCour];
+	double costSuppU = params->timeCost[local->idxNodeUPrev][local->idxNodeV] 
+	+ params->timeCost[local->idxNodeV][local->idxXNext]
+	- params->timeCost[local->idxNodeUPrev][local->idxNodeU] 
+	- params->timeCost[local->idxNodeU][local->idxX] 
+	- params->timeCost[local->idxX][local->idxXNext];
 
-	double costSuppV = params->timeCost[local->noeudVPredCour][local->noeudUCour] 
-	+ params->timeCost[local->xCour][local->yCour]
-	+ params->timeCost[local->noeudUCour][local->xCour]
-	- params->timeCost[local->noeudVPred->idx][local->noeudVCour] 
-	- params->timeCost[local->noeudVCour][local->yCour];
+	double costSuppV = params->timeCost[local->idxNodeVPrev][local->idxNodeU] 
+	+ params->timeCost[local->idxX][local->idxY]
+	+ params->timeCost[local->idxNodeU][local->idxX]
+	- params->timeCost[local->nodeVPrev->idx][local->idxNodeV] 
+	- params->timeCost[local->idxNodeV][local->idxY];
 
 	for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
 		if (localSearchList[scenario]->routeU != localSearchList[scenario]->routeV)
 		{
-		costSuppU += (localSearchList[scenario]->routeU->excedentCharge(localSearchList[scenario]->routeU->load + localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->noeudVCour] - localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->noeudUCour] - localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->xCour])*params->penalityCapa[scenario]
+		costSuppU += (localSearchList[scenario]->routeU->excedentCharge(localSearchList[scenario]->routeU->load + localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->idxNodeV] - localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->idxNodeU] - localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->idxX])*params->penalityCapa[scenario]
 		- localSearchList[scenario]->routeU->excedentCharge(localSearchList[scenario]->routeU->load)*params->penalityCapa[scenario]) / (double) nbScenario;
 
-		costSuppV += (localSearchList[scenario]->routeV->excedentCharge(localSearchList[scenario]->routeV->load + localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->noeudUCour] + localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->xCour] - localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->noeudVCour])*params->penalityCapa[scenario]
+		costSuppV += (localSearchList[scenario]->routeV->excedentCharge(localSearchList[scenario]->routeV->load + localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->idxNodeU] + localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->idxX] - localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->idxNodeV])*params->penalityCapa[scenario]
 		- localSearchList[scenario]->routeV->excedentCharge(localSearchList[scenario]->routeV->load)*params->penalityCapa[scenario]) / (double) nbScenario;
 		}
 	}
 
 	if ( costSuppU + costSuppV > -0.0001 ) { return false;}
-	if ( local->noeudU == local->noeudVPred || local->x == local->noeudVPred || local->noeudU == local->y || local->x->isADepot ) { return false;}
+	if ( local->nodeU == local->nodeVPrev || local->x == local->nodeVPrev || local->nodeU == local->y || local->x->isADepot ) { return false;}
 
 	// mettre a jour les noeuds
 	for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
-		localSearchList[scenario]->swapNoeud(localSearchList[scenario]->noeudU, localSearchList[scenario]->noeudV) ;
-		localSearchList[scenario]->insertNoeud(localSearchList[scenario]->x, localSearchList[scenario]->noeudU);
+		localSearchList[scenario]->swapNode(localSearchList[scenario]->nodeU, localSearchList[scenario]->nodeV) ;
+		localSearchList[scenario]->insertNode(localSearchList[scenario]->x, localSearchList[scenario]->nodeU);
 	}
-	local->rechercheTerminee = false ; 
+	local->stopResearch = false ; 
 	return true;
 }
 
 bool Individual::mutation6_indiv() {
 	LocalSearch* local = localSearchList[0];
-	double costSuppU = params->timeCost[local->noeudUPredCour][local->noeudVCour]  
-	+ params->timeCost[local->noeudVCour][local->yCour]
-	+ params->timeCost[local->yCour][local->xSuivCour]
-	- params->timeCost[local->noeudUPredCour][local->noeudUCour] 
-	- params->timeCost[local->noeudUCour][local->xCour] 
-	- params->timeCost[local->xCour][local->xSuivCour];
+	double costSuppU = params->timeCost[local->idxNodeUPrev][local->idxNodeV]  
+	+ params->timeCost[local->idxNodeV][local->idxY]
+	+ params->timeCost[local->idxY][local->idxXNext]
+	- params->timeCost[local->idxNodeUPrev][local->idxNodeU] 
+	- params->timeCost[local->idxNodeU][local->idxX] 
+	- params->timeCost[local->idxX][local->idxXNext];
 
-	double costSuppV = params->timeCost[local->noeudVPredCour][local->noeudUCour] 
-	+ params->timeCost[local->noeudUCour][local->xCour]
-	+ params->timeCost[local->xCour][local->ySuivCour]
-	- params->timeCost[local->noeudVPredCour][local->noeudVCour] 
-	- params->timeCost[local->noeudVCour][local->yCour]
-	- params->timeCost[local->yCour][local->ySuivCour];
+	double costSuppV = params->timeCost[local->idxNodeVPrev][local->idxNodeU] 
+	+ params->timeCost[local->idxNodeU][local->idxX]
+	+ params->timeCost[local->idxX][local->idxYNext]
+	- params->timeCost[local->idxNodeVPrev][local->idxNodeV] 
+	- params->timeCost[local->idxNodeV][local->idxY]
+	- params->timeCost[local->idxY][local->idxYNext];
 	
 	for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
 		if (localSearchList[scenario]->routeU != localSearchList[scenario]->routeV)
 		{
-		costSuppU += (localSearchList[scenario]->routeU->excedentCharge(localSearchList[scenario]->routeU->load + localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->noeudVCour] + localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->yCour] - localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->noeudUCour] - localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->xCour])*params->penalityCapa[scenario]
+		costSuppU += (localSearchList[scenario]->routeU->excedentCharge(localSearchList[scenario]->routeU->load + localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->idxNodeV] + localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->idxY] - localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->idxNodeU] - localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->idxX])*params->penalityCapa[scenario]
 		- localSearchList[scenario]->routeU->excedentCharge(localSearchList[scenario]->routeU->load)*params->penalityCapa[scenario]) / (double) nbScenario;
 		
-		costSuppV += (localSearchList[scenario]->routeV->excedentCharge(localSearchList[scenario]->routeV->load + localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->noeudUCour] + localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->xCour] - localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->noeudVCour] - localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->yCour])*params->penalityCapa[scenario]
+		costSuppV += (localSearchList[scenario]->routeV->excedentCharge(localSearchList[scenario]->routeV->load + localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->idxNodeU] + localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->idxX] - localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->idxNodeV] - localSearchList[scenario]->deliveryPerDay[1][localSearchList[scenario]->idxY])*params->penalityCapa[scenario]
 		- localSearchList[scenario]->routeV->excedentCharge(localSearchList[scenario]->routeV->load)*params->penalityCapa[scenario]) / (double) nbScenario;
 		}
 	}
 
 	if ( costSuppU + costSuppV > -0.0001 ) { return false;}
-	if ( local->x->isADepot || local->y->isADepot || local->y == local->noeudUPred || local->noeudU == local->y || local->x == local->noeudV || local->noeudV == local->noeudXSuiv ) { return false;}
+	if ( local->x->isADepot || local->y->isADepot || local->y == local->nodeUPrev || local->nodeU == local->y || local->x == local->nodeV || local->nodeV == local->nodeXNext ) { return false;}
 
 	// mettre a jour les noeuds
 	for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
-		localSearchList[scenario]->swapNoeud(localSearchList[scenario]->noeudU, localSearchList[scenario]->noeudV) ;
-		localSearchList[scenario]->swapNoeud(localSearchList[scenario]->x,localSearchList[scenario]->y) ;
+		localSearchList[scenario]->swapNode(localSearchList[scenario]->nodeU, localSearchList[scenario]->nodeV) ;
+		localSearchList[scenario]->swapNode(localSearchList[scenario]->x,localSearchList[scenario]->y) ;
 	}
 
-	local->rechercheTerminee = false ; 
+	local->stopResearch = false ; 
 	return true;
 	
 }
 
 bool Individual::mutation7_indiv() {
 	LocalSearch* local = localSearchList[0];
-	if  ((local->routeU->idx != local->routeV->idx) || local->noeudU->next == local->noeudV || local->noeudU->place > local->noeudV->place ) {  return false; }
+	if  ((local->routeU->idx != local->routeV->idx) || local->nodeU->next == local->nodeV || local->nodeU->place > local->nodeV->place ) {  return false; }
 	
-	double cost = params->timeCost[local->noeudUCour][local->noeudVCour] + params->timeCost[local->xCour][local->yCour]
-	- params->timeCost[local->noeudUCour][local->xCour] - params->timeCost[local->noeudVCour][local->yCour] ;
+	double cost = params->timeCost[local->idxNodeU][local->idxNodeV] + params->timeCost[local->idxX][local->idxY]
+	- params->timeCost[local->idxNodeU][local->idxX] - params->timeCost[local->idxNodeV][local->idxY] ;
 	
 	if ( cost > -0.0001 ) { return false;}
 	
 	// mettre a jour les noeuds
 	for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
-		Node * nodeNum = localSearchList[scenario]->noeudXSuiv ;
+		Node * nodeNum = localSearchList[scenario]->nodeXNext ;
 		Node * temp ;
 		localSearchList[scenario]->x->prev = nodeNum ;
 		localSearchList[scenario]->x->next = localSearchList[scenario]->y ;
 
-		while ( nodeNum != localSearchList[scenario]->noeudV )
+		while ( nodeNum != localSearchList[scenario]->nodeV )
 		{
 			temp = nodeNum->next ;
 			nodeNum->next = nodeNum->prev ;
@@ -1297,16 +1297,16 @@ bool Individual::mutation7_indiv() {
 			nodeNum = temp ;
 		}
 
-		localSearchList[scenario]->noeudV->next = localSearchList[scenario]->noeudV->prev ;
-		localSearchList[scenario]->noeudV->prev = localSearchList[scenario]->noeudU ;
-		localSearchList[scenario]->noeudU->next = localSearchList[scenario]->noeudV ;
+		localSearchList[scenario]->nodeV->next = localSearchList[scenario]->nodeV->prev ;
+		localSearchList[scenario]->nodeV->prev = localSearchList[scenario]->nodeU ;
+		localSearchList[scenario]->nodeU->next = localSearchList[scenario]->nodeV ;
 		localSearchList[scenario]->y->prev = localSearchList[scenario]->x ;
 
 		// et mettre a jour les routes
 		localSearchList[scenario]->routeU->updateRouteData();
 	}
 
-	local->rechercheTerminee = false ; 
+	local->stopResearch = false ; 
 	return true;
 	
 }
@@ -1318,14 +1318,14 @@ bool Individual::mutation8_indiv() {
 
 	for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
 		LocalSearch* localTemp = localSearchList[scenario];
-		double chargeResteU = localTemp->routeU->load - localTemp->noeudU->previousLoad ;
-		double chargeResteV = localTemp->routeV->load - localTemp->noeudV->previousLoad ;
+		double chargeResteU = localTemp->routeU->load - localTemp->nodeU->previousLoad ;
+		double chargeResteV = localTemp->routeV->load - localTemp->nodeV->previousLoad ;
 
-		cost += (params->timeCost[localTemp->noeudUCour][localTemp->noeudVCour] 
-		+ params->timeCost[localTemp->xCour][localTemp->yCour]
-		- params->timeCost[localTemp->noeudUCour][localTemp->xCour] 
-		- params->timeCost[localTemp->noeudVCour][localTemp->yCour]
-		+ localTemp->routeU->excedentCharge(localTemp->noeudU->previousLoad + localTemp->noeudV->previousLoad)*params->penalityCapa[scenario]
+		cost += (params->timeCost[localTemp->idxNodeU][localTemp->idxNodeV] 
+		+ params->timeCost[localTemp->idxX][localTemp->idxY]
+		- params->timeCost[localTemp->idxNodeU][localTemp->idxX] 
+		- params->timeCost[localTemp->idxNodeV][localTemp->idxY]
+		+ localTemp->routeU->excedentCharge(localTemp->nodeU->previousLoad + localTemp->nodeV->previousLoad)*params->penalityCapa[scenario]
 		+ localTemp->routeV->excedentCharge(chargeResteV + chargeResteU)*params->penalityCapa[scenario]
 		- localTemp->routeU->excedentCharge(localTemp->routeU->load)*params->penalityCapa[scenario]
 		- localTemp->routeV->excedentCharge(localTemp->routeV->load)*params->penalityCapa[scenario]) / (double) nbScenario;
@@ -1345,7 +1345,7 @@ bool Individual::mutation8_indiv() {
 		// on inverse le sens et on change le nom des routes
 		Node * temp ;
 		Node * xx = localTemp->x ;
-		Node * vv = localTemp->noeudV ;
+		Node * vv = localTemp->nodeV ;
 
 		while ( !xx->isADepot )
 		{
@@ -1366,8 +1366,8 @@ bool Individual::mutation8_indiv() {
 		}
 
 		// mettre a jour les noeuds
-		localTemp->noeudU->next = localTemp->noeudV ;
-		localTemp->noeudV->prev = localTemp->noeudU ;
+		localTemp->nodeU->next = localTemp->nodeV ;
+		localTemp->nodeV->prev = localTemp->nodeU ;
 		localTemp->x->next = localTemp->y ;
 		localTemp->y->prev = localTemp->x ;
 
@@ -1380,13 +1380,13 @@ bool Individual::mutation8_indiv() {
 			depotV->next = localTemp->y ;
 			localTemp->y->prev = depotV ;
 		}
-		else if ( localTemp->noeudV->isADepot )
+		else if ( localTemp->nodeV->isADepot )
 		{
 			depotV->next = depotUFin->prev ;
 			depotV->next->prev = depotV ;
 			depotV->prev = depotVFin ;
-			depotUFin->prev = localTemp->noeudU ;
-			localTemp->noeudU->next = depotUFin ;
+			depotUFin->prev = localTemp->nodeU ;
+			localTemp->nodeU->next = depotUFin ;
 		}
 		else
 		{
@@ -1401,7 +1401,7 @@ bool Individual::mutation8_indiv() {
 		localTemp->routeV->updateRouteData();
 	}
 
-	local->rechercheTerminee = false ; 
+	local->stopResearch = false ; 
 	return true;
 	
 }
@@ -1413,15 +1413,15 @@ bool Individual::mutation9_indiv() {
 	double cost = 0.0;
 	for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
 		LocalSearch* localTemp = localSearchList[scenario];
-		double chargeResteU = localTemp->routeU->load - localTemp->noeudU->previousLoad ;
-		double chargeResteV = localTemp->routeV->load - localTemp->noeudV->previousLoad ;
+		double chargeResteU = localTemp->routeU->load - localTemp->nodeU->previousLoad ;
+		double chargeResteV = localTemp->routeV->load - localTemp->nodeV->previousLoad ;
 
-		cost += (params->timeCost[localTemp->noeudUCour][localTemp->yCour] 
-		+ params->timeCost[localTemp->noeudVCour][localTemp->xCour]
-		- params->timeCost[localTemp->noeudUCour][localTemp->xCour] 
-		- params->timeCost[localTemp->noeudVCour][localTemp->yCour]
-		+ (localTemp->routeU->excedentCharge(localTemp->noeudU->previousLoad + chargeResteV)
-		+ localTemp->routeV->excedentCharge(localTemp->noeudV->previousLoad + chargeResteU)
+		cost += (params->timeCost[localTemp->idxNodeU][localTemp->idxY] 
+		+ params->timeCost[localTemp->idxNodeV][localTemp->idxX]
+		- params->timeCost[localTemp->idxNodeU][localTemp->idxX] 
+		- params->timeCost[localTemp->idxNodeV][localTemp->idxY]
+		+ (localTemp->routeU->excedentCharge(localTemp->nodeU->previousLoad + chargeResteV)
+		+ localTemp->routeV->excedentCharge(localTemp->nodeV->previousLoad + chargeResteU)
 		- localTemp->routeU->excedentCharge(localTemp->routeU->load)
 		- localTemp->routeV->excedentCharge(localTemp->routeV->load))*params->penalityCapa[scenario]) / (double) nbScenario;
 	}
@@ -1453,18 +1453,18 @@ bool Individual::mutation9_indiv() {
 		}
 
 		// mettre a jour les noeuds
-		localTemp->noeudU->next = localTemp->y ;
-		localTemp->y->prev = localTemp->noeudU ;
-		localTemp->noeudV->next = localTemp->x ;
-		localTemp->x->prev = localTemp->noeudV ;
+		localTemp->nodeU->next = localTemp->y ;
+		localTemp->y->prev = localTemp->nodeU ;
+		localTemp->nodeV->next = localTemp->x ;
+		localTemp->x->prev = localTemp->nodeV ;
 
 		// mettre � jour les extr�mit�s
 		if (localTemp->x->isADepot)
 		{
 			depotUFin->prev = depotVFin->prev ;
 			depotUFin->prev->next = depotUFin ;
-			localTemp->noeudV->next = depotVFin ;
-			depotVFin->prev = localTemp->noeudV ;
+			localTemp->nodeV->next = depotVFin ;
+			depotVFin->prev = localTemp->nodeV ;
 		}
 		else
 		{
@@ -1478,6 +1478,6 @@ bool Individual::mutation9_indiv() {
 		localTemp->routeV->updateRouteData();
 	}
 
-	local->rechercheTerminee = false ;
+	local->stopResearch = false ;
 	return true;
 }

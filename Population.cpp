@@ -321,7 +321,7 @@ void Population::ExportPop(string nomFichier,bool add, std::vector<double> deliv
 		if (params->jVal == 1) myfile << "---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------" << endl;
 		myfile << "Day "<< params->jVal << endl;
 		myfile << endl;
-		loc->printInventoryLevels(myfile,false, deliveries, totalCost);
+		loc->printInventoryLevels(myfile, deliveries, totalCost);
 		// export cost
 		myfile << "Total cost: " << totalCost << endl;
 
