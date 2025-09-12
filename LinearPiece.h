@@ -17,18 +17,15 @@ constexpr double EPSILON = 1e-5;
 
 inline bool le(const double &x, const double &y) { return x <= y + EPSILON; } // less than or equal to
 
-inline bool lt(const double &x, const double &y) { return x + EPSILON < y; } //less than
+inline bool lt(const double &x, const double &y) { return x + EPSILON < y; } // less than
 
-inline bool eq(const double &x, const double &y) //equal
-{
-    return fabs(x - y) < EPSILON;
-}
+inline bool eq(const double &x, const double &y) { return fabs(x - y) < EPSILON; } // equal
 
 inline bool neq(const double &x, const double &y) { return !eq(x, y); } // not equal
 
 inline bool gt(const double &x, const double &y) { return lt(y, x); } // greater than
 
-inline bool ge(const double &x, const double &y) { return le(y, x); }
+inline bool ge(const double &x, const double &y) { return le(y, x); } // greater than or equal to
 
 class Params;
 
@@ -56,39 +53,57 @@ class LinearPiece
 {
 
 public:
-    double slope=0;
-    shared_ptr<Point> p1;
-    shared_ptr<Point> p2;
+    double slope = 0.;
+    shared_ptr<Point> p1;   // starting point of linear piece
+    shared_ptr<Point> p2;   // end point of linear piece
+    
+    shared_ptr<LinearPiece> fromC_pre;      // original C function used to get that linear piece
+    shared_ptr<LinearPiece> fromC;  // translated and modified C function to get that linear piece
+    shared_ptr<LinearPiece> fromF;      // F function used to get that linear piece
+    shared_ptr<Insertion> fromInst;     // insertion used to get that linear piece
 
-    shared_ptr<LinearPiece> next;
-    shared_ptr<LinearPiece> fromC_pre;
-    shared_ptr<LinearPiece> fromC;
-    shared_ptr<LinearPiece> fromF;
-    shared_ptr<Insertion> fromInst;
-    double replenishment_loss;
+    // specify is this linear piece comes from a stockout
+    bool stockout;
 
+    // constructors
     LinearPiece();
-
-    LinearPiece(double left_x, double left_y, double right_x, double right_y);
-    void updateLinearPiece(double left_x, double left_y, double right_x, double right_y);
-    void print();
     LinearPiece(LinearPiece *lp);
-    std::shared_ptr<LinearPiece> getInpiece(double start, double end) const;
-   
-    double cost(double x);
+    LinearPiece(double left_x, double left_y, double right_x, double right_y);
 
-    std::shared_ptr<LinearPiece> getInBound(double lb, double ub);
-
-    bool eqlp(const shared_ptr<LinearPiece> rhs);
-    bool eqFromC(const shared_ptr<LinearPiece> rhs);
-    bool eqFromCpre(const shared_ptr<LinearPiece> rhs);
-    bool eqFromF(const shared_ptr<LinearPiece> rhs);
-
-    bool eqDeep(const shared_ptr<LinearPiece> rhs);
-
-    std::shared_ptr<LinearPiece> clone();
+    // update the slope if values changed
+    void updateSlope();
+    
+    // update linear piece with new values (also update the slope)
     void update(double left_x, double left_y, double right_x, double right_y);
+    
+    // return value of linear piece applied on x
+    double cost(double x);
+    
+    // get linear piece in [lb, ub]
+    std::shared_ptr<LinearPiece> getInBound(double lb, double ub) const;
+    
+    // check equality of linear pieces (without fromC, fromCPre and fromF)
+    bool eqlp(const shared_ptr<LinearPiece> rhs);
 
+    // check equality of fromC
+    bool eqFromC(const shared_ptr<LinearPiece> rhs);
+
+    // check equality of fromCPre
+    bool eqFromCpre(const shared_ptr<LinearPiece> rhs);
+
+    // check equality of fromF
+    bool eqFromF(const shared_ptr<LinearPiece> rhs);
+    
+    // check equality of linear pieces (with fromC, fromCPre and fromF)
+    bool eqDeep(const shared_ptr<LinearPiece> rhs);
+    
+    // copy the linear piece
+    std::shared_ptr<LinearPiece> clone();
+    
+    // display linear piece
+    void print();
+
+    // destructor
     ~LinearPiece();
 };
 
