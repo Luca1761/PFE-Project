@@ -109,7 +109,7 @@ bool LinearPiece::eqFromF(const shared_ptr<LinearPiece> rhs) {
 }
 
 bool LinearPiece::eqDeep(const shared_ptr<LinearPiece> rhs) {
-    return eqlp(rhs) && eqFromC(rhs) && eqFromF(rhs);
+    return eqlp(rhs) && eqFromC(rhs) && eqFromF(rhs) && stockout == rhs->stockout;
 }
 
 std::shared_ptr<LinearPiece> LinearPiece::clone() {

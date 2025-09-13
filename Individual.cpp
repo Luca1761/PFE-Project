@@ -921,7 +921,7 @@ void Individual::backwardDPSingleClient(unsigned int client, bool &stopResearch)
 	// convert DP results
 	double objective = 0.0;
 	for (unsigned int scenario = 0; scenario < nbScenario; scenario++){
-		objective += lotsizingSolver->objective[scenario];
+		objective += lotsizingSolver->cost[scenario];
 	}
 	objective /= (double)nbScenario;
 	
@@ -956,7 +956,7 @@ void Individual::backwardDPSingleClient(unsigned int client, bool &stopResearch)
 		}
 
 		double realCost = localSearchList[scenario]->evaluateCurrentClientCost(client);
-		double expectedCost = lotsizingSolver->objective[scenario];
+		double expectedCost = lotsizingSolver->cost[scenario];
 		if (fabs(realCost - expectedCost) > 0.001) { // we check if backtracked solution has the good cost
 			std::cout << "The solution doesn't give the expected cost for scenario " << scenario << std::endl;
 			std::cout << "Cost: " << realCost << "; Expected cost: " << expectedCost << std::endl;

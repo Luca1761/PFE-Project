@@ -51,6 +51,8 @@ Node* placeInsertion;
 // possible moves
 vector<unsigned int> moves;
 
+void removeDominatedInsertions (double penalityCapa);
+
 // default constructor	
 Node(void);
 

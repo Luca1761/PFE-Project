@@ -306,6 +306,8 @@ void LocalSearch::computeInsertionCost(Node *client) {
     client->allInsertions.push_back(myRoute->bestInsertion[client->idx]);
   }
   std::sort(client->allInsertions.begin(), client->allInsertions.end(), mySort);
+  if (client->day > 1 || params->nbScenarios == 1) // if scenarios, insertions must be the same on day 1
+    client->removeDominatedInsertions(params->penalityCapa[idxScenario]);
 }
 
 double LocalSearch::evaluateCurrentClientCost(unsigned int client) {
