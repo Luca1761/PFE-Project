@@ -5,83 +5,79 @@
 #include "PLFunction.h"
 #include <cmath>
 #include <cassert>
+
 PLFunction::PLFunction(Params *_params) : params(_params) {
     nbPieces = 0;
     pieces = vector<shared_ptr<LinearPiece>>();
-    minimalPiece = nullptr;
 }
 
 PLFunction::PLFunction(PLFunction *plf) : params(plf->params) {
     nbPieces = plf->nbPieces;
     pieces = plf->pieces;
-    minimalPiece = plf->minimalPiece;
 }
 
 void PLFunction::clear() {
     nbPieces = 0;
     pieces.clear();
-    minimalPiece = nullptr;
 }
 
-PLFunction::PLFunction(Params *_params, Insertion insertion, unsigned int client, unsigned int idxScenario) : params(_params){
-    double maxDeliverable = (params->endDayInventories) ? params->cli[client].maxInventory + params->cli[client].dailyDemand[idxScenario][1] : params->cli[client].maxInventory;
+PLFunction::PLFunction(Params *_params, Insertion insertion, Client client, unsigned int idxScenario) : params(_params){
+    double maxInventory = (params->endDayInventories) ? client.maxInventory + client.dailyDemand[idxScenario][1] 
+                                                      : client.maxInventory;
     nbPieces = 0;
     pieces = vector<shared_ptr<LinearPiece>>();
-    minimalPiece = nullptr;
-    double lim = std::min(insertion.load, maxDeliverable);
-    double cost1 = insertion.detour - params->inventoryCostSupplier * (double)(params->nbDays) * lim;
-    shared_ptr<LinearPiece> tmp(make_shared<LinearPiece>(0, insertion.detour, lim, cost1));
+    double lim = std::min(insertion.load, maxInventory);
+    double costNoPenality = insertion.detour - params->inventoryCostSupplier * (double)(params->nbDays) * lim;
+    shared_ptr<LinearPiece> tmp(make_shared<LinearPiece>(0, insertion.detour, lim, costNoPenality));
     tmp->fromInst = make_shared<Insertion>(insertion.detour, insertion.load, insertion.place);
     append(tmp);
-    if (insertion.load < maxDeliverable) {
-        double cost = insertion.detour + params->penalityCapa[idxScenario] * std::max(0.0, maxDeliverable - insertion.load) - params->inventoryCostSupplier * (double)(params->nbDays) * (maxDeliverable);
-        shared_ptr<LinearPiece> tmp2(make_shared<LinearPiece>(insertion.load, cost1, maxDeliverable, cost));
+    if (insertion.load < maxInventory) {
+        double costPenality = insertion.detour 
+                            + params->penalityCapa[idxScenario] * std::max(0.0, maxInventory - insertion.load) 
+                            - params->inventoryCostSupplier * (double)(params->nbDays) * (maxInventory);
+
+        shared_ptr<LinearPiece> tmp2(make_shared<LinearPiece>(insertion.load, costNoPenality, maxInventory, costPenality));
         tmp2->fromInst = make_shared<Insertion>(insertion.detour, insertion.load, insertion.place);
         append(tmp2);
     }
 }
 
 
-PLFunction::PLFunction(Params *_params, vector<Insertion> insertions, unsigned int day, unsigned int client, unsigned int idxScenario) : params(_params)
-{
-    if (insertions.size() == 0)
-    {
-        throw std::string(
-            "ERROR: can not initialize a PL function with zero element in "
-            "insertions!!!");
+PLFunction::PLFunction(Params *_params, vector<Insertion> insertions, unsigned int day, Client client, unsigned int idxScenario) : params(_params) {
+    if (insertions.empty()) {
+        std::cout << "Cannot initialize a PL function with zero element in insertions!!!" << std::endl;
+        throw std::string("Cannot initialize a PL function with zero element in insertions");
     }
-    nbPieces = 0;
-    pieces = vector<shared_ptr<LinearPiece>>();
-    minimalPiece = nullptr;
 
-    std::vector<Insertion>::iterator index = insertions.begin();
+    clear();
 
     double pre_x = 0;
     double pre_y, x, y, pre_load, pre_detour;
     Node *pre_place = nullptr;
-
+    
     // loop through all pieces
+    std::vector<Insertion>::iterator index = insertions.begin();
     while (index != insertions.end()) {
         if (index->detour < -1) {
-            std::cout << index->detour << std::endl;
-            throw std::string("Negative detour??");
+            std::cout << "Negative detour - Triangular inequality?" << std::endl;
+            throw std::string("Negative detour - Triangular inequality?");
         }
         if (index == insertions.begin()) {
             pre_x = 0;
-            pre_y = calculateGFunction(day, index->detour, pre_x,  pre_x, idxScenario);
+            pre_y = calculateF(day, index->detour, pre_x,  pre_x, idxScenario);
             x = index->load;
-            y = calculateGFunction(day, index->detour, x, index->load, idxScenario); //x,load: demand loadfree
+            y = calculateF(day, index->detour, x, index->load, idxScenario);
         } else {
-            double current_cost = calculateGFunction(day, index->detour, index->load, index->load, idxScenario);
+            double current_cost = calculateF(day, index->detour, index->load, index->load, idxScenario);
             std::vector<Insertion>::iterator pre_index = index - 1;
-            double pre_insertion_cost_with_current_demand = calculateGFunction(day, pre_index->detour, index->load, pre_index->load, idxScenario);
+            double pre_insertion_cost_with_current_demand = calculateF(day, pre_index->detour, index->load, pre_index->load, idxScenario);
 
             bool is_dominated_vehicle = (index->load <= pre_load) || (pre_insertion_cost_with_current_demand <= current_cost);
 
-            if (!is_dominated_vehicle) {    // make piecey
+            if (!is_dominated_vehicle) {    // make piece
                 x = pre_load + (index->detour - pre_detour) / params->penalityCapa[idxScenario];
 
-                y = calculateGFunction(day, pre_detour, x, pre_load, idxScenario);
+                y = calculateF(day, pre_detour, x, pre_load, idxScenario);
 
                 shared_ptr<LinearPiece> tmp(make_shared<LinearPiece>(pre_x, pre_y, x, y));
                 tmp->fromInst = make_shared<Insertion>(pre_index->detour, pre_index->load, pre_index->place);
@@ -95,8 +91,8 @@ PLFunction::PLFunction(Params *_params, vector<Insertion> insertions, unsigned i
             y = current_cost;
         }
 
-        // make piecey
-        pre_y = calculateGFunction(day, index->detour, pre_x, index->load, idxScenario);
+        // make piece
+        pre_y = calculateF(day, index->detour, pre_x, index->load, idxScenario);
         shared_ptr<LinearPiece> tmp(make_shared<LinearPiece>(pre_x, pre_y, x, y));
         tmp->fromInst = make_shared<Insertion>(index->detour, index->load, index->place);
 
@@ -111,91 +107,20 @@ PLFunction::PLFunction(Params *_params, vector<Insertion> insertions, unsigned i
     }
 
     // the last piece
-    x =  (params->endDayInventories) ? params->cli[client].maxInventory + params->cli[client].dailyDemand[idxScenario][day + 1] : params->cli[client].maxInventory;
+    x =  (params->endDayInventories) ? client.maxInventory + client.dailyDemand[idxScenario][day + 1] : client.maxInventory;
     if (x - pre_x <= 0.01 ) {
         return;
     }
 
-    y = calculateGFunction(day, pre_detour, x, pre_load, idxScenario);
-    // make piecey
+    y = calculateF(day, pre_detour, x, pre_load, idxScenario);
+
+    // make last piece
     shared_ptr<LinearPiece> tmp(make_shared<LinearPiece>(pre_x, pre_y, x, y));
     tmp->fromInst = make_shared<Insertion>(pre_detour, pre_load, pre_place);
     append(tmp);
-        
-    
-}
-
-PLFunction::PLFunction(Params *_params, vector<shared_ptr<LinearPiece>> _pieces) : params(_params)
-{
-    nbPieces = 0;
-    pieces = vector<shared_ptr<LinearPiece>>();
-
-    for (auto & piece : _pieces) {
-        append(piece);
-    }
-}
-
-double PLFunction::cost(double x)
-{
-    if (eq(x, 0)) return 0;
-
-    shared_ptr<LinearPiece> piece = getPiece(x);
-
-    if (piece == nullptr)
-    {
-        throw std::string(
-            "ERROR: can not find a piece that fit the value of x !!!");
-    }
-
-    return piece->cost(x);
-}
-
-shared_ptr<LinearPiece> PLFunction::getPiece(double x) {
-    if (nbPieces == 0) {
-        std::cout << "No pieces to search" << std::endl;
-        throw std::string("Can't find a piece");
-        return nullptr;
-    }
-    if (gt(x, pieces[nbPieces - 1]->p2->x)) return nullptr;
-
-    shared_ptr<LinearPiece> fitPiece;
-    // binary search to get right piece
-    unsigned int first = 0;
-    unsigned int last = nbPieces - 1;
-    unsigned int middle = (first + last) / 2;
-    while (first <= last)
-    {
-        if (lt(pieces[middle]->p2->x, x))
-        {
-            if ((middle == nbPieces - 1) || lt(x, pieces[middle + 1]->p2->x))
-            {
-                fitPiece = pieces[middle + 1];
-                break;
-            }
-            first = middle + 1;
-        }
-        else if (lt(x, pieces[middle]->p2->x))
-        {
-            if ((middle == 0) || gt(x, pieces[middle - 1]->p2->x))
-            {
-                fitPiece = pieces[middle];
-                break;
-            }
-            last = middle;
-        }
-        else
-        {
-            fitPiece = pieces[middle];
-            break;
-        }
-
-        middle = (first + last) / 2;
-    }
-    return fitPiece;
 }
 
 std::shared_ptr<LinearPiece> PLFunction::getMinimalPiece(double &minAt, double &minValue){
-//client, I[day], objective
     if (nbPieces == 0) return nullptr;
     shared_ptr<LinearPiece> minPiece = pieces[0];
     minValue = pieces[0]->p1->y;
@@ -207,15 +132,13 @@ std::shared_ptr<LinearPiece> PLFunction::getMinimalPiece(double &minAt, double &
     }
     
     for (auto& piece : pieces) {
-        if (gt(minValue, piece->p2->y)){
-            
+        if (gt(minValue, piece->p2->y)){ 
             minPiece = piece;
             
             minValue = piece->p2->y;
             minAt = piece->p2->x;
         }
         if (gt(minValue, piece->p1->y)){
-            
             minPiece = piece;
             
             minValue = piece->p1->y;
@@ -225,105 +148,88 @@ std::shared_ptr<LinearPiece> PLFunction::getMinimalPiece(double &minAt, double &
     return minPiece;
 }
 
-bool PLFunction::intersect(shared_ptr<LinearPiece> lp1, shared_ptr<LinearPiece> lp2, double &x, double &y)
-{
-    if(lp1)lp1->updateLinearPiece(lp1->p1->x,lp1->p1->y,lp1->p2->x,lp1->p2->y);
-    if(lp2)lp2->updateLinearPiece(lp2->p1->x,lp2->p1->y,lp2->p2->x,lp2->p2->y);
+bool PLFunction::intersect(shared_ptr<LinearPiece> lp1, shared_ptr<LinearPiece> lp2, double &x, double &y) {
+    if (lp1) lp1->updateSlope();
+    if (lp2) lp2->updateSlope();
     
     // parallel
     if (eq(lp1->slope, lp2->slope)) return false;
     
     // get intersection point
-    double del_b = ( (lp1->p2->y - lp1->slope * lp1->p2->x ) - (lp2->p2->y - lp2->slope * lp2->p2->x) );
-    double del_k=lp2->slope - lp1->slope;
-    x = del_b/del_k;
+    double del_b = ((lp1->p2->y - lp1->slope * lp1->p2->x ) - (lp2->p2->y - lp2->slope * lp2->p2->x));
+    double del_k = lp2->slope - lp1->slope;
+    x = del_b / del_k;
     y = lp1->p2->y - lp1->slope * (lp1->p2->x - x);
 
-    if(lt(x, lp1->p1->x)||  lt(x, lp2->p1->x) ||lt( lp1->p2->x,x) || lt( lp2->p2->x,x)) return false;
-    return true;
+    return le(lp1->p1->x, x) && le(x, lp1->p2->x) && le(lp2->p1->x, x) && le(x, lp2->p2->x);
 }
 
 void PLFunction::append(shared_ptr<LinearPiece> lp){
-    if(!lp) return;
+    if (!lp) return;
     double minNum = std::min(lp->p1->x, lp->p2->x);
     double maxNum = std::max(lp->p1->x, lp->p2->x);
-    if(ceil(minNum) >floor(maxNum)) return;
-    double exp=0;
-    if(lp->slope<100&&lp->slope>-100)exp= 0.01;
-    else if(lp->slope<1000&& lp->slope>-1000)exp = 0.001;
-    else    exp = 0.0001;
-    if(fabs(lp->p1->y*1000-floor(lp->p1->y*1000)) <=exp) lp->p1->y=floor(lp->p1->y*1000)/1000;  
-    if(fabs(lp->p1->y*1000-ceil(lp->p1->y*1000))<=exp) lp->p1->y=ceil(lp->p1->y*1000)/1000;  
-    if(fabs(lp->p2->y*1000-floor(lp->p2->y*1000))<=exp) lp->p2->y=floor(lp->p2->y*1000)/1000;  
-    if(fabs(lp->p2->y*1000-ceil(lp->p2->y*1000))<=exp) lp->p2->y=ceil(lp->p2->y*1000)/1000; 
+    if (ceil(minNum) > floor(maxNum)) return;
+    double exp = 0;
+    if(lp->slope<100&&lp->slope>-100) exp = 0.01;
+    else if(lp->slope<1000&& lp->slope>-1000) exp = 0.001;
+    else exp = 0.0001;
+    if (fabs(lp->p1->y*1000-floor(lp->p1->y*1000)) <= exp) lp->p1->y = floor(lp->p1->y*1000)/1000;  
+    if (fabs(lp->p1->y*1000-ceil(lp->p1->y*1000)) <= exp) lp->p1->y = ceil(lp->p1->y*1000)/1000;  
+    if (fabs(lp->p2->y*1000-floor(lp->p2->y*1000)) <= exp) lp->p2->y = floor(lp->p2->y*1000)/1000;  
+    if (fabs(lp->p2->y*1000-ceil(lp->p2->y*1000)) <= exp) lp->p2->y = ceil(lp->p2->y*1000)/1000; 
     
-    if(fabs(lp->p1->x*1000-floor(lp->p1->x*1000)) <=exp) lp->p1->x=floor(lp->p1->x*1000)/1000;  
-    if(fabs(lp->p1->x*1000-ceil(lp->p1->x*1000))<=exp) lp->p1->x=ceil(lp->p1->x*1000)/1000;  
-    if(fabs(lp->p2->x*1000-floor(lp->p2->x*1000))<=exp) lp->p2->x=floor(lp->p2->x*1000)/1000;  
-    if(fabs(lp->p2->x*1000-ceil(lp->p2->x*1000))<=exp) lp->p2->x=ceil(lp->p2->x*1000)/1000;
+    if (fabs(lp->p1->x*1000-floor(lp->p1->x*1000)) <= exp) lp->p1->x = floor(lp->p1->x*1000)/1000;  
+    if (fabs(lp->p1->x*1000-ceil(lp->p1->x*1000)) <= exp) lp->p1->x = ceil(lp->p1->x*1000)/1000;  
+    if (fabs(lp->p2->x*1000-floor(lp->p2->x*1000)) <= exp) lp->p2->x = floor(lp->p2->x*1000)/1000;  
+    if (fabs(lp->p2->x*1000-ceil(lp->p2->x*1000)) <= exp) lp->p2->x = ceil(lp->p2->x*1000)/1000;
+
+    
     shared_ptr<LinearPiece> newPiece = lp->clone();
-     if(newPiece)    newPiece->updateLinearPiece(newPiece->p1->x, newPiece->p1->y,newPiece->p2->x, newPiece->p2->y);
-        
-    if (nbPieces == 0){
-        pieces = vector<shared_ptr<LinearPiece>>();
+    if (newPiece) newPiece->updateSlope();
+
+    if (nbPieces == 0) {
         pieces.push_back(newPiece);
         nbPieces += 1;
-    }
-    else{
+    } else{
         shared_ptr<LinearPiece> lastPiece = pieces[nbPieces - 1];
-        lastPiece->updateLinearPiece(lastPiece->p1->x, lastPiece->p1->y,lastPiece->p2->x, lastPiece->p2->y);
-                //。= *
-        if (lastPiece->eqDeep(newPiece))
-            lastPiece->update(lastPiece->p1->x, lastPiece->p1->y, newPiece->p2->x, newPiece->p2->y);
-        
-        else if (eq(lastPiece->p1->x,lastPiece->p2->x) && eq(newPiece->p1->x,lastPiece->p2->x)){
-            if(eq(newPiece->p1->x,newPiece->p2->x)&&ge(newPiece->p1->y,lastPiece->p2->y)){
-                //* (ignore new)
-                //. 
-            }
-            else if(ge(lastPiece->p2->y,newPiece->p1->y)){
-                //.
-                //*(-----------)
-                pieces.pop_back();
-                pieces.push_back(newPiece);  
-                
-            }
-            else{
-                //*-----------
-                //.
-               
-                pieces.push_back(newPiece);
-                lastPiece->next = newPiece;
-                nbPieces += 1;
-            }
+        lastPiece->updateSlope();
+
+        bool isLastPoint = eq(lastPiece->p1->x, lastPiece->p2->x);
+        bool isNewPoint = eq(newPiece->p1->x,newPiece->p2->x);
+        bool test = eq(newPiece->p1->y,newPiece->p2->y);
+        if (isNewPoint && !test) {
+            newPiece->print();
+            throw std::string("Values on a point are not the same");
         }
-        
-        //---------o -> --------o
-        //         * ->          *
-        else if (eq(newPiece->p1->x,newPiece->p2->x)&&eq(newPiece->p1->x,lastPiece->p2->x)  ){
-             if(gt(lastPiece->p2->y,newPiece->p1->y)){
+
+        if (!lastPiece->eqDeep(newPiece)) {     
+            if (isLastPoint && isNewPoint && eq(newPiece->p1->x, lastPiece->p2->x)) {
+                if (gt(lastPiece->p2->y, newPiece->p1->y)) {
+                    pieces.pop_back();
+                    pieces.push_back(newPiece);
+                }
+            } else if (isLastPoint && eq(newPiece->p1->x, lastPiece->p2->x)) {
+                if(ge(lastPiece->p2->y, newPiece->p1->y)){
+                    pieces.pop_back();            
+                } else{
+                    nbPieces += 1;
+                }
                 pieces.push_back(newPiece);
-                lastPiece->next = newPiece;
-                nbPieces += 1;
-             }
-            else{
-                //         * (ignore new)
-                //---------o
-            }
-        }
-        else{
-            // link together
-            if(eq(lastPiece->slope,newPiece->slope)&&  eq(newPiece->p1->y, lastPiece->p2->y) &&lastPiece->eqFromC(newPiece) && lastPiece->eqFromF(newPiece) &&lastPiece->eqFromCpre(newPiece) && lastPiece->replenishment_loss == newPiece->replenishment_loss){
-                newPiece->p1->x = lastPiece->p1->x;
-                newPiece->p1->y = lastPiece->p1->y;
-                pieces.pop_back();
-                pieces.push_back(newPiece);  
-            }
-            //add in newPiece
-            else{
-                lastPiece->next = newPiece;
-                pieces.push_back(newPiece);
-                nbPieces += 1;
+            } else if (isNewPoint && eq(newPiece->p1->x, lastPiece->p2->x)) {
+                if (gt(lastPiece->p2->y, newPiece->p1->y)){
+                    pieces.push_back(newPiece);
+                    nbPieces += 1;
+                }
+            } else{
+                if(eq(lastPiece->slope, newPiece->slope) && eq(newPiece->p1->y, lastPiece->p2->y) && lastPiece->eqFromC(newPiece) && lastPiece->eqFromF(newPiece) &&lastPiece->eqFromCpre(newPiece) && lastPiece->stockout == newPiece->stockout){
+                    newPiece->p1->x = lastPiece->p1->x;
+                    newPiece->p1->y = lastPiece->p1->y;
+                    pieces.pop_back();
+                    pieces.push_back(newPiece);  
+                } else{
+                    pieces.push_back(newPiece);
+                    nbPieces += 1;
+                }
             }
         }
     }
@@ -336,38 +242,32 @@ void PLFunction::shiftRight(double x_axis) {
     }
 }
 
-void PLFunction::addHoldingf(double InventoryCost) //x = 6,daily = 5  -----> +1*holdingcost --->dp(1)
-{
+void PLFunction::addHoldingf(double inventoryCost) {
     for (auto &piece : pieces) {
-        piece->p1->y += InventoryCost*(piece->p1->x);
-        piece->p2->y += InventoryCost*(piece->p2->x); 
+        piece->p1->y += inventoryCost * (piece->p1->x);
+        piece->p2->y += inventoryCost * (piece->p2->x); 
         piece->update(piece->p1->x, piece->p1->y, piece->p2->x, piece->p2->y);
     }
 }
 
-void PLFunction::addStockoutf(double stockoutCost)//x = 2,daily = 6  -----> +1*stockoutcost --->dp(-1)
-{
+void PLFunction::addStockoutf(double stockoutCost) {
     for (auto &piece : pieces) {
         piece->p1->y -= stockoutCost*(piece->p1->x);
         piece->p2->y -= stockoutCost*(piece->p2->x);
-
         piece->update(piece->p1->x, piece->p1->y, piece->p2->x, piece->p2->y);
     }
 }
 
-void PLFunction::moveUp(double y_axis)
-{
+void PLFunction::moveUp(double y_axis) {
     for (auto &piece : pieces) {
         piece->p1->y += y_axis;
         piece->p2->y += y_axis;
     }
 }
 
-std::shared_ptr<PLFunction> PLFunction::getInBound(double lb, double ub)
-{
+std::shared_ptr<PLFunction> PLFunction::getInBound(double lb, double ub) {
     std::shared_ptr<PLFunction> plFunction(std::make_shared<PLFunction>(params));
 
-    plFunction->clear();
     if (lt(ub, lb)) return plFunction;
 
     for (auto &piece : pieces){
@@ -378,17 +278,23 @@ std::shared_ptr<PLFunction> PLFunction::getInBound(double lb, double ub)
     return plFunction;
 }
 
+std::shared_ptr<PLFunction> PLFunction::clone() {
+  std::shared_ptr<PLFunction> destination(std::make_shared<PLFunction>(params));
+  for (auto & piece : pieces) {
+    destination->append(piece);
+  }
+  return destination;
+}
+
 void PLFunction::print() {
     for (unsigned int i = 0; i < nbPieces; i++) {        
-        cout << i<<" :(" << pieces[i]->p1->x << ", " << pieces[i]->p1->y << ", " << pieces[i]->p2->x
+        cout << i <<" :(" << pieces[i]->p1->x << ", " << pieces[i]->p1->y << ", " << pieces[i]->p2->x
              << ", " << pieces[i]->p2->y << "), ";
     }
     cout << endl;
 }
 
-//only calculate the &stockout cost &detour & more capacity cost
-double PLFunction::calculateGFunction(unsigned int day, double detour, double replenishment, double freeload, unsigned int idxScenario)
-{
+double PLFunction::calculateF(unsigned int day, double detour, double replenishment, double freeload, unsigned int idxScenario) {
     // detour
     double cost = detour;
 
@@ -400,7 +306,4 @@ double PLFunction::calculateGFunction(unsigned int day, double detour, double re
     return cost;
 }
 
-PLFunction::~PLFunction()
-{
-
-}
+PLFunction::~PLFunction() {}
