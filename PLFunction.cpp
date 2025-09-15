@@ -170,7 +170,7 @@ void PLFunction::append(shared_ptr<LinearPiece> lp){
     double maxNum = std::max(lp->p1->x, lp->p2->x);
     if (ceil(minNum) > floor(maxNum)) return;
     double exp = 0;
-    if(lp->slope<100&&lp->slope>-100) exp = 0.01;
+    if(lp->slope<100 && lp->slope>-100) exp = 0.01;
     else if(lp->slope<1000&& lp->slope>-1000) exp = 0.001;
     else exp = 0.0001;
     if (fabs(lp->p1->y*1000-floor(lp->p1->y*1000)) <= exp) lp->p1->y = floor(lp->p1->y*1000)/1000;  
@@ -199,7 +199,8 @@ void PLFunction::append(shared_ptr<LinearPiece> lp){
         bool test = eq(newPiece->p1->y,newPiece->p2->y);
         if (isNewPoint && !test) {
             newPiece->print();
-            throw std::string("Values on a point are not the same");
+            double valMin = std::min(newPiece->p1->y, newPiece->p2->y);
+            newPiece->update(newPiece->p1->x, valMin, newPiece->p2->x, valMin);
         }
 
         if (!lastPiece->eqDeep(newPiece)) {     
