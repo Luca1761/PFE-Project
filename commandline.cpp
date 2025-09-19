@@ -91,16 +91,11 @@ commandline::commandline(int argc, char *argv[])
           }
           nb_scenarios = (unsigned int) nbS;
       } else {
-        std::cout << "Unknown command : " << string(argv[i]) << std::endl;
+        std::cout << "[-sol] [-seed] [-cores] [-trueDemand1] [-deterministic] [-traces] [-time] [-iter] [-iterNonProd] [-veh]: " << string(argv[i]) << std::endl;
         throw std::string("Unknown command");
       }
     }
     if (deterministic) nb_scenarios = 1;
-    if (end_day_inventories && !deterministic && !true_demand_day1) {
-      std::cout << "INVALID COMBINATION, CANNOT HAVE END-DAY INVENTORIES WITHOUT DETERMINISTIC OR TRUE DAY 1 DEMAND" << std::endl;
-      throw std::string("INVALID COMBINATION, CANNOT HAVE END-DAY INVENTORIES WITHOUT DETERMINISTIC OR TRUE DAY 1 DEMAND");
-
-    }
     if (!hasSolName)
       set_default_sorties_name(string(argv[1]));
   }

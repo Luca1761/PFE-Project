@@ -34,19 +34,18 @@ if __name__ == "__main__":
         args = parser.parse_args()
 
         expe_id = args.expe_id
-        nbScenario = 25
+        nbScenario = 10
         nbVehicle = 1
         seed = 42
-        nbCores = 16
+        nbCores = 10
         maxIter = 20000
         maxIterNonProd = 20000
         maxTime = 1000
         chemin_element = os.path.join(chemin_dossier, listInstance[expe_id])
 
         if os.path.isfile(chemin_element):
-            result = subprocess.Popen(['./irp', chemin_element, '-veh', str(nbVehicle), '-seed', str(seed), '-scenarios', str(nbScenario), '-iter', str(maxIter), "-iterNonProd", str(maxIterNonProd), '-time', str(maxTime), '-traces', '0', '-cores', str(nbCores)], stdout=subprocess.PIPE, text=True, stderr=subprocess.PIPE)
+            result = subprocess.Popen(['./irp', chemin_element, '-veh', str(nbVehicle), '-seed', str(seed), '-scenarios', str(nbScenario), '-iter', str(maxIter), "-iterNonProd", str(maxIterNonProd), '-time', str(maxTime), '-traces', '0', '-cores', str(nbCores), 'endDay', '1'], stdout=subprocess.PIPE, text=True, stderr=subprocess.PIPE)
             for res in result.stdout:
-                # average += float(res)
                 print(res)
             for err in result.stderr:
                 print(err)
