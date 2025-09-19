@@ -532,7 +532,7 @@ void Individual::measureSol() {
 				inventoryCost[scenario] += params->cli[cus].stockoutCost * std::max<double>(0, params->cli[cus].dailyDemand[scenario][k]-I_end[k-1][cus]-chromL[day][cus]);
 				inventoryCost[scenario] -= chromL[day][cus] * ((double) params->nbDays + 1 - k) * params->inventoryCostSupplier;
                 
-				double maxDeliverable = (params->endDayInventories) ? params->cli[cus].dailyDemand[scenario][k] + params->cli[cus].maxInventory : params->cli[cus].maxInventory;
+				double maxDeliverable = (params->endDayInventories) ? params->cli[cus].theoricalMinDemand + params->cli[cus].maxInventory : params->cli[cus].maxInventory;
 				double stockOvercharge = 1000000 * std::max<double>(I_end[k-1][cus] + chromL[day][cus] - maxDeliverable, 0.0);
 				if (stockOvercharge > 0) isFeasible = false;
 				inventoryCost[scenario] += stockOvercharge;

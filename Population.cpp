@@ -104,7 +104,7 @@ bool Population::fitExist(SubPopulation *pop, Individual *indiv) {
 void Population::diversify() {
 	vector<double> savePenalities = params->penalityCapa;
 
-	while (valid->nbIndiv > params->rho * params->mu) { // remove parrt of feasible individuals
+	while (valid->nbIndiv > params->rho * params->mu) { // remove part of feasible individuals
 		removeIndividual(valid, valid->nbIndiv - 1);
 	}
 	while (invalid->nbIndiv > params->rho * params->mu) { // remove part on infeasible individuals

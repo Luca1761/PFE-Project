@@ -22,7 +22,7 @@ void PLFunction::clear() {
 }
 
 PLFunction::PLFunction(Params *_params, Insertion insertion, Client client, unsigned int idxScenario) : params(_params){
-    double maxInventory = (params->endDayInventories) ? client.maxInventory + client.dailyDemand[idxScenario][1] 
+    double maxInventory = (params->endDayInventories) ? client.maxInventory + client.theoricalMinDemand
                                                       : client.maxInventory;
     nbPieces = 0;
     pieces = vector<shared_ptr<LinearPiece>>();
@@ -107,7 +107,7 @@ PLFunction::PLFunction(Params *_params, vector<Insertion> insertions, unsigned i
     }
 
     // the last piece
-    x =  (params->endDayInventories) ? client.maxInventory + client.dailyDemand[idxScenario][day + 1] : client.maxInventory;
+    x =  (params->endDayInventories) ? client.maxInventory + client.theoricalMinDemand : client.maxInventory;
     if (x - pre_x <= 0.01 ) {
         return;
     }

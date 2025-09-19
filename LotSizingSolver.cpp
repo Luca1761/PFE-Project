@@ -482,7 +482,7 @@ void LotSizingSolver::solveOneScenario(unsigned int scenario) {
       std::shared_ptr<PLFunction> fromC1;
       std::shared_ptr<PLFunction> fromC2;
       maxInventory = (params->endDayInventories) ? params->cli[client].maxInventory : std::max(0.0, params->cli[client].maxInventory - params->cli[client].dailyDemand[scenario][t - 1]);
-      maxDeliverable = (params->endDayInventories) ? params->cli[client].maxInventory + params->cli[client].dailyDemand[scenario][t] : params->cli[client].maxInventory;
+      maxDeliverable = (params->endDayInventories) ? params->cli[client].maxInventory + params->cli[client].theoricalMinDemand : params->cli[client].maxInventory;
       
       //(1). First case: no delivery and no stockout
       //q(t) = 0 and  I(t-1) > daily[t] ==> I(t) > 0 
@@ -566,7 +566,7 @@ void LotSizingSolver::solveOneScenario(unsigned int scenario) {
 void LotSizingSolver::day1(unsigned int scenario) {
   unsigned int nbInsertionsFirstDay = (unsigned int) insertions[0][0].size();
   double maxInventory = params->cli[client].startingInventory;
-  double maxDeliverable = (params->endDayInventories) ? params->cli[client].maxInventory + params->cli[client].dailyDemand[scenario][1] : params->cli[client].maxInventory;
+  double maxDeliverable = (params->endDayInventories) ? params->cli[client].maxInventory + params->cli[client].theoricalMinDemand : params->cli[client].maxInventory;
 
   for (unsigned int k = 0; k < nbInsertionsFirstDay; k++) {
       //picewise linear functions

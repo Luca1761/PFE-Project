@@ -344,7 +344,7 @@ double LocalSearch::evaluateCurrentClientCost(unsigned int client) {
       if(eq(x2, 0)) x2 = 0;
       cost += params->penalityCapa[idxScenario] *(std::max<double>(0., x1) - std::max<double>(0., x2));
 
-      double maxDeliverable = (params->endDayInventories) ? params->cli[client].dailyDemand[idxScenario][k] + params->cli[client].maxInventory : params->cli[client].maxInventory;
+      double maxDeliverable = (params->endDayInventories) ? params->cli[client].theoricalMinDemand + params->cli[client].maxInventory : params->cli[client].maxInventory;
       cost += 1000000 * std::max<double> (0., I + deliveryPerDay[k][client] - maxDeliverable);
 
       I = std::max<double> (0., I + deliveryPerDay[k][client] - params->cli[client].dailyDemand[idxScenario][k]);

@@ -281,6 +281,7 @@ void Params::updateToDay(unsigned int j, std::vector<double> deliveries) {
 			oldDemands[i - nbDepots].push_back(cli[i].trueDemand[j - 1]); // we add the previous demand to historical data and compute again means and std
 			meanDemands[i - nbDepots] = computeMean(oldDemands[i - nbDepots]);
 			stdDemands[i - nbDepots] = computeStd(oldDemands[i - nbDepots]);
+			cli[i- nbDepots].theoricalMinDemand = round(max(meanDemands[i - nbDepots] - 3 * stdDemands[i - nbDepots], 0.));
 		}
 	}
     

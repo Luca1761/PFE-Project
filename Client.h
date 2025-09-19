@@ -42,6 +42,8 @@ public:
 	// daily inventory cost of the customer
 	double inventoryCost ;
 
+	double theoricalMinDemand;
+
 	// daily stockout cost of the customer
 	double stockoutCost;
 
