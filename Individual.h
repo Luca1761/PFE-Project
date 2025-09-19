@@ -37,7 +37,7 @@ struct solutionCost {
 };
 
 // literally the same but for each scenario (coutSol is then compute as an average of these)
-struct solutionCost_scenario {
+struct solutionCostScenario {
   vector<double> evaluation;
   vector<double> fitness;
   vector<double> capacityViol;
@@ -76,10 +76,10 @@ class Individual
   float fitRank;
 
   // average gloval solution cost
-  struct solutionCost solutionCost; 
+  struct solutionCost solution_cost; 
 
   // solution cost, scenario per scenario
-  solutionCost_scenario solutionCost_scenario;
+  solutionCostScenario solutionCost_scenario;
 
   // The giant tour of each individual 
   // chromT[1][j] -> day 1, j-th customer of the corresponding tour (shared by every scenario)

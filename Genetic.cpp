@@ -33,12 +33,12 @@ void Genetic::evolve(unsigned int maxIter, unsigned int maxIterNonProd, unsigned
 		nbIterNonProd++;
 		if (place == 0 && child->isFeasible) {
 			nbIterNonProd = 1;
-			if (child->solutionCost.capacityViol > 0.0001) {
+			if (child->solution_cost.capacityViol > 0.0001) {
 				std::cout << "SOLUTION IS NOT FEASIBLE" << std::endl;
 				throw std::string("SOLUTION IS NOT FEASIBLE");
 			}
 			if (params->traces) {
-				std::cout << "NEW BEST FEASIBLE - Cost: " << child->solutionCost.evaluation << std::endl;
+				std::cout << "NEW BEST FEASIBLE - Cost: " << child->solution_cost.evaluation << std::endl;
 				std::cout << endl;
 			}
 		}

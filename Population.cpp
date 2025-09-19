@@ -29,7 +29,7 @@ Population::Population(Params* _params) : params(_params), nbScenario(params->nb
 		train(randomIndiv);
 		if (count) updateNbValid(randomIndiv);
 		if (addIndividual(randomIndiv) == 0 && randomIndiv->isFeasible) {
-			if (params->traces) std::cout << "NEW BEST FEASIBLE FROM INITIALIZATION - Cost: " << randomIndiv->solutionCost.evaluation << std::endl;
+			if (params->traces) std::cout << "NEW BEST FEASIBLE FROM INITIALIZATION - Cost: " << randomIndiv->solution_cost.evaluation << std::endl;
 		}
 		delete randomIndiv;
 	}
@@ -93,9 +93,9 @@ void Population::updateProximity(SubPopulation *pop, Individual *indiv) {
 }
 
 bool Population::fitExist(SubPopulation *pop, Individual *indiv) {
-	double fitness = indiv->solutionCost.evaluation;
+	double fitness = indiv->solution_cost.evaluation;
 	for (Individual* indiv2 : pop->individuals) {
-		if (indiv != indiv2 && indiv2->solutionCost.evaluation >= (fitness - params->delta) && indiv2->solutionCost.evaluation <= (fitness + params->delta))
+		if (indiv != indiv2 && indiv2->solution_cost.evaluation >= (fitness - params->delta) && indiv2->solution_cost.evaluation <= (fitness + params->delta))
 			return true;
 	}
 	return false;
@@ -119,7 +119,7 @@ void Population::diversify() {
 		Individual *randomIndiv = new Individual(params);
 		train(randomIndiv);
 		if (addIndividual(randomIndiv) == 0 && randomIndiv->isFeasible) {
-			if (params->traces) std::cout << "NEW BEST FEASIBLE FROM DIVERSIFY - Cost: " << randomIndiv->solutionCost.evaluation << std::endl;
+			if (params->traces) std::cout << "NEW BEST FEASIBLE FROM DIVERSIFY - Cost: " << randomIndiv->solution_cost.evaluation << std::endl;
 		}
 		delete randomIndiv;
 	}
@@ -134,7 +134,7 @@ unsigned int Population::placeIndividual(SubPopulation *pop, Individual *indiv) 
 
 	pop->individuals.push_back(newIndiv); // add it at the end (at place size)
 	for (unsigned int i = size; i >= 0; i--) { // we try to place it at the good place (pop->individuals is already sorted)
-		if (i != 0 && pop->individuals[i - 1]->solutionCost.evaluation >= indiv->solutionCost.evaluation + 0.001) {
+		if (i != 0 && pop->individuals[i - 1]->solution_cost.evaluation >= indiv->solution_cost.evaluation + 0.001) {
 			pop->individuals[i] = pop->individuals[i - 1];
 		} else {
 			pop->individuals[i] = newIndiv;
@@ -172,16 +172,16 @@ void Population::removeIndividual(SubPopulation *pop, unsigned int p) {
 void Population::validatePen() {
 	// penalities have been updated, we also need to update evaluations
 	for (Individual* indiv : invalid->individuals) {
-		indiv->solutionCost.evaluation = 0.0;
+		indiv->solution_cost.evaluation = 0.0;
 		for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
 			indiv->solutionCost_scenario.evaluation[scenario] = indiv->solutionCost_scenario.fitness[scenario] + params->penalityCapa[scenario] * indiv->solutionCost_scenario.capacityViol[scenario]; 
-			indiv->solutionCost.evaluation += indiv->solutionCost_scenario.evaluation[scenario];
+			indiv->solution_cost.evaluation += indiv->solutionCost_scenario.evaluation[scenario];
 		}
-		indiv->solutionCost.evaluation /= (double) nbScenario;
+		indiv->solution_cost.evaluation /= (double) nbScenario;
 	}
 	for (unsigned int i = 0; i < invalid->nbIndiv; i++) {
 		for (unsigned int j = 0; j < invalid->nbIndiv - i - 1; j++) {
-			if (invalid->individuals[j]->solutionCost.evaluation > invalid->individuals[j + 1]->solutionCost.evaluation) {
+			if (invalid->individuals[j]->solution_cost.evaluation > invalid->individuals[j + 1]->solution_cost.evaluation) {
 				std::swap(invalid->individuals[j], invalid->individuals[j + 1]);
 			}
 		}
@@ -220,7 +220,7 @@ Individual *Population::getBestInfeasIndividual() {
 void Population::copyIndividual(Individual *destination, Individual *source) {
 	destination->chromT = source->chromT; // copy of the tour
 	destination->chromL = source->chromL; // copy of delivered quantities
-	destination->solutionCost = source->solutionCost; // copy of average solution cost
+	destination->solution_cost = source->solution_cost; // copy of average solution cost
 	destination->solutionCost_scenario = source->solutionCost_scenario; // copy of cost, scenario per scenario
 	destination->isFeasible = source->isFeasible; //copy of feasibility
 }
@@ -300,7 +300,7 @@ double Population::getDiversity(SubPopulation *pop) {
 double Population::getAverageFeasible() {
 	double sum = 0.;
 	for (Individual* indiv : valid->individuals) {
-		sum += indiv->solutionCost.evaluation;
+		sum += indiv->solution_cost.evaluation;
 	}
 	return sum / (double)valid->nbIndiv;
 }
@@ -308,7 +308,7 @@ double Population::getAverageFeasible() {
 double Population::getAverageInfeasible() {
 	double sum = 0.;
 	for (Individual* indiv : invalid->individuals) {
-		sum += indiv->solutionCost.evaluation;
+		sum += indiv->solution_cost.evaluation;
 	}
 	return sum / (double)invalid->nbIndiv;
 }
@@ -346,7 +346,7 @@ void Population::train(Individual *indiv) {
 }
 
 void Population::updateNbValid(Individual *indiv) {
-	capaValidityList.push_back(indiv->solutionCost.capacityViol < 0.0001);
+	capaValidityList.push_back(indiv->solution_cost.capacityViol < 0.0001);
 	capaValidityList.pop_front();
 }
 
@@ -371,7 +371,7 @@ void Population::displayState(unsigned int nbIter) {
 	cout << "It " << nbIter << " | Sol moy: ";
 
 	if (getBestFeasIndividual() != NULL) {
-		cout << getBestFeasIndividual()->solutionCost.evaluation << " Scenarios - ";
+		cout << getBestFeasIndividual()->solution_cost.evaluation << " Scenarios - ";
 		for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
 			cout << scenario + 1 << ": " << getBestFeasIndividual()->solutionCost_scenario.evaluation[scenario] << " ";
 		}
@@ -382,7 +382,7 @@ void Population::displayState(unsigned int nbIter) {
 	cout << "| ";
 
 	if (getBestInfeasIndividual() != NULL) {
-		cout << getBestInfeasIndividual()->solutionCost.evaluation << " Scenarios - ";
+		cout << getBestInfeasIndividual()->solution_cost.evaluation << " Scenarios - ";
 		for (unsigned int scenario = 0; scenario < nbScenario; scenario++) {
 			cout << scenario << ": " << getBestInfeasIndividual()->solutionCost_scenario.evaluation[scenario] << " ";
 		}
