@@ -198,7 +198,6 @@ void PLFunction::append(shared_ptr<LinearPiece> lp){
         bool isNewPoint = eq(newPiece->p1->x,newPiece->p2->x);
         bool test = eq(newPiece->p1->y,newPiece->p2->y);
         if (isNewPoint && !test) {
-            newPiece->print();
             double valMin = std::min(newPiece->p1->y, newPiece->p2->y);
             newPiece->update(newPiece->p1->x, valMin, newPiece->p2->x, valMin);
         }

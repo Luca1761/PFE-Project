@@ -230,6 +230,7 @@ Client Params::getNextClient() {
 		meanDemands.push_back(computeMean(historicalDemands));
 		stdDemands.push_back(computeStd(historicalDemands));
 		oldDemands.push_back(historicalDemands);
+		client.theoricalMinDemand = round(max(computeMean(historicalDemands) - 3 * computeStd(historicalDemands), 0.));
 
 		client.trueDemand = vector<double>(pHorizon + 1, 0.0);
 		for (unsigned int t = 1; t <= pHorizon; t++) {
