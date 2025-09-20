@@ -44,7 +44,7 @@ if __name__ == "__main__":
         chemin_element = os.path.join(chemin_dossier, listInstance[expe_id])
 
         if os.path.isfile(chemin_element):
-            result = subprocess.Popen(['./irp', chemin_element, '-veh', str(nbVehicle), '-seed', str(seed), '-scenarios', str(nbScenario), '-iter', str(maxIter), "-iterNonProd", str(maxIterNonProd), '-time', str(maxTime), '-traces', '0', '-cores', str(nbCores), '-endDay', '1'], stdout=subprocess.PIPE, text=True, stderr=subprocess.PIPE)
+            result = subprocess.Popen(['./irp', chemin_element, '-veh', str(nbVehicle), '-seed', str(seed), '-scenarios', str(nbScenario), '-iter', str(maxIter), "-iterNonProd", str(maxIterNonProd), '-time', str(maxTime), '-traces', '0', '-cores', str(nbCores), '-endDay', '1', '-deterministic', '1'], stdout=subprocess.PIPE, text=True, stderr=subprocess.PIPE)
             for res in result.stdout:
                 print(res)
             for err in result.stderr:
