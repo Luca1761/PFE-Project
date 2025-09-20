@@ -40,7 +40,7 @@ if __name__ == "__main__":
         nbCores = 10
         maxIter = 20000
         maxIterNonProd = 20000
-        maxTime = 1000
+        maxTime = 1200
         chemin_element = os.path.join(chemin_dossier, listInstance[expe_id])
 
         if os.path.isfile(chemin_element):
