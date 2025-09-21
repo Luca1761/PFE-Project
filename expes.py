@@ -5,22 +5,15 @@ import argparse
 if __name__ == "__main__":
     chemin_dossier = "dsirp/standard/"
     listInstance = []
-    liste = ["25-10-3",
-            "100-20-4",
+    liste = [
             "125-20-1",
             "125-20-2",
             "125-20-3",
             "125-20-4",
-            "125-20-5",
             "150-20-1",
-            "150-20-2",
-            "150-20-3",
-            "150-20-4",
             "150-20-5",
             "200-20-1",
-            "200-20-2",
             "200-20-3",
-            "200-20-4",
             "200-20-5",
             "200-10-1",
             "200-10-2",
@@ -71,7 +64,7 @@ if __name__ == "__main__":
 
         if (True):
             nbScenario = 1
-            maxIter = 80000
+            maxIter = 1000
             maxIterNonProd = 80000
             maxTime = 1800
             deterministic = 1
