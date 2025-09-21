@@ -41,10 +41,20 @@ if __name__ == "__main__":
         maxIter = 20000
         maxIterNonProd = 20000
         maxTime = 1200
-        chemin_element = os.path.join(chemin_dossier, listInstance[expe_id])
+        chemin_element = os.path.join(chemin_dossier, listInstance[expe_id%150])
+        deterministic = 0
+        endDay = 0
+
+        if (expe_id >= 150):
+            nbScenario = 1
+            maxIter = 80000
+            maxIterNonProd = 80000
+            maxTime = 28000
+            deterministic = 1
+            endDay = 1
 
         if os.path.isfile(chemin_element):
-            result = subprocess.Popen(['./irp', chemin_element, '-veh', str(nbVehicle), '-seed', str(seed), '-scenarios', str(nbScenario), '-iter', str(maxIter), "-iterNonProd", str(maxIterNonProd), '-time', str(maxTime), '-traces', '0', '-cores', str(nbCores), '-endDay', '0', '-deterministic', '0'], stdout=subprocess.PIPE, text=True, stderr=subprocess.PIPE)
+            result = subprocess.Popen(['./irp', chemin_element, '-veh', str(nbVehicle), '-seed', str(seed), '-scenarios', str(nbScenario), '-iter', str(maxIter), "-iterNonProd", str(maxIterNonProd), '-time', str(maxTime), '-traces', '0', '-cores', str(nbCores), '-endDay', str(endDay), '-deterministic', str(deterministic)], stdout=subprocess.PIPE, text=True, stderr=subprocess.PIPE)
             for res in result.stdout:
                 print(res)
             for err in result.stderr:

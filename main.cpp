@@ -50,6 +50,7 @@ int main(int argc, char *argv[]) {
 
     population->measureAndUpdateQuantities(deliveries, totalCost);
     population->ExportPop(command.get_path_to_solution(), deliveries, totalCostBis);
+    if (params->deterministic) return 0;
   }
   if (params->traces) std::cout << "FINAL COST: " << totalCost << std::endl;
   else std::cout << totalCost << std::endl;
