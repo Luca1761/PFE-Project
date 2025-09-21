@@ -73,7 +73,7 @@ if __name__ == "__main__":
             nbScenario = 1
             maxIter = 80000
             maxIterNonProd = 80000
-            maxTime = 2800
+            maxTime = 1800
             deterministic = 1
             endDay = 1
 
