@@ -1,8 +1,8 @@
 #!/bin/bash
-#SBATCH --array=0-299
+#SBATCH --array=0-21
 #SBATCH --cpus-per-task=16
 #SBATCH --mem=36G
-#SBATCH --time=10:00:00
+#SBATCH --time=1:00:00
 #SBATCH --job-name=expes_DSIRP
 #SBATCH -o expes_out/expes_%A.out
 #SBATCH -e expes_out/expes_%A.errarray

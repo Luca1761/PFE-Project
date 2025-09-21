@@ -7,7 +7,7 @@ void Genetic::evolve(unsigned int maxIter, unsigned int maxIterNonProd, unsigned
 	unsigned int diversificationIdx = 1;
 	nbIter = 0;
 	nbIterNonProd = 1;
-	while (nbIter < maxIter && nbIterNonProd < maxIterNonProd && (round((float) (clock() - population->totalTime) / CLOCKS_PER_SEC) <  maxTime || nbIter%50 != 0)) {
+	while (nbIter < maxIter && nbIterNonProd < maxIterNonProd && (round((float) (clock() - population->totalTime) / CLOCKS_PER_SEC) <  maxTime)) {
 		// we take two individuals from the population
 		population->copyIndividual(child, population->getIndividualBinT());
 		population->copyIndividual(child2, population->getIndividualBinT());

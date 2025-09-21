@@ -5,10 +5,34 @@ import argparse
 if __name__ == "__main__":
     chemin_dossier = "dsirp/standard/"
     listInstance = []
-    for nbClients in [5,10,15,25,50,75,100,125,150,200]:
-        for p in [5,10,20]:
-            for i in [1,2,3,4,5]:
-                listInstance.append("dirp-" + str(nbClients) + "-" + str(p) + "-" + str(i) + ".dat")
+    liste = ["25-10-3",
+            "100-20-4",
+            "125-20-1",
+            "125-20-2",
+            "125-20-3",
+            "125-20-4",
+            "125-20-5",
+            "150-20-1",
+            "150-20-2",
+            "150-20-3",
+            "150-20-4",
+            "150-20-5",
+            "200-20-1",
+            "200-20-2",
+            "200-20-3",
+            "200-20-4",
+            "200-20-5",
+            "200-10-1",
+            "200-10-2",
+            "200-10-3",
+            "200-10-4",
+            "200-10-5"]
+    # for nbClients in [5,10,15,25,50,75,100,125,150,200]:
+    #     for p in [5,10,20]:
+    #         for i in [1,2,3,4,5]:
+    for s in liste:
+        # listInstance.append("dirp-" + str(nbClients) + "-" + str(p) + "-" + str(i) + ".dat")
+        listInstance.append("dirp-" + s + ".dat" )
 
     launchAll = False
 
@@ -45,11 +69,11 @@ if __name__ == "__main__":
         deterministic = 0
         endDay = 0
 
-        if (expe_id >= 150):
+        if (True):
             nbScenario = 1
             maxIter = 80000
             maxIterNonProd = 80000
-            maxTime = 28000
+            maxTime = 2800
             deterministic = 1
             endDay = 1
 
