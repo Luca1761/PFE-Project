@@ -1,0 +1,171 @@
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Day 1
+
+route[0]: travel time = 0; capacity = 1132; charge = 0; depot = 0
+ 0 -> 0
+
+CUSTOMER 1 bounds (0,84) | Av: 28.16 | Std: 5.061067081 | True: 22 [morning: 56, replenishment: 0, evening: 34] 
+CUSTOMER 2 bounds (0,64) | Av: 31.5 | Std: 2.801785145 | True: 34 [morning: 32, replenishment: 0, evening: 0] 
+CUSTOMER 3 bounds (0,267) | Av: 88.04 | Std: 5.063437568 | True: 90 [morning: 178, replenishment: 0, evening: 88] 
+CUSTOMER 4 bounds (0,192) | Av: 48.34 | Std: 7.154327362 | True: 54 [morning: 144, replenishment: 0, evening: 90] 
+CUSTOMER 5 bounds (0,96) | Av: 23.24 | Std: 7.611990541 | True: 24 [morning: 72, replenishment: 0, evening: 48] 
+CUSTOMER 6 bounds (0,186) | Av: 61.32 | Std: 2.671628717 | True: 60 [morning: 124, replenishment: 0, evening: 64] 
+CUSTOMER 7 bounds (0,32) | Av: 16.1 | Std: 6.521502894 | True: 1 [morning: 16, replenishment: 0, evening: 15] 
+CUSTOMER 8 bounds (0,234) | Av: 77.3 | Std: 6.280923499 | True: 77 [morning: 156, replenishment: 0, evening: 79] 
+CUSTOMER 9 bounds (0,244) | Av: 60.72 | Std: 6.135275055 | True: 63 [morning: 183, replenishment: 0, evening: 120] 
+CUSTOMER 10 bounds (0,332) | Av: 82.12 | Std: 1.935355265 | True: 83 [morning: 249, replenishment: 0, evening: 166] 
+CUSTOMER 11 bounds (0,94) | Av: 47.18 | Std: 3.050835951 | True: 57 [morning: 47, replenishment: 0, evening: 0] 
+CUSTOMER 12 bounds (0,68) | Av: 16.68 | Std: 1.782582396 | True: 16 [morning: 51, replenishment: 0, evening: 35] 
+CUSTOMER 13 bounds (0,136) | Av: 32.28 | Std: 7.373031941 | True: 40 [morning: 102, replenishment: 0, evening: 62] 
+CUSTOMER 14 bounds (0,108) | Av: 35.42 | Std: 2.126875643 | True: 32 [morning: 72, replenishment: 0, evening: 40] 
+CUSTOMER 15 bounds (0,300) | Av: 99.66 | Std: 4.554602068 | True: 110 [morning: 200, replenishment: 0, evening: 90] 
+
+SUPPLIER INVENTORY [morning: 4125, evening: 4125] 
+ROUTE COST: 0
+SUPPLY INVENTORY COST: 41.25
+CLIENT INVENTORY COST: 41.61
+CLIENT STOCKOUT COST: 88
+CLIENT STOCKOUT Amount: 12
+COST SUMMARY : THIS DAY 170.86
+Total cost: 170.86
+Route number: 0
+
+Total Time: 1191.337402
+Best Solution Time: 820.123291
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Day 2
+
+route[0]: travel time = 1178; capacity = 1132; charge = 530; depot = 0
+ 0 -> 7 -> 8 -> 11 -> 14 -> 15 -> 3 -> 2 -> 9 -> 0
+
+CUSTOMER 1 bounds (0,84) | Av: 28.03921569 | Std: 5.083463326 | True: 30 [morning: 34, replenishment: 0, evening: 4] 
+CUSTOMER 2 bounds (0,64) | Av: 31.54901961 | Std: 2.795751156 | True: 29 [morning: 0, replenishment: 61, evening: 32] 
+CUSTOMER 3 bounds (0,267) | Av: 88.07843137 | Std: 5.020909758 | True: 91 [morning: 88, replenishment: 87, evening: 84] 
+CUSTOMER 4 bounds (0,192) | Av: 48.45098039 | Std: 7.127174523 | True: 59 [morning: 90, replenishment: 0, evening: 31] 
+CUSTOMER 5 bounds (0,96) | Av: 23.25490196 | Std: 7.53773029 | True: 31 [morning: 48, replenishment: 0, evening: 17] 
+CUSTOMER 6 bounds (0,186) | Av: 61.29411765 | Std: 2.65163004 | True: 56 [morning: 64, replenishment: 0, evening: 8] 
+CUSTOMER 7 bounds (0,32) | Av: 15.80392157 | Std: 6.788166196 | True: 0 [morning: 15, replenishment: 8, evening: 23] 
+CUSTOMER 8 bounds (0,234) | Av: 77.29411765 | Std: 6.219180066 | True: 71 [morning: 79, replenishment: 66, evening: 74] 
+CUSTOMER 9 bounds (0,244) | Av: 60.76470588 | Std: 6.083046951 | True: 64 [morning: 120, replenishment: 75, evening: 131] 
+CUSTOMER 10 bounds (0,332) | Av: 82.1372549 | Std: 1.920167556 | True: 79 [morning: 166, replenishment: 0, evening: 87] 
+CUSTOMER 11 bounds (0,94) | Av: 47.37254902 | Std: 3.313435421 | True: 44 [morning: 0, replenishment: 92, evening: 48] 
+CUSTOMER 12 bounds (0,68) | Av: 16.66666667 | Std: 1.767535857 | True: 17 [morning: 35, replenishment: 0, evening: 18] 
+CUSTOMER 13 bounds (0,136) | Av: 32.43137255 | Std: 7.378439449 | True: 43 [morning: 62, replenishment: 0, evening: 19] 
+CUSTOMER 14 bounds (0,108) | Av: 35.35294118 | Std: 2.15864454 | True: 33 [morning: 40, replenishment: 31, evening: 38] 
+CUSTOMER 15 bounds (0,300) | Av: 99.8627451 | Std: 4.732116418 | True: 101 [morning: 90, replenishment: 110, evening: 99] 
+
+SUPPLIER INVENTORY [morning: 5820, evening: 5290] 
+ROUTE COST: 1178
+SUPPLY INVENTORY COST: 52.9
+CLIENT INVENTORY COST: 32.28
+CLIENT STOCKOUT COST: 0
+CLIENT STOCKOUT Amount: 0
+COST SUMMARY : THIS DAY 1263.18
+Total cost: 1434.04
+Route number: 1
+
+Total Time: 1133.968384
+Best Solution Time: 15.18404293
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Day 3
+
+route[0]: travel time = 1002; capacity = 1132; charge = 694; depot = 0
+ 0 -> 1 -> 10 -> 12 -> 4 -> 13 -> 6 -> 8 -> 7 -> 0
+
+CUSTOMER 1 bounds (0,84) | Av: 28.07692308 | Std: 5.041543391 | True: 21 [morning: 4, replenishment: 76, evening: 59] 
+CUSTOMER 2 bounds (0,64) | Av: 31.5 | Std: 2.790781528 | True: 33 [morning: 32, replenishment: 0, evening: 0] 
+CUSTOMER 3 bounds (0,267) | Av: 88.13461538 | Std: 4.988559396 | True: 82 [morning: 84, replenishment: 0, evening: 2] 
+CUSTOMER 4 bounds (0,192) | Av: 48.65384615 | Std: 7.205458976 | True: 38 [morning: 31, replenishment: 117, evening: 110] 
+CUSTOMER 5 bounds (0,96) | Av: 23.40384615 | Std: 7.540300992 | True: 25 [morning: 17, replenishment: 0, evening: 0] 
+CUSTOMER 6 bounds (0,186) | Av: 61.19230769 | Std: 2.724803885 | True: 55 [morning: 8, replenishment: 177, evening: 130] 
+CUSTOMER 7 bounds (0,32) | Av: 15.5 | Std: 7.064265436 | True: 13 [morning: 23, replenishment: 2, evening: 12] 
+CUSTOMER 8 bounds (0,234) | Av: 77.17307692 | Std: 6.219451973 | True: 74 [morning: 74, replenishment: 46, evening: 46] 
+CUSTOMER 9 bounds (0,244) | Av: 60.82692308 | Std: 6.040635327 | True: 66 [morning: 131, replenishment: 0, evening: 65] 
+CUSTOMER 10 bounds (0,332) | Av: 82.07692308 | Std: 1.949814132 | True: 81 [morning: 87, replenishment: 159, evening: 165] 
+CUSTOMER 11 bounds (0,94) | Av: 47.30769231 | Std: 3.313947574 | True: 47 [morning: 48, replenishment: 0, evening: 1] 
+CUSTOMER 12 bounds (0,68) | Av: 16.67307692 | Std: 1.751056317 | True: 16 [morning: 18, replenishment: 33, evening: 35] 
+CUSTOMER 13 bounds (0,136) | Av: 32.63461538 | Std: 7.449906675 | True: 42 [morning: 19, replenishment: 84, evening: 61] 
+CUSTOMER 14 bounds (0,108) | Av: 35.30769231 | Std: 2.162072203 | True: 35 [morning: 38, replenishment: 0, evening: 3] 
+CUSTOMER 15 bounds (0,300) | Av: 99.88461538 | Std: 4.68899631 | True: 95 [morning: 99, replenishment: 0, evening: 4] 
+
+SUPPLIER INVENTORY [morning: 6984, evening: 6290] 
+ROUTE COST: 1002
+SUPPLY INVENTORY COST: 62.9
+CLIENT INVENTORY COST: 31.74
+CLIENT STOCKOUT COST: 62
+CLIENT STOCKOUT Amount: 9
+COST SUMMARY : THIS DAY 1158.64
+Total cost: 2592.68
+Route number: 1
+
+Total Time: 869.0283813
+Best Solution Time: 74.14768982
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Day 4
+
+route[0]: travel time = 1274; capacity = 1132; charge = 809; depot = 0
+ 0 -> 7 -> 8 -> 5 -> 11 -> 14 -> 15 -> 3 -> 2 -> 9 -> 0
+
+CUSTOMER 1 bounds (0,84) | Av: 27.94339623 | Std: 5.085736971 | True: 31 [morning: 59, replenishment: 0, evening: 28] 
+CUSTOMER 2 bounds (0,64) | Av: 31.52830189 | Std: 2.771851595 | True: 28 [morning: 0, replenishment: 62, evening: 34] 
+CUSTOMER 3 bounds (0,267) | Av: 88.01886792 | Std: 5.011272448 | True: 85 [morning: 2, replenishment: 170, evening: 87] 
+CUSTOMER 4 bounds (0,192) | Av: 48.45283019 | Std: 7.282872225 | True: 58 [morning: 110, replenishment: 0, evening: 52] 
+CUSTOMER 5 bounds (0,96) | Av: 23.43396226 | Std: 7.471983985 | True: 23 [morning: 0, replenishment: 47, evening: 24] 
+CUSTOMER 6 bounds (0,186) | Av: 61.0754717 | Std: 2.827420029 | True: 61 [morning: 130, replenishment: 0, evening: 69] 
+CUSTOMER 7 bounds (0,32) | Av: 15.45283019 | Std: 7.005566621 | True: 12 [morning: 12, replenishment: 13, evening: 13] 
+CUSTOMER 8 bounds (0,234) | Av: 77.11320755 | Std: 6.175607456 | True: 82 [morning: 46, replenishment: 106, evening: 70] 
+CUSTOMER 9 bounds (0,244) | Av: 60.9245283 | Std: 6.024632007 | True: 52 [morning: 65, replenishment: 57, evening: 70] 
+CUSTOMER 10 bounds (0,332) | Av: 82.05660377 | Std: 1.936882287 | True: 78 [morning: 165, replenishment: 0, evening: 87] 
+CUSTOMER 11 bounds (0,94) | Av: 47.30188679 | Std: 3.282801988 | True: 47 [morning: 1, replenishment: 92, evening: 46] 
+CUSTOMER 12 bounds (0,68) | Av: 16.66037736 | Std: 1.736874185 | True: 16 [morning: 35, replenishment: 0, evening: 19] 
+CUSTOMER 13 bounds (0,136) | Av: 32.81132075 | Std: 7.48849836 | True: 30 [morning: 61, replenishment: 0, evening: 31] 
+CUSTOMER 14 bounds (0,108) | Av: 35.30188679 | Std: 2.141987313 | True: 33 [morning: 3, replenishment: 68, evening: 38] 
+CUSTOMER 15 bounds (0,300) | Av: 99.79245283 | Std: 4.691857622 | True: 101 [morning: 4, replenishment: 194, evening: 97] 
+
+SUPPLIER INVENTORY [morning: 7993, evening: 7184] 
+ROUTE COST: 1274
+SUPPLY INVENTORY COST: 71.84
+CLIENT INVENTORY COST: 33.99
+CLIENT STOCKOUT COST: 0
+CLIENT STOCKOUT Amount: 0
+COST SUMMARY : THIS DAY 1379.83
+Total cost: 3972.51
+Route number: 1
+
+Total Time: 231.0167999
+Best Solution Time: 0.02423799969
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Day 5
+
+route[0]: travel time = 0; capacity = 1132; charge = 0; depot = 0
+ 0 -> 0
+
+CUSTOMER 1 bounds (0,84) | Av: 28 | Std: 5.055250296 | True: 23 [morning: 28, replenishment: 0, evening: 5] 
+CUSTOMER 2 bounds (0,64) | Av: 31.46296296 | Std: 2.786960132 | True: 29 [morning: 34, replenishment: 0, evening: 5] 
+CUSTOMER 3 bounds (0,267) | Av: 87.96296296 | Std: 4.981309373 | True: 95 [morning: 87, replenishment: 0, evening: 0] 
+CUSTOMER 4 bounds (0,192) | Av: 48.62962963 | Std: 7.329029788 | True: 53 [morning: 52, replenishment: 0, evening: 0] 
+CUSTOMER 5 bounds (0,96) | Av: 23.42592593 | Std: 7.402706842 | True: 30 [morning: 24, replenishment: 0, evening: 0] 
+CUSTOMER 6 bounds (0,186) | Av: 61.07407407 | Std: 2.801136356 | True: 62 [morning: 69, replenishment: 0, evening: 7] 
+CUSTOMER 7 bounds (0,32) | Av: 15.38888889 | Std: 6.955990402 | True: 21 [morning: 13, replenishment: 0, evening: 0] 
+CUSTOMER 8 bounds (0,234) | Av: 77.2037037 | Std: 6.153528436 | True: 66 [morning: 70, replenishment: 0, evening: 4] 
+CUSTOMER 9 bounds (0,244) | Av: 60.75925926 | Std: 6.088651207 | True: 62 [morning: 70, replenishment: 0, evening: 8] 
+CUSTOMER 10 bounds (0,332) | Av: 81.98148148 | Std: 1.995279065 | True: 83 [morning: 87, replenishment: 0, evening: 4] 
+CUSTOMER 11 bounds (0,94) | Av: 47.2962963 | Std: 3.252518281 | True: 50 [morning: 46, replenishment: 0, evening: 0] 
+CUSTOMER 12 bounds (0,68) | Av: 16.64814815 | Std: 1.723018534 | True: 14 [morning: 19, replenishment: 0, evening: 5] 
+CUSTOMER 13 bounds (0,136) | Av: 32.75925926 | Std: 7.428511603 | True: 26 [morning: 31, replenishment: 0, evening: 5] 
+CUSTOMER 14 bounds (0,108) | Av: 35.25925926 | Std: 2.14463314 | True: 36 [morning: 38, replenishment: 0, evening: 2] 
+CUSTOMER 15 bounds (0,300) | Av: 99.81481481 | Std: 4.651061504 | True: 96 [morning: 97, replenishment: 0, evening: 1] 
+
+SUPPLIER INVENTORY [morning: 8883, evening: 8883] 
+ROUTE COST: 0
+SUPPLY INVENTORY COST: 88.83
+CLIENT INVENTORY COST: 2.6
+CLIENT STOCKOUT COST: 194
+CLIENT STOCKOUT Amount: 27
+COST SUMMARY : THIS DAY 285.43
+Total cost: 4257.94
+Route number: 0
+
+Total Time: 109.8296661
+Best Solution Time: 0.01796000078
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

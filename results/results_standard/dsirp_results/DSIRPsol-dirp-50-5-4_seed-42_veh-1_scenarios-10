@@ -1,0 +1,346 @@
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Day 1
+
+route[0]: travel time = 0; capacity = 3894; charge = 0; depot = 0
+ 0 -> 0
+
+CUSTOMER 1 bounds (0,190) | Av: 95.74 | Std: 6.590326244 | True: 96 [morning: 95, replenishment: 0, evening: 0] 
+CUSTOMER 2 bounds (0,66) | Av: 32.68 | Std: 7.993597438 | True: 46 [morning: 33, replenishment: 0, evening: 0] 
+CUSTOMER 3 bounds (0,152) | Av: 38.08 | Std: 3.99919992 | True: 43 [morning: 114, replenishment: 0, evening: 71] 
+CUSTOMER 4 bounds (0,70) | Av: 33.5 | Std: 5.937171044 | True: 27 [morning: 35, replenishment: 0, evening: 8] 
+CUSTOMER 5 bounds (0,33) | Av: 10.24 | Std: 6.830988215 | True: 16 [morning: 22, replenishment: 0, evening: 6] 
+CUSTOMER 6 bounds (0,261) | Av: 87 | Std: 11.14091558 | True: 100 [morning: 174, replenishment: 0, evening: 74] 
+CUSTOMER 7 bounds (0,276) | Av: 91.26 | Std: 3.968929327 | True: 93 [morning: 184, replenishment: 0, evening: 91] 
+CUSTOMER 8 bounds (0,56) | Av: 28.82 | Std: 8.691812239 | True: 27 [morning: 28, replenishment: 0, evening: 1] 
+CUSTOMER 9 bounds (0,56) | Av: 12.74 | Std: 8.221459724 | True: 25 [morning: 42, replenishment: 0, evening: 17] 
+CUSTOMER 10 bounds (0,200) | Av: 50.68 | Std: 6.58920329 | True: 47 [morning: 150, replenishment: 0, evening: 103] 
+CUSTOMER 11 bounds (0,52) | Av: 15.36 | Std: 5.705295785 | True: 5 [morning: 39, replenishment: 0, evening: 34] 
+CUSTOMER 12 bounds (0,192) | Av: 62.86 | Std: 5.299094262 | True: 70 [morning: 128, replenishment: 0, evening: 58] 
+CUSTOMER 13 bounds (0,224) | Av: 54.3 | Std: 9.873702446 | True: 49 [morning: 168, replenishment: 0, evening: 119] 
+CUSTOMER 14 bounds (0,120) | Av: 28.36 | Std: 8.765295203 | True: 29 [morning: 90, replenishment: 0, evening: 61] 
+CUSTOMER 15 bounds (0,280) | Av: 70.08 | Std: 5.66688627 | True: 64 [morning: 210, replenishment: 0, evening: 146] 
+CUSTOMER 16 bounds (0,33) | Av: 9.5 | Std: 7.066116331 | True: 2 [morning: 22, replenishment: 0, evening: 20] 
+CUSTOMER 17 bounds (0,264) | Av: 66.36 | Std: 3.86139871 | True: 57 [morning: 198, replenishment: 0, evening: 141] 
+CUSTOMER 18 bounds (0,87) | Av: 30.14 | Std: 7.480668419 | True: 36 [morning: 58, replenishment: 0, evening: 22] 
+CUSTOMER 19 bounds (0,176) | Av: 87.94 | Std: 7.360461942 | True: 85 [morning: 88, replenishment: 0, evening: 3] 
+CUSTOMER 20 bounds (0,144) | Av: 71.76 | Std: 2.285257097 | True: 73 [morning: 72, replenishment: 0, evening: 0] 
+CUSTOMER 21 bounds (0,42) | Av: 14.06 | Std: 5.216933965 | True: 16 [morning: 28, replenishment: 0, evening: 12] 
+CUSTOMER 22 bounds (0,92) | Av: 45.24 | Std: 2.997065231 | True: 46 [morning: 46, replenishment: 0, evening: 0] 
+CUSTOMER 23 bounds (0,99) | Av: 31.4 | Std: 9.2757749 | True: 41 [morning: 66, replenishment: 0, evening: 25] 
+CUSTOMER 24 bounds (0,360) | Av: 89.6 | Std: 4.190465368 | True: 88 [morning: 270, replenishment: 0, evening: 182] 
+CUSTOMER 25 bounds (0,216) | Av: 71.52 | Std: 3.869056733 | True: 69 [morning: 144, replenishment: 0, evening: 75] 
+CUSTOMER 26 bounds (0,39) | Av: 12.28 | Std: 7.952458739 | True: 28 [morning: 26, replenishment: 0, evening: 0] 
+CUSTOMER 27 bounds (0,285) | Av: 94.64 | Std: 5.44705425 | True: 96 [morning: 190, replenishment: 0, evening: 94] 
+CUSTOMER 28 bounds (0,153) | Av: 48.44 | Std: 7.147475079 | True: 51 [morning: 102, replenishment: 0, evening: 51] 
+CUSTOMER 29 bounds (0,260) | Av: 63.06 | Std: 8.907098293 | True: 59 [morning: 195, replenishment: 0, evening: 136] 
+CUSTOMER 30 bounds (0,24) | Av: 16.08 | Std: 10.34763741 | True: 1 [morning: 12, replenishment: 0, evening: 11] 
+CUSTOMER 31 bounds (0,212) | Av: 52.76 | Std: 5.361193897 | True: 43 [morning: 159, replenishment: 0, evening: 116] 
+CUSTOMER 32 bounds (0,184) | Av: 44.58 | Std: 4.931896187 | True: 48 [morning: 138, replenishment: 0, evening: 90] 
+CUSTOMER 33 bounds (0,237) | Av: 78.88 | Std: 3.26582302 | True: 75 [morning: 158, replenishment: 0, evening: 83] 
+CUSTOMER 34 bounds (0,192) | Av: 47.18 | Std: 9.500926271 | True: 48 [morning: 144, replenishment: 0, evening: 96] 
+CUSTOMER 35 bounds (0,42) | Av: 20.62 | Std: 5.919087768 | True: 29 [morning: 21, replenishment: 0, evening: 0] 
+CUSTOMER 36 bounds (0,96) | Av: 23.24 | Std: 9.399063783 | True: 44 [morning: 72, replenishment: 0, evening: 28] 
+CUSTOMER 37 bounds (0,88) | Av: 20.16 | Std: 5.749295609 | True: 24 [morning: 66, replenishment: 0, evening: 42] 
+CUSTOMER 38 bounds (0,272) | Av: 68 | Std: 3.423448554 | True: 69 [morning: 204, replenishment: 0, evening: 135] 
+CUSTOMER 39 bounds (0,126) | Av: 43.46 | Std: 7.32723686 | True: 46 [morning: 84, replenishment: 0, evening: 38] 
+CUSTOMER 40 bounds (0,72) | Av: 36 | Std: 2.778488798 | True: 37 [morning: 36, replenishment: 0, evening: 0] 
+CUSTOMER 41 bounds (0,194) | Av: 96.4 | Std: 10.71634266 | True: 109 [morning: 97, replenishment: 0, evening: 0] 
+CUSTOMER 42 bounds (0,285) | Av: 94.84 | Std: 4.177846335 | True: 97 [morning: 190, replenishment: 0, evening: 93] 
+CUSTOMER 43 bounds (0,144) | Av: 71.58 | Std: 1.662407892 | True: 72 [morning: 72, replenishment: 0, evening: 0] 
+CUSTOMER 44 bounds (0,54) | Av: 27.24 | Std: 2.404662138 | True: 26 [morning: 27, replenishment: 0, evening: 1] 
+CUSTOMER 45 bounds (0,104) | Av: 50.28 | Std: 4.587112381 | True: 53 [morning: 52, replenishment: 0, evening: 0] 
+CUSTOMER 46 bounds (0,246) | Av: 83.14 | Std: 7.634160072 | True: 96 [morning: 164, replenishment: 0, evening: 68] 
+CUSTOMER 47 bounds (0,141) | Av: 46.68 | Std: 8.120197042 | True: 47 [morning: 94, replenishment: 0, evening: 47] 
+CUSTOMER 48 bounds (0,176) | Av: 88.72 | Std: 6.238717817 | True: 91 [morning: 88, replenishment: 0, evening: 0] 
+CUSTOMER 49 bounds (0,128) | Av: 62.92 | Std: 9.008529292 | True: 65 [morning: 64, replenishment: 0, evening: 0] 
+CUSTOMER 50 bounds (0,120) | Av: 59.72 | Std: 5.110929465 | True: 50 [morning: 60, replenishment: 0, evening: 10] 
+
+SUPPLIER INVENTORY [morning: 14418, evening: 14418] 
+ROUTE COST: 0
+SUPPLY INVENTORY COST: 144.18
+CLIENT INVENTORY COST: 128.31
+CLIENT STOCKOUT COST: 588
+CLIENT STOCKOUT Amount: 43
+COST SUMMARY : THIS DAY 860.49
+Total cost: 860.49
+Route number: 0
+
+Total Time: 1204.226074
+Best Solution Time: 1038.900635
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Day 2
+
+route[0]: travel time = 2391; capacity = 3894; charge = 2379; depot = 0
+ 0 -> 36 -> 46 -> 20 -> 37 -> 26 -> 50 -> 49 -> 25 -> 45 -> 14 -> 48 -> 30 -> 5 -> 19 -> 42 -> 2 -> 11 -> 22 -> 4 -> 8 -> 32 -> 1 -> 44 -> 12 -> 39 -> 6 -> 34 -> 27 -> 7 -> 35 -> 28 -> 41 -> 23 -> 40 -> 47 -> 18 -> 21 -> 3 -> 43 -> 0
+
+CUSTOMER 1 bounds (0,190) | Av: 95.74509804 | Std: 6.52549491 | True: 87 [morning: 0, replenishment: 152, evening: 65] 
+CUSTOMER 2 bounds (0,66) | Av: 32.94117647 | Std: 8.127445067 | True: 30 [morning: 0, replenishment: 57, evening: 27] 
+CUSTOMER 3 bounds (0,152) | Av: 38.17647059 | Std: 4.018125025 | True: 41 [morning: 71, replenishment: 34, evening: 64] 
+CUSTOMER 4 bounds (0,70) | Av: 33.37254902 | Std: 5.947353289 | True: 38 [morning: 8, replenishment: 40, evening: 10] 
+CUSTOMER 5 bounds (0,33) | Av: 10.35294118 | Std: 6.810670778 | True: 1 [morning: 6, replenishment: 15, evening: 20] 
+CUSTOMER 6 bounds (0,261) | Av: 87.25490196 | Std: 11.17743374 | True: 89 [morning: 74, replenishment: 110, evening: 95] 
+CUSTOMER 7 bounds (0,276) | Av: 91.29411765 | Std: 3.937223654 | True: 92 [morning: 91, replenishment: 82, evening: 81] 
+CUSTOMER 8 bounds (0,56) | Av: 28.78431373 | Std: 8.609875145 | True: 37 [morning: 1, replenishment: 41, evening: 5] 
+CUSTOMER 9 bounds (0,56) | Av: 12.98039216 | Std: 8.316037414 | True: 7 [morning: 17, replenishment: 0, evening: 10] 
+CUSTOMER 10 bounds (0,200) | Av: 50.60784314 | Std: 6.544203936 | True: 59 [morning: 103, replenishment: 0, evening: 44] 
+CUSTOMER 11 bounds (0,52) | Av: 15.15686275 | Std: 5.828841573 | True: 11 [morning: 34, replenishment: 10, evening: 33] 
+CUSTOMER 12 bounds (0,192) | Av: 63 | Std: 5.339457268 | True: 70 [morning: 58, replenishment: 61, evening: 49] 
+CUSTOMER 13 bounds (0,224) | Av: 54.19607843 | Std: 9.804 | True: 36 [morning: 119, replenishment: 0, evening: 83] 
+CUSTOMER 14 bounds (0,120) | Av: 28.37254902 | Std: 8.679389118 | True: 31 [morning: 61, replenishment: 6, evening: 36] 
+CUSTOMER 15 bounds (0,280) | Av: 69.96078431 | Std: 5.674023313 | True: 76 [morning: 146, replenishment: 0, evening: 70] 
+CUSTOMER 16 bounds (0,33) | Av: 9.352941176 | Std: 7.073351064 | True: 24 [morning: 20, replenishment: 0, evening: 0] 
+CUSTOMER 17 bounds (0,264) | Av: 66.17647059 | Std: 4.037597239 | True: 69 [morning: 141, replenishment: 0, evening: 72] 
+CUSTOMER 18 bounds (0,87) | Av: 30.25490196 | Std: 7.451393177 | True: 23 [morning: 22, replenishment: 29, evening: 28] 
+CUSTOMER 19 bounds (0,176) | Av: 87.88235294 | Std: 7.299333998 | True: 87 [morning: 3, replenishment: 129, evening: 45] 
+CUSTOMER 20 bounds (0,144) | Av: 71.78431373 | Std: 2.269263727 | True: 71 [morning: 0, replenishment: 101, evening: 30] 
+CUSTOMER 21 bounds (0,42) | Av: 14.09803922 | Std: 5.172532667 | True: 9 [morning: 12, replenishment: 13, evening: 16] 
+CUSTOMER 22 bounds (0,92) | Av: 45.25490196 | Std: 2.969407 | True: 46 [morning: 0, replenishment: 71, evening: 25] 
+CUSTOMER 23 bounds (0,99) | Av: 31.58823529 | Std: 9.280332293 | True: 18 [morning: 25, replenishment: 38, evening: 45] 
+CUSTOMER 24 bounds (0,360) | Av: 89.56862745 | Std: 4.155105067 | True: 95 [morning: 182, replenishment: 0, evening: 87] 
+CUSTOMER 25 bounds (0,216) | Av: 71.47058824 | Std: 3.846836955 | True: 71 [morning: 75, replenishment: 50, evening: 54] 
+CUSTOMER 26 bounds (0,39) | Av: 12.58823529 | Std: 8.170190846 | True: 26 [morning: 0, replenishment: 31, evening: 5] 
+CUSTOMER 27 bounds (0,285) | Av: 94.66666667 | Std: 5.396682593 | True: 95 [morning: 94, replenishment: 88, evening: 87] 
+CUSTOMER 28 bounds (0,153) | Av: 48.49019608 | Std: 7.085950056 | True: 46 [morning: 51, replenishment: 50, evening: 55] 
+CUSTOMER 29 bounds (0,260) | Av: 62.98039216 | Std: 8.837287748 | True: 67 [morning: 136, replenishment: 0, evening: 69] 
+CUSTOMER 30 bounds (0,24) | Av: 15.78431373 | Std: 10.45684638 | True: 4 [morning: 11, replenishment: 11, evening: 18] 
+CUSTOMER 31 bounds (0,212) | Av: 52.56862745 | Std: 5.478138019 | True: 57 [morning: 116, replenishment: 0, evening: 59] 
+CUSTOMER 32 bounds (0,184) | Av: 44.64705882 | Std: 4.906272613 | True: 34 [morning: 90, replenishment: 9, evening: 65] 
+CUSTOMER 33 bounds (0,237) | Av: 78.80392157 | Std: 3.278088921 | True: 80 [morning: 83, replenishment: 0, evening: 3] 
+CUSTOMER 34 bounds (0,192) | Av: 47.19607843 | Std: 9.408005785 | True: 50 [morning: 96, replenishment: 39, evening: 85] 
+CUSTOMER 35 bounds (0,42) | Av: 20.78431373 | Std: 5.974828656 | True: 18 [morning: 0, replenishment: 37, evening: 19] 
+CUSTOMER 36 bounds (0,96) | Av: 23.64705882 | Std: 9.741408541 | True: 25 [morning: 28, replenishment: 54, evening: 57] 
+CUSTOMER 37 bounds (0,88) | Av: 20.23529412 | Std: 5.717493744 | True: 29 [morning: 42, replenishment: 20, evening: 33] 
+CUSTOMER 38 bounds (0,272) | Av: 68.01960784 | Std: 3.39255353 | True: 67 [morning: 135, replenishment: 0, evening: 68] 
+CUSTOMER 39 bounds (0,126) | Av: 43.50980392 | Std: 7.263587805 | True: 32 [morning: 38, replenishment: 48, evening: 54] 
+CUSTOMER 40 bounds (0,72) | Av: 36.01960784 | Std: 2.754605385 | True: 36 [morning: 0, replenishment: 60, evening: 24] 
+CUSTOMER 41 bounds (0,194) | Av: 96.64705882 | Std: 10.75361048 | True: 91 [morning: 0, replenishment: 133, evening: 42] 
+CUSTOMER 42 bounds (0,285) | Av: 94.88235294 | Std: 4.147510753 | True: 92 [morning: 93, replenishment: 87, evening: 88] 
+CUSTOMER 43 bounds (0,144) | Av: 71.58823529 | Std: 1.647058824 | True: 71 [morning: 0, replenishment: 85, evening: 14] 
+CUSTOMER 44 bounds (0,54) | Av: 27.21568627 | Std: 2.387169343 | True: 26 [morning: 1, replenishment: 50, evening: 25] 
+CUSTOMER 45 bounds (0,104) | Av: 50.33333333 | Std: 4.557547787 | True: 54 [morning: 0, replenishment: 85, evening: 31] 
+CUSTOMER 46 bounds (0,246) | Av: 83.39215686 | Std: 7.766389202 | True: 95 [morning: 68, replenishment: 101, evening: 74] 
+CUSTOMER 47 bounds (0,141) | Av: 46.68627451 | Std: 8.040315563 | True: 52 [morning: 47, replenishment: 54, evening: 49] 
+CUSTOMER 48 bounds (0,176) | Av: 88.76470588 | Std: 6.185334443 | True: 94 [morning: 0, replenishment: 130, evening: 36] 
+CUSTOMER 49 bounds (0,128) | Av: 62.96078431 | Std: 8.924433929 | True: 40 [morning: 0, replenishment: 95, evening: 55] 
+CUSTOMER 50 bounds (0,120) | Av: 59.52941176 | Std: 5.236946203 | True: 65 [morning: 10, replenishment: 73, evening: 18] 
+
+SUPPLIER INVENTORY [morning: 21217, evening: 18838] 
+ROUTE COST: 2391
+SUPPLY INVENTORY COST: 188.38
+CLIENT INVENTORY COST: 118.45
+CLIENT STOCKOUT COST: 32
+CLIENT STOCKOUT Amount: 4
+COST SUMMARY : THIS DAY 2729.83
+Total cost: 3590.32
+Route number: 1
+
+Total Time: 1202.837036
+Best Solution Time: 1187.40271
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Day 3
+
+route[0]: travel time = 2496; capacity = 3894; charge = 2854; depot = 0
+ 0 -> 43 -> 33 -> 16 -> 9 -> 40 -> 47 -> 18 -> 38 -> 22 -> 4 -> 8 -> 1 -> 32 -> 17 -> 41 -> 28 -> 35 -> 10 -> 7 -> 27 -> 31 -> 34 -> 6 -> 39 -> 12 -> 44 -> 2 -> 42 -> 19 -> 15 -> 30 -> 48 -> 14 -> 45 -> 25 -> 24 -> 50 -> 49 -> 26 -> 37 -> 20 -> 46 -> 0
+
+CUSTOMER 1 bounds (0,190) | Av: 95.57692308 | Std: 6.573098303 | True: 91 [morning: 65, replenishment: 63, evening: 37] 
+CUSTOMER 2 bounds (0,66) | Av: 32.88461538 | Std: 8.05904615 | True: 42 [morning: 27, replenishment: 15, evening: 0] 
+CUSTOMER 3 bounds (0,152) | Av: 38.23076923 | Std: 3.99815046 | True: 40 [morning: 64, replenishment: 0, evening: 24] 
+CUSTOMER 4 bounds (0,70) | Av: 33.46153846 | Std: 5.92407584 | True: 34 [morning: 10, replenishment: 32, evening: 8] 
+CUSTOMER 5 bounds (0,33) | Av: 10.17307692 | Std: 6.86608486 | True: 9 [morning: 20, replenishment: 0, evening: 11] 
+CUSTOMER 6 bounds (0,261) | Av: 87.28846154 | Std: 11.07203084 | True: 78 [morning: 95, replenishment: 157, evening: 174] 
+CUSTOMER 7 bounds (0,276) | Av: 91.30769231 | Std: 3.900386872 | True: 87 [morning: 81, replenishment: 102, evening: 96] 
+CUSTOMER 8 bounds (0,56) | Av: 28.94230769 | Std: 8.601013942 | True: 38 [morning: 5, replenishment: 31, evening: 0] 
+CUSTOMER 9 bounds (0,56) | Av: 12.86538462 | Std: 8.276539704 | True: 12 [morning: 10, replenishment: 28, evening: 26] 
+CUSTOMER 10 bounds (0,200) | Av: 50.76923077 | Std: 6.582656071 | True: 50 [morning: 44, replenishment: 99, evening: 93] 
+CUSTOMER 11 bounds (0,52) | Av: 15.07692308 | Std: 5.800683494 | True: 20 [morning: 33, replenishment: 0, evening: 13] 
+CUSTOMER 12 bounds (0,192) | Av: 63.13461538 | Std: 5.374544153 | True: 68 [morning: 49, replenishment: 67, evening: 48] 
+CUSTOMER 13 bounds (0,224) | Av: 53.84615385 | Std: 10.0257066 | True: 65 [morning: 83, replenishment: 0, evening: 18] 
+CUSTOMER 14 bounds (0,120) | Av: 28.42307692 | Std: 8.60309907 | True: 29 [morning: 36, replenishment: 12, evening: 19] 
+CUSTOMER 15 bounds (0,280) | Av: 70.07692308 | Std: 5.680080423 | True: 65 [morning: 70, replenishment: 143, evening: 148] 
+CUSTOMER 16 bounds (0,33) | Av: 9.634615385 | Std: 7.288106344 | True: 25 [morning: 0, replenishment: 24, evening: 0] 
+CUSTOMER 17 bounds (0,264) | Av: 66.23076923 | Std: 4.017344055 | True: 64 [morning: 72, replenishment: 100, evening: 108] 
+CUSTOMER 18 bounds (0,87) | Av: 30.11538462 | Std: 7.446356482 | True: 24 [morning: 28, replenishment: 37, evening: 41] 
+CUSTOMER 19 bounds (0,176) | Av: 87.86538462 | Std: 7.229822974 | True: 87 [morning: 45, replenishment: 68, evening: 26] 
+CUSTOMER 20 bounds (0,144) | Av: 71.76923077 | Std: 2.249917816 | True: 69 [morning: 30, replenishment: 77, evening: 38] 
+CUSTOMER 21 bounds (0,42) | Av: 14 | Std: 5.170180774 | True: 6 [morning: 16, replenishment: 0, evening: 10] 
+CUSTOMER 22 bounds (0,92) | Av: 45.26923077 | Std: 2.942496223 | True: 46 [morning: 25, replenishment: 52, evening: 31] 
+CUSTOMER 23 bounds (0,99) | Av: 31.32692308 | Std: 9.37820951 | True: 29 [morning: 45, replenishment: 0, evening: 16] 
+CUSTOMER 24 bounds (0,360) | Av: 89.67307692 | Std: 4.182018071 | True: 93 [morning: 87, replenishment: 153, evening: 147] 
+CUSTOMER 25 bounds (0,216) | Av: 71.46153846 | Std: 3.810216723 | True: 63 [morning: 54, replenishment: 44, evening: 35] 
+CUSTOMER 26 bounds (0,39) | Av: 12.84615385 | Std: 8.298249619 | True: 7 [morning: 5, replenishment: 26, evening: 24] 
+CUSTOMER 27 bounds (0,285) | Av: 94.67307692 | Std: 5.344735562 | True: 88 [morning: 87, replenishment: 155, evening: 154] 
+CUSTOMER 28 bounds (0,153) | Av: 48.44230769 | Std: 7.025813562 | True: 49 [morning: 55, replenishment: 33, evening: 39] 
+CUSTOMER 29 bounds (0,260) | Av: 63.05769231 | Std: 8.769294028 | True: 64 [morning: 69, replenishment: 0, evening: 5] 
+CUSTOMER 30 bounds (0,24) | Av: 15.55769231 | Std: 10.48151021 | True: 25 [morning: 18, replenishment: 4, evening: 0] 
+CUSTOMER 31 bounds (0,212) | Av: 52.65384615 | Std: 5.459235701 | True: 51 [morning: 59, replenishment: 100, evening: 108] 
+CUSTOMER 32 bounds (0,184) | Av: 44.44230769 | Std: 5.074117815 | True: 45 [morning: 65, replenishment: 25, evening: 45] 
+CUSTOMER 33 bounds (0,237) | Av: 78.82692308 | Std: 3.250568908 | True: 73 [morning: 3, replenishment: 208, evening: 138] 
+CUSTOMER 34 bounds (0,192) | Av: 47.25 | Std: 9.32505929 | True: 55 [morning: 85, replenishment: 54, evening: 84] 
+CUSTOMER 35 bounds (0,42) | Av: 20.73076923 | Std: 5.929442134 | True: 17 [morning: 19, replenishment: 13, evening: 15] 
+CUSTOMER 36 bounds (0,96) | Av: 23.67307692 | Std: 9.649075591 | True: 24 [morning: 57, replenishment: 0, evening: 33] 
+CUSTOMER 37 bounds (0,88) | Av: 20.40384615 | Std: 5.788780978 | True: 25 [morning: 33, replenishment: 21, evening: 29] 
+CUSTOMER 38 bounds (0,272) | Av: 68 | Std: 3.36269123 | True: 68 [morning: 68, replenishment: 121, evening: 121] 
+CUSTOMER 39 bounds (0,126) | Av: 43.28846154 | Std: 7.365033131 | True: 34 [morning: 54, replenishment: 48, evening: 68] 
+CUSTOMER 40 bounds (0,72) | Av: 36.01923077 | Std: 2.727991545 | True: 31 [morning: 24, replenishment: 17, evening: 10] 
+CUSTOMER 41 bounds (0,194) | Av: 96.53846154 | Std: 10.67790951 | True: 102 [morning: 42, replenishment: 102, evening: 42] 
+CUSTOMER 42 bounds (0,285) | Av: 94.82692308 | Std: 4.126467822 | True: 96 [morning: 88, replenishment: 129, evening: 121] 
+CUSTOMER 43 bounds (0,144) | Av: 71.57692308 | Std: 1.633144134 | True: 69 [morning: 14, replenishment: 100, evening: 45] 
+CUSTOMER 44 bounds (0,54) | Av: 27.19230769 | Std: 2.369992385 | True: 28 [morning: 25, replenishment: 12, evening: 9] 
+CUSTOMER 45 bounds (0,104) | Av: 50.40384615 | Std: 4.541516247 | True: 58 [morning: 31, replenishment: 41, evening: 14] 
+CUSTOMER 46 bounds (0,246) | Av: 83.61538462 | Std: 7.854821758 | True: 79 [morning: 74, replenishment: 100, evening: 95] 
+CUSTOMER 47 bounds (0,141) | Av: 46.78846154 | Std: 7.996000295 | True: 52 [morning: 49, replenishment: 60, evening: 57] 
+CUSTOMER 48 bounds (0,176) | Av: 88.86538462 | Std: 6.1676228 | True: 76 [morning: 36, replenishment: 79, evening: 39] 
+CUSTOMER 49 bounds (0,128) | Av: 62.51923077 | Std: 9.383886321 | True: 54 [morning: 55, replenishment: 36, evening: 37] 
+CUSTOMER 50 bounds (0,120) | Av: 59.63461538 | Std: 5.24048165 | True: 66 [morning: 18, replenishment: 66, evening: 18] 
+
+SUPPLIER INVENTORY [morning: 25638, evening: 22784] 
+ROUTE COST: 2496
+SUPPLY INVENTORY COST: 227.84
+CLIENT INVENTORY COST: 129.85
+CLIENT STOCKOUT COST: 34
+CLIENT STOCKOUT Amount: 6
+COST SUMMARY : THIS DAY 2887.69
+Total cost: 6478.01
+Route number: 1
+
+Total Time: 1199.699219
+Best Solution Time: 973.4014282
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Day 4
+
+route[0]: travel time = 2037; capacity = 3894; charge = 1759; depot = 0
+ 0 -> 20 -> 37 -> 49 -> 50 -> 24 -> 25 -> 45 -> 14 -> 48 -> 30 -> 5 -> 19 -> 12 -> 44 -> 2 -> 11 -> 22 -> 4 -> 8 -> 17 -> 32 -> 1 -> 7 -> 10 -> 35 -> 28 -> 41 -> 23 -> 40 -> 9 -> 16 -> 29 -> 21 -> 33 -> 3 -> 13 -> 43 -> 0
+
+CUSTOMER 1 bounds (0,190) | Av: 95.49056604 | Std: 6.540505553 | True: 84 [morning: 37, replenishment: 105, evening: 58] 
+CUSTOMER 2 bounds (0,66) | Av: 33.05660377 | Std: 8.078424782 | True: 28 [morning: 0, replenishment: 50, evening: 22] 
+CUSTOMER 3 bounds (0,152) | Av: 38.26415094 | Std: 3.967561598 | True: 36 [morning: 24, replenishment: 49, evening: 37] 
+CUSTOMER 4 bounds (0,70) | Av: 33.47169811 | Std: 5.868379525 | True: 24 [morning: 8, replenishment: 56, evening: 40] 
+CUSTOMER 5 bounds (0,33) | Av: 10.1509434 | Std: 6.802874604 | True: 24 [morning: 11, replenishment: 6, evening: 0] 
+CUSTOMER 6 bounds (0,261) | Av: 87.11320755 | Std: 11.03965473 | True: 90 [morning: 174, replenishment: 0, evening: 84] 
+CUSTOMER 7 bounds (0,276) | Av: 91.22641509 | Std: 3.907619598 | True: 90 [morning: 96, replenishment: 37, evening: 43] 
+CUSTOMER 8 bounds (0,56) | Av: 29.11320755 | Std: 8.608158432 | True: 32 [morning: 0, replenishment: 48, evening: 16] 
+CUSTOMER 9 bounds (0,56) | Av: 12.8490566 | Std: 8.198932803 | True: 16 [morning: 26, replenishment: 15, evening: 25] 
+CUSTOMER 10 bounds (0,200) | Av: 50.75471698 | Std: 6.521099746 | True: 41 [morning: 93, replenishment: 7, evening: 59] 
+CUSTOMER 11 bounds (0,52) | Av: 15.16981132 | Std: 5.784611495 | True: 0 [morning: 13, replenishment: 17, evening: 30] 
+CUSTOMER 12 bounds (0,192) | Av: 63.22641509 | Std: 5.364599229 | True: 63 [morning: 48, replenishment: 79, evening: 64] 
+CUSTOMER 13 bounds (0,224) | Av: 54.05660377 | Std: 10.0459606 | True: 47 [morning: 18, replenishment: 95, evening: 66] 
+CUSTOMER 14 bounds (0,120) | Av: 28.43396226 | Std: 8.521912785 | True: 36 [morning: 19, replenishment: 26, evening: 9] 
+CUSTOMER 15 bounds (0,280) | Av: 69.98113208 | Std: 5.66848476 | True: 73 [morning: 148, replenishment: 0, evening: 75] 
+CUSTOMER 16 bounds (0,33) | Av: 9.924528302 | Std: 7.515641693 | True: 17 [morning: 0, replenishment: 18, evening: 1] 
+CUSTOMER 17 bounds (0,264) | Av: 66.18867925 | Std: 3.990822508 | True: 71 [morning: 108, replenishment: 23, evening: 60] 
+CUSTOMER 18 bounds (0,87) | Av: 30 | Std: 7.422556138 | True: 12 [morning: 41, replenishment: 0, evening: 29] 
+CUSTOMER 19 bounds (0,176) | Av: 87.8490566 | Std: 7.162260175 | True: 84 [morning: 26, replenishment: 107, evening: 49] 
+CUSTOMER 20 bounds (0,144) | Av: 71.71698113 | Std: 2.260216708 | True: 72 [morning: 38, replenishment: 83, evening: 49] 
+CUSTOMER 21 bounds (0,42) | Av: 13.8490566 | Std: 5.23556858 | True: 21 [morning: 10, replenishment: 18, evening: 7] 
+CUSTOMER 22 bounds (0,92) | Av: 45.28301887 | Std: 2.91630005 | True: 52 [morning: 31, replenishment: 60, evening: 39] 
+CUSTOMER 23 bounds (0,99) | Av: 31.28301887 | Std: 9.294708088 | True: 21 [morning: 16, replenishment: 41, evening: 36] 
+CUSTOMER 24 bounds (0,360) | Av: 89.73584906 | Std: 4.167035702 | True: 82 [morning: 147, replenishment: 16, evening: 81] 
+CUSTOMER 25 bounds (0,216) | Av: 71.30188679 | Std: 3.945787846 | True: 67 [morning: 35, replenishment: 89, evening: 57] 
+CUSTOMER 26 bounds (0,39) | Av: 12.73584906 | Std: 8.25798857 | True: 18 [morning: 24, replenishment: 0, evening: 6] 
+CUSTOMER 27 bounds (0,285) | Av: 94.54716981 | Std: 5.371363755 | True: 88 [morning: 154, replenishment: 0, evening: 66] 
+CUSTOMER 28 bounds (0,153) | Av: 48.45283019 | Std: 6.959630325 | True: 32 [morning: 39, replenishment: 36, evening: 43] 
+CUSTOMER 29 bounds (0,260) | Av: 63.0754717 | Std: 8.687117021 | True: 65 [morning: 5, replenishment: 125, evening: 65] 
+CUSTOMER 30 bounds (0,24) | Av: 15.73584906 | Std: 10.46134113 | True: 0 [morning: 0, replenishment: 16, evening: 16] 
+CUSTOMER 31 bounds (0,212) | Av: 52.62264151 | Std: 5.412168035 | True: 46 [morning: 108, replenishment: 0, evening: 62] 
+CUSTOMER 32 bounds (0,184) | Av: 44.45283019 | Std: 5.026593572 | True: 47 [morning: 45, replenishment: 25, evening: 23] 
+CUSTOMER 33 bounds (0,237) | Av: 78.71698113 | Std: 3.315927022 | True: 82 [morning: 138, replenishment: 18, evening: 74] 
+CUSTOMER 34 bounds (0,192) | Av: 47.39622642 | Std: 9.296661244 | True: 47 [morning: 84, replenishment: 0, evening: 37] 
+CUSTOMER 35 bounds (0,42) | Av: 20.66037736 | Std: 5.895131974 | True: 10 [morning: 15, replenishment: 13, evening: 18] 
+CUSTOMER 36 bounds (0,96) | Av: 23.67924528 | Std: 9.5577166 | True: 16 [morning: 33, replenishment: 0, evening: 17] 
+CUSTOMER 37 bounds (0,88) | Av: 20.49056604 | Std: 5.767909407 | True: 26 [morning: 29, replenishment: 13, evening: 16] 
+CUSTOMER 38 bounds (0,272) | Av: 68 | Std: 3.33081666 | True: 68 [morning: 121, replenishment: 0, evening: 53] 
+CUSTOMER 39 bounds (0,126) | Av: 43.11320755 | Std: 7.403875521 | True: 37 [morning: 68, replenishment: 0, evening: 31] 
+CUSTOMER 40 bounds (0,72) | Av: 35.9245283 | Std: 2.787093276 | True: 30 [morning: 10, replenishment: 47, evening: 27] 
+CUSTOMER 41 bounds (0,194) | Av: 96.64150943 | Std: 10.60276635 | True: 99 [morning: 42, replenishment: 113, evening: 56] 
+CUSTOMER 42 bounds (0,285) | Av: 94.8490566 | Std: 4.090468564 | True: 94 [morning: 121, replenishment: 0, evening: 27] 
+CUSTOMER 43 bounds (0,144) | Av: 71.52830189 | Std: 1.655223562 | True: 73 [morning: 45, replenishment: 26, evening: 0] 
+CUSTOMER 44 bounds (0,54) | Av: 27.20754717 | Std: 2.350098276 | True: 28 [morning: 9, replenishment: 33, evening: 14] 
+CUSTOMER 45 bounds (0,104) | Av: 50.54716981 | Std: 4.615666667 | True: 50 [morning: 14, replenishment: 72, evening: 36] 
+CUSTOMER 46 bounds (0,246) | Av: 83.52830189 | Std: 7.805667447 | True: 102 [morning: 95, replenishment: 0, evening: 0] 
+CUSTOMER 47 bounds (0,141) | Av: 46.88679245 | Std: 7.951884498 | True: 42 [morning: 57, replenishment: 0, evening: 15] 
+CUSTOMER 48 bounds (0,176) | Av: 88.62264151 | Std: 6.354990358 | True: 98 [morning: 39, replenishment: 83, evening: 24] 
+CUSTOMER 49 bounds (0,128) | Av: 62.35849057 | Std: 9.366931677 | True: 55 [morning: 37, replenishment: 43, evening: 25] 
+CUSTOMER 50 bounds (0,120) | Av: 59.75471698 | Std: 5.26256147 | True: 61 [morning: 18, replenishment: 51, evening: 8] 
+
+SUPPLIER INVENTORY [morning: 29582, evening: 27823] 
+ROUTE COST: 2037
+SUPPLY INVENTORY COST: 278.23
+CLIENT INVENTORY COST: 97.43
+CLIENT STOCKOUT COST: 170
+CLIENT STOCKOUT Amount: 16
+COST SUMMARY : THIS DAY 2582.66
+Total cost: 9060.67
+Route number: 1
+
+Total Time: 857.9003296
+Best Solution Time: 820.3302612
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Day 5
+
+route[0]: travel time = 2078; capacity = 3894; charge = 876; depot = 0
+ 0 -> 43 -> 33 -> 21 -> 38 -> 18 -> 29 -> 16 -> 40 -> 47 -> 8 -> 32 -> 1 -> 17 -> 41 -> 28 -> 35 -> 7 -> 27 -> 34 -> 39 -> 44 -> 2 -> 42 -> 19 -> 5 -> 30 -> 48 -> 14 -> 45 -> 25 -> 24 -> 50 -> 49 -> 37 -> 20 -> 46 -> 36 -> 0
+
+CUSTOMER 1 bounds (0,190) | Av: 95.27777778 | Std: 6.662267067 | True: 92 [morning: 58, replenishment: 37, evening: 3] 
+CUSTOMER 2 bounds (0,66) | Av: 32.96296296 | Std: 8.032256643 | True: 25 [morning: 22, replenishment: 9, evening: 6] 
+CUSTOMER 3 bounds (0,152) | Av: 38.22222222 | Std: 3.942487778 | True: 42 [morning: 37, replenishment: 0, evening: 0] 
+CUSTOMER 4 bounds (0,70) | Av: 33.2962963 | Std: 5.952371546 | True: 29 [morning: 40, replenishment: 0, evening: 11] 
+CUSTOMER 5 bounds (0,33) | Av: 10.40740741 | Std: 6.993432153 | True: 18 [morning: 0, replenishment: 15, evening: 0] 
+CUSTOMER 6 bounds (0,261) | Av: 87.16666667 | Std: 10.94388041 | True: 95 [morning: 84, replenishment: 0, evening: 0] 
+CUSTOMER 7 bounds (0,276) | Av: 91.2037037 | Std: 3.874798105 | True: 90 [morning: 43, replenishment: 48, evening: 1] 
+CUSTOMER 8 bounds (0,56) | Av: 29.16666667 | Std: 8.536956696 | True: 35 [morning: 16, replenishment: 16, evening: 0] 
+CUSTOMER 9 bounds (0,56) | Av: 12.90740741 | Std: 8.133762554 | True: 18 [morning: 25, replenishment: 0, evening: 7] 
+CUSTOMER 10 bounds (0,200) | Av: 50.57407407 | Std: 6.592930703 | True: 44 [morning: 59, replenishment: 0, evening: 15] 
+CUSTOMER 11 bounds (0,52) | Av: 14.88888889 | Std: 6.084791809 | True: 13 [morning: 30, replenishment: 0, evening: 17] 
+CUSTOMER 12 bounds (0,192) | Av: 63.22222222 | Std: 5.314782552 | True: 73 [morning: 64, replenishment: 0, evening: 0] 
+CUSTOMER 13 bounds (0,224) | Av: 53.92592593 | Std: 9.997873574 | True: 57 [morning: 66, replenishment: 0, evening: 9] 
+CUSTOMER 14 bounds (0,120) | Av: 28.57407407 | Std: 8.504033579 | True: 45 [morning: 9, replenishment: 20, evening: 0] 
+CUSTOMER 15 bounds (0,280) | Av: 70.03703704 | Std: 5.630482392 | True: 68 [morning: 75, replenishment: 0, evening: 7] 
+CUSTOMER 16 bounds (0,33) | Av: 10.05555556 | Std: 7.506581474 | True: 0 [morning: 1, replenishment: 9, evening: 10] 
+CUSTOMER 17 bounds (0,264) | Av: 66.27777778 | Std: 4.006553274 | True: 74 [morning: 60, replenishment: 6, evening: 0] 
+CUSTOMER 18 bounds (0,87) | Av: 29.66666667 | Std: 7.743575593 | True: 22 [morning: 29, replenishment: 3, evening: 10] 
+CUSTOMER 19 bounds (0,176) | Av: 87.77777778 | Std: 7.114582486 | True: 90 [morning: 49, replenishment: 41, evening: 0] 
+CUSTOMER 20 bounds (0,144) | Av: 71.72222222 | Std: 2.239516041 | True: 64 [morning: 49, replenishment: 23, evening: 8] 
+CUSTOMER 21 bounds (0,42) | Av: 13.98148148 | Std: 5.275698096 | True: 3 [morning: 7, replenishment: 7, evening: 11] 
+CUSTOMER 22 bounds (0,92) | Av: 45.40740741 | Std: 3.02776362 | True: 46 [morning: 39, replenishment: 0, evening: 0] 
+CUSTOMER 23 bounds (0,99) | Av: 31.09259259 | Std: 9.312016368 | True: 29 [morning: 36, replenishment: 0, evening: 7] 
+CUSTOMER 24 bounds (0,360) | Av: 89.59259259 | Std: 4.25797082 | True: 89 [morning: 81, replenishment: 9, evening: 1] 
+CUSTOMER 25 bounds (0,216) | Av: 71.22222222 | Std: 3.951870943 | True: 66 [morning: 57, replenishment: 13, evening: 4] 
+CUSTOMER 26 bounds (0,39) | Av: 12.83333333 | Std: 8.211892911 | True: 13 [morning: 6, replenishment: 0, evening: 0] 
+CUSTOMER 27 bounds (0,285) | Av: 94.42592593 | Std: 5.394104641 | True: 99 [morning: 66, replenishment: 27, evening: 0] 
+CUSTOMER 28 bounds (0,153) | Av: 48.14814815 | Std: 7.242895388 | True: 58 [morning: 43, replenishment: 7, evening: 0] 
+CUSTOMER 29 bounds (0,260) | Av: 63.11111111 | Std: 8.610215007 | True: 68 [morning: 65, replenishment: 4, evening: 1] 
+CUSTOMER 30 bounds (0,24) | Av: 15.44444444 | Std: 10.57892151 | True: 14 [morning: 16, replenishment: 3, evening: 5] 
+CUSTOMER 31 bounds (0,212) | Av: 52.5 | Std: 5.435650494 | True: 52 [morning: 62, replenishment: 0, evening: 10] 
+CUSTOMER 32 bounds (0,184) | Av: 44.5 | Std: 4.991659711 | True: 57 [morning: 23, replenishment: 23, evening: 0] 
+CUSTOMER 33 bounds (0,237) | Av: 78.77777778 | Std: 3.314763087 | True: 84 [morning: 74, replenishment: 6, evening: 0] 
+CUSTOMER 34 bounds (0,192) | Av: 47.38888889 | Std: 9.210333703 | True: 46 [morning: 37, replenishment: 13, evening: 4] 
+CUSTOMER 35 bounds (0,42) | Av: 20.46296296 | Std: 6.014528592 | True: 22 [morning: 18, replenishment: 4, evening: 0] 
+CUSTOMER 36 bounds (0,96) | Av: 23.53703704 | Std: 9.525235416 | True: 25 [morning: 17, replenishment: 8, evening: 0] 
+CUSTOMER 37 bounds (0,88) | Av: 20.59259259 | Std: 5.762325015 | True: 16 [morning: 16, replenishment: 6, evening: 6] 
+CUSTOMER 38 bounds (0,272) | Av: 68 | Std: 3.299831646 | True: 66 [morning: 53, replenishment: 14, evening: 1] 
+CUSTOMER 39 bounds (0,126) | Av: 43 | Std: 7.381157191 | True: 49 [morning: 31, replenishment: 10, evening: 0] 
+CUSTOMER 40 bounds (0,72) | Av: 35.81481481 | Std: 2.874369973 | True: 38 [morning: 27, replenishment: 9, evening: 0] 
+CUSTOMER 41 bounds (0,194) | Av: 96.68518519 | Std: 10.50894517 | True: 100 [morning: 56, replenishment: 45, evening: 1] 
+CUSTOMER 42 bounds (0,285) | Av: 94.83333333 | Std: 4.0540332 | True: 95 [morning: 27, replenishment: 69, evening: 1] 
+CUSTOMER 43 bounds (0,144) | Av: 71.55555556 | Std: 1.651785416 | True: 69 [morning: 0, replenishment: 71, evening: 2] 
+CUSTOMER 44 bounds (0,54) | Av: 27.22222222 | Std: 2.330686329 | True: 29 [morning: 14, replenishment: 12, evening: 0] 
+CUSTOMER 45 bounds (0,104) | Av: 50.53703704 | Std: 4.573324275 | True: 53 [morning: 36, replenishment: 16, evening: 0] 
+CUSTOMER 46 bounds (0,246) | Av: 83.87037037 | Std: 8.124143935 | True: 81 [morning: 0, replenishment: 87, evening: 6] 
+CUSTOMER 47 bounds (0,141) | Av: 46.7962963 | Std: 7.905412186 | True: 45 [morning: 15, replenishment: 30, evening: 0] 
+CUSTOMER 48 bounds (0,176) | Av: 88.7962963 | Std: 6.421548301 | True: 90 [morning: 24, replenishment: 66, evening: 0] 
+CUSTOMER 49 bounds (0,128) | Av: 62.22222222 | Std: 9.332671934 | True: 48 [morning: 25, replenishment: 38, evening: 15] 
+CUSTOMER 50 bounds (0,120) | Av: 59.77777778 | Std: 5.216308709 | True: 63 [morning: 8, replenishment: 52, evening: 0] 
+
+SUPPLIER INVENTORY [morning: 34620, evening: 33744] 
+ROUTE COST: 2078
+SUPPLY INVENTORY COST: 337.44
+CLIENT INVENTORY COST: 9.15
+CLIENT STOCKOUT COST: 1382
+CLIENT STOCKOUT Amount: 115
+COST SUMMARY : THIS DAY 3806.59
+Total cost: 12867.26
+Route number: 1
+
+Total Time: 396.9104004
+Best Solution Time: 0.1312599927
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
