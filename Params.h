@@ -50,6 +50,9 @@ class Params {
   // pseudo-random generator
   Rng* rng;
 
+  // instance path
+  string instancePath;
+
   // generator's seed
   int seed;
 
@@ -208,7 +211,7 @@ class Params {
   void shuffleNeighbors();
   
   // constructor
-  Params(string nomInstance, int seedRNG, unsigned int nbCore, unsigned int nbScenario, unsigned int nbVeh, bool endInventories, bool trace, bool determinist, bool trueDemand1);
+  Params(string instance, int seedRNG, unsigned int nbCore, unsigned int nbScenario, unsigned int nbVeh, bool endInventories, bool trace, bool determinist, bool trueDemand1);
 
   // destructor
   ~Params(void);

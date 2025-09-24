@@ -21,8 +21,8 @@ double computeStd(const std::vector<double>& data) {
 
 }
 
-Params::Params(string nomInstance, int seedRNG, unsigned int nbCore, unsigned int nbScenario, unsigned int nbVeh, bool endInventories, bool trace, bool determinist, bool trueDemand1) : 
-	seed(seedRNG), nbCores(nbCore), nbScenarios(nbScenario), nbVehiculesPerDep(nbVeh), endDayInventories(endInventories), traces(trace), deterministic(determinist), trueDemandDay1(trueDemand1)
+Params::Params(string instance, int seedRNG, unsigned int nbCore, unsigned int nbScenario, unsigned int nbVeh, bool endInventories, bool trace, bool determinist, bool trueDemand1) : 
+	seed(seedRNG), instancePath(instance), nbCores(nbCore), nbScenarios(nbScenario), nbVehiculesPerDep(nbVeh), endDayInventories(endInventories), traces(trace), deterministic(determinist), trueDemandDay1(trueDemand1)
 {
 	jVal = 1; // initial value for jVal
 	if (seed == 0)
@@ -30,12 +30,12 @@ Params::Params(string nomInstance, int seedRNG, unsigned int nbCore, unsigned in
 	else
 		rng = new Rng((unsigned long long)(seed));	
 
-	file.open(nomInstance.c_str());
+	file.open(instancePath.c_str());
 
 	if (file.is_open())
 		collectData();	
 	else {
-		cout << "Unable to open file : " << nomInstance << endl;
+		cout << "Unable to open file : " << instancePath << endl;
 		throw string(" Unable to open file ");
 	}
 	setMethodParams();

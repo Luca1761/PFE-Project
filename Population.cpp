@@ -233,13 +233,9 @@ void Population::ExportPop(string nomFichier, std::vector<double> deliveries, do
 		ofstream myfile;
 		myfile.precision(10);
 		cout.precision(10);
-		if (params->deterministic) {
-			string path = "irp_results.txt";
-			myfile.open(path.data(), std::ios::app);
-		} else {
-			if (params->jVal == 1) myfile.open(nomFichier.data());
-			else myfile.open(nomFichier.data(), std::ios::app); // add on previous (do not erase previous information)
-		}
+		
+		if (params->jVal == 1 && !params->deterministic) myfile.open(nomFichier.data());
+		else myfile.open(nomFichier.data(), std::ios::app); // add on previous (do not erase previous information)
 		// We will update the local search structure for paths (particularly the split, in case it's not done)
 		// We are obliged to set very strong parameters 
 		// so that the splitting does not produce a from the best valid solution
@@ -251,7 +247,7 @@ void Population::ExportPop(string nomFichier, std::vector<double> deliveries, do
 		LocalSearch *loc = trainer->localSearchList[0];
 		params->penalityCapa = savePenalities;
 		if (params->deterministic) {
-			myfile << bestFeasible->solution_cost.evaluation << " " << (float) timeBest / (float)CLOCKS_PER_SEC << " " << nomFichier << endl;
+			myfile << bestFeasible->solution_cost.evaluation << " " << (float) timeBest / (float)CLOCKS_PER_SEC << " " << params->instancePath << endl;
 			myfile.close();
 			return;
 		}

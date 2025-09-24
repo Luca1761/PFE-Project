@@ -5,38 +5,47 @@ void commandline::set_instance_name(string to_parse) { instance_name = to_parse;
 void commandline::set_sortie_name(string to_parse) { sortie_name = to_parse; }
 
 void commandline::set_default_sorties_name(string to_parse) {
-  char caractere1 = '/';
-  char caractere2 = '\\';
-  int pos = (int) to_parse.find_last_of(caractere1);
-  int pos2 = (int) to_parse.find_last_of(caractere2);
+  int pos = (int) to_parse.find_last_of('/');
+  int pos2 = (int) to_parse.find_last_of('\\');
+  int posStandard = (int) to_parse.find("standard");
+  int posCorrelated = (int) to_parse.find("correlated");
+  int posSeasonal = (int) to_parse.find("seasonal");
+
   if (pos2 > pos)
     pos = pos2;
-
-  if (pos != -1) {
+  string typeInstance;
+  if (posStandard != -1) {
+    typeInstance = "standard";
+  } else if (posSeasonal != -1) {
+    typeInstance = "seasonal";
+  } else if (posCorrelated != -1) {
+    typeInstance = "correlated";
+  } else {
+    std::cout << "ERROR DATA NAME" << std::endl;
+    throw std::string("ERROR DATA NAME");
+  }
+  string directory = "results/results_" + typeInstance + "/";
+  if (deterministic) {
+    sortie_name = directory + "irp_results.txt";
+  } else {
     unsigned int position = (unsigned int) pos;
-    string directory = (deterministic) ? "irp_results/" : "dsirp_results/";
+    string place = directory + ((end_day_inventories) ? "dsirpr_results/" : "dsirp_results/");
     string filename = to_parse.substr(position + 1, to_parse.length() - position - 1-4);
-    string type = (deterministic) ? "IRPsol-" : "DSIRPsol-";
+    string type = "DSIRPsol-";
     if (end_day_inventories) type += "end-";
     if (true_demand_day1) type += "day1-";
-
-    sortie_name = directory + type + filename + "_seed-" + std::to_string(seed) + "_veh-" + std::to_string(nbVeh) + "_scenarios-" + std::to_string(nb_scenarios);
-  } else {
-    sortie_name = to_parse.substr(0, 0) + "DSIRPsol-" +
-                  to_parse.substr(0, to_parse.length() - 1) + "-seed-" + to_parse.substr((unsigned int) seed) + "-veh-" + to_parse.substr(nbVeh);
+  
+    sortie_name = place + type + filename + "_seed-" + std::to_string(seed) + "_veh-" + std::to_string(nbVeh) + "_scenarios-" + std::to_string(nb_scenarios);
   }
+
+
 }
 
-// constructeur
-commandline::commandline(int argc, char *argv[])
-{
-  if (argc > 24 || argc < 2)
-  {
+commandline::commandline(int argc, char *argv[]) {
+  if (argc > 24 || argc < 2) {
     std::cout << "incorrect command line" << std::endl;
     throw std::string("incorrect command line");
-  }
-  else
-  {
+  } else {
     // default values
     set_instance_name(string(argv[1]));
 
@@ -53,8 +62,7 @@ commandline::commandline(int argc, char *argv[])
     deterministic = false;
 
     // parameters
-    for (int i = 2; i < argc; i += 2)
-    {
+    for (int i = 2; i < argc; i += 2) {
       if (string(argv[i]) == "-sol") {
         set_sortie_name(string(argv[i + 1]));
         hasSolName = true;
